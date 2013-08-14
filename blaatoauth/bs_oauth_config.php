@@ -1,11 +1,15 @@
 <?php
 
-function blaat_oauth_add_form(){
+function blaat_oauth_add_page(){
 global $_SERVER;
 $ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING'];
+        echo '<div class="wrap">';
+        screen_icon();
+        echo "<h2>BlaatSchaap OAuth Configuration</h2>";
+
 echo "
 <form method='post' action='$ACTION'>
-  <table>
+  <table class='form-table'>
     <tr>
       <td>Service:</td>
       <td>
@@ -79,11 +83,15 @@ echo "
 }
 
 
-function blaat_oauth_add_custom_form(){
+function blaat_oauth_add_custom_page(){
 $ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING'];
+        echo '<div class="wrap">';
+        screen_icon();
+        echo "<h2>BlaatSchaap OAuth Configuration</h2>";
+
 echo "
 <form method='post' action='$ACTION'>
-  <table>
+  <table class='form-table'>
     <tr>
       <td>Display name:</td>
       <td>
@@ -228,7 +236,7 @@ function blaat_oauth_list_services(){
     echo"
 <form method='post' action='$ACTION'>
   <input type=hidden name=id value='".$result['id']."'>
-  <table>
+  <table class='form-table'>
     <tr>
       <td>Service:</td>";
     if (strlen($result['client_name'])) {
@@ -318,8 +326,8 @@ function blaat_oauth_list_services(){
       <td><input type='checkbox' name='client_enabled' value=1 $enabled></input>
     </tr>
     <tr>
-      <td><input type='submit' name='delete_service' value='Delete'></td>
-      <td><input type='submit' name='update_service' value='Update'></input>
+      <td></td><td><input type='submit' name='delete_service' value='Delete'>
+      <input type='submit' name='update_service' value='Update'></input>
     </tr>
   </table>
 </form><hr>";
