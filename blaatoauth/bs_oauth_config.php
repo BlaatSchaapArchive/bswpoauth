@@ -2,7 +2,9 @@
 
 function blaat_oauth_add_page(){
 global $_SERVER;
-$ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING'];
+//$ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING'];
+
+$ACTION="admin.php?page=blaat_oauth_services";
         echo '<div class="wrap">';
         screen_icon();
         echo "<h2>BlaatSchaap OAuth Configuration</h2>";
@@ -57,13 +59,6 @@ echo "
       </td>
     </tr>
     <tr>
-      <td>    <tr>
-      <td>Client Secret:</td>
-      <td>
-        <input type='text' name='client_secret'></input>
-      </td>
-    </tr>
-    <tr>
       <td>Default Scope:</td>
       <td>
         <input type='text' name='default_scope'></input>
@@ -84,7 +79,9 @@ echo "
 
 
 function blaat_oauth_add_custom_page(){
-$ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING'];
+//$ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING'];
+$ACTION="admin.php?page=blaat_oauth_services";
+
         echo '<div class="wrap">';
         screen_icon();
         echo "<h2>BlaatSchaap OAuth Configuration</h2>";
@@ -216,8 +213,21 @@ function blaat_oauth_delete_service(){
   $wpdb->query($query);
 }
 
+if (!function_exists("blaat_not_implemented")) {
+  function blaat_not_implemented() {
+      ?>
+      <div class="error">
+          <p><?php _e( 'Not Implemented!', 'blaatschaap' ); ?></p>
+      </div>
+      <?php
+  }
+}
+
+
 function blaat_oauth_update_service(){
   // TODO: Implement me!
+  blaat_not_implemented();
+
 }
 
 function blaat_oauth_list_services(){

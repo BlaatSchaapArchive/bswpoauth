@@ -36,10 +36,14 @@ if (!function_exists("blaat_page_select")) {
   }
 }
 
-
-
 if (!function_exists("blaat_plugins_page")) {
   function blaat_plugins_page(){
+    echo "BlaatSchaap Plugins";
+  }
+}
+
+if (!function_exists("blaat_plugins_auth_page")) {
+  function blaat_plugins_auth_page(){
     //echo "Thank you for using the BlaatSchaap Coding Projects WordPress Authentication Plugins";
     echo '<div class="wrap">';
     
@@ -140,6 +144,7 @@ function blaat_oauth_menu() {
   add_menu_page('BlaatSchaap', 'BlaatSchaap', 'manage_options', 'blaat_plugins', 'blaat_plugins_page');
   add_submenu_page('blaat_plugins', "" , "" , 'manage_options', 'blaat_plugins', 'blaat_plugins_page');
 
+  add_submenu_page('blaat_plugins', "Auth Pages" , "Auth pages" , 'manage_options', 'blaat_auth_pages_plugins', 'blaat_plugins_auth_page');
   add_submenu_page('blaat_plugins' , 'OAuth Configuration', 'OAuth Configuration', 'manage_options', 'blaat_oauth_services', 'blaat_oauth_config_page' );
   add_submenu_page('blaat_plugins' , 'OAuth Add Service',   'OAuth Add', 'manage_options', 'blaat_oauth_add', 'blaat_oauth_add_page' );
   add_submenu_page('blaat_plugins' , 'OAuth Add Custom Service',   'OAuth Add Custom', 'manage_options', 'blaat_oauth_custom', 'blaat_oauth_add_custom_page' );
