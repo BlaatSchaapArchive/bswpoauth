@@ -186,7 +186,6 @@ function blaat_oauth_do_login($user){
 
     if ($_REQUEST['oauth_id']) $_SESSION['oauth_id']=$_REQUEST['oauth_id'];
 
-    echo "<br>OAUTH ID: " . $_SESSION['oauth_id'] . "<br>";
 
     global $wpdb;
     $table_name = $wpdb->prefix . "bs_oauth_services";
@@ -216,13 +215,21 @@ function blaat_oauth_do_login($user){
     }
 
     if(($success = $client->Initialize())){
-      echo "init<br>";
+      //echo "init<br>";
       if(($success = $client->Process())){
-        echo "process<br>";
+        //echo "process<br>";
         if(strlen($client->access_token)){
-          echo "token: $client->access_token";
+          //echo "token: $client->access_token";
           //echo "<pre>"; print_r($client); print_r($_SESSION); die ("</pre>");
+          $_SESSION['oauth_display'] = $result['display_name'];
           if ( is_a($user, 'WP_User') ) { // we are logged in, link OAuth to user
+              $_SESSION['oauth_token']   = $client->access_token;
+              $_SESSION['oauth_expiry']  = $client->access_token_expiry;
+              $_SESSION['oauth_scope']   = $client->scope;
+              //$_SESSION['oauth_display'] = $result['display_name'];
+              header("Location: ".site_url("/".get_option("link_page")));
+              
+/*
             $user_id    = $user->ID;
             $service_id = $_SESSION['oauth_id'];
             $token = $client->access_token;
@@ -236,7 +243,7 @@ function blaat_oauth_do_login($user){
                                                               $user_id , $service_id , $token , $expiry , $scope  );
             $wpdb->query($query);
             return $user;
-            
+*/            
           } else {
             $service_id = $_SESSION['oauth_id'];
             $token = $client->access_token;
@@ -252,10 +259,13 @@ function blaat_oauth_do_login($user){
               
               return new WP_User( $result['user_id']);
             } else {
-              $_SESSION['oauth_signup']=1;
-		// TODO: create custom page!
-              header("Location: /wp-login.php?action=register&oauth_signup=1");
-              //echo "This user is not linked";
+              $_SESSION['oauth_signup']  = 1;
+              $_SESSION['oauth_token']   = $client->access_token;
+              $_SESSION['oauth_expiry']  = $client->access_token_expiry;
+              $_SESSION['oauth_scope']   = $client->scope;
+              //$_SESSION['oauth_display'] = $result['display_name'];
+
+              header("Location: ".site_url("/".get_option("register_page")));
             }
 
 
@@ -374,7 +384,8 @@ add_filter( 'the_content', 'blaat_auth_display' );
 
 
 function blaat_auth_login_display(){
-  blaat_oauth_do_login();
+  
+  if (!is_user_logged_in()) blaat_oauth_do_login();
 
   if ( is_user_logged_in() ) {
     echo "Logged in";
@@ -404,6 +415,73 @@ function blaat_auth_login_display(){
   }
 }
 
+function blaat_auth_link_display(){
+  session_start();
+  global $wpdb;
+  //if ( is_a($user, 'WP_User') ) { 
+  if (is_user_logged_in()) {
+    $user = wp_get_current_user();
+    if (isset($_SESSION['oauth_id'])     && isset($_SESSION['oauth_token']) &&
+        isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
+
+      $user_id    = $user->ID;
+      $service_id = $_SESSION['oauth_id'];
+      $token      = $_SESSION['oauth_token'];
+      $expiry     = $_SESSION['oauth_expiry'];
+      $scope      = $_SESSION['oauth_scope'];
+      $service    = $_SESSION['oauth_display'];
+      $table_name = $wpdb->prefix . "bs_oauth_sessions";
+   
+      $query = $wpdb->prepare("INSERT INTO $table_name (`user_id`, `service_id`, `token`, `expiry`, `scope` )
+                                       VALUES      ( %d      ,  %d         ,  %s    , %s      , %s      )",
+                                                    $user_id , $service_id , $token , $expiry , $scope  );
+      $wpdb->query($query);
+      unset($_SESSION['oauth_id']);
+      unset($_SESSION['oauth_token']);
+      unset($_SESSION['oauth_expiry']);
+      unset($_SESSION['oauth_scope']);
+      unset($_SESSION['oauth_display']);
+      printf( __("Your %s account has been linked", "blaat_auth"), $service );
+    } else {
+      echo "local known, no oauth. we need link form";
+    }      
+  } else {
+    // oauth user, no wp-user
+    if (isset($_SESSION['oauth_id'])     && isset($_SESSION['oauth_token']) &&
+        isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
+        $service_id = $_SESSION['oauth_id'];
+        $token      = $_SESSION['oauth_token'];
+        $expiry     = $_SESSION['oauth_expiry'];
+        $scope      = $_SESSION['oauth_scope'];
+        $service    = $_SESSION['oauth_display'];
+        echo "<div id='blaat_auth_local'>";
+        printf(  "<p>" .  __("Please provide a local account to link to %s","blaat_auth") . "</p>" , $service);
+        wp_login_form();
+        echo "</div>";
+      } else {
+      //echo "nothing";
+      printf(  "<p>" .  __("You need to be logged in to use this feature","blaat_auth") . "</p>");        
+    } 
+  }
+}
+
+function blaat_auth_register_display() {
+  session_start();
+    if (isset($_SESSION['oauth_id'])     && isset($_SESSION['oauth_token']) &&
+        isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
+
+    $service = $_SESSION['oauth_display'];
+    printf( __("You are authenticated to %s","blaat_auth") , $service );
+    echo "<br>";
+    _e("Please provide a username and e-mail address to complete your signup","blaat_auth");
+    echo "<br>";
+    printf( __("If you already have an account, please click <a href='%s'>here</a> to link it","blaat_auth") , site_url("/".get_option("link_page")));
+    echo "<br>";
+  } else {
+    _e("Please provice a username and password to sign up");
+  }
+}
+
 function blaat_auth_display($content) {
   $login_page    = get_option('login_page');
   $link_page     = get_option('link_page');
@@ -416,10 +494,12 @@ function blaat_auth_display($content) {
       
       break;
     case $link_page :
-      echo "link_page";
+      blaat_auth_link_display();
+      //echo "link_page";
       break;
     case $register_page :
-      echo "register_page";
+      //echo "register_page";
+     blaat_auth_register_display();
       break;
     default : 
       return $content;
