@@ -13,9 +13,6 @@ License: 3 Clause BSD
 session_start();
 ob_start();
 
-
-load_plugin_textdomain('blaat_auth', false, basename( dirname( __FILE__ ) ) . '/languages' );
-
 function blaat_register_pageoptions(){
   register_setting( 'blaat_auth_pages', 'login_page' );
   register_setting( 'blaat_auth_pages', 'register_page' );
@@ -78,8 +75,8 @@ if (!function_exists("blaat_plugins_auth_page")) {
 
 
 
-require_once("oauth/oauth_client.php");
-require_once("oauth/http.php");
+//require_once("oauth/oauth_client.php");
+//require_once("oauth/http.php");
 //require_once("bs_wp_oauth.php");
 
 require_once("bs_oauth_config.php");
@@ -178,7 +175,6 @@ function blaat_oauth_do_login(){
 }
 
 function blaat_oauth_process_login($client, $displayname){
-  global $wpdb;
   $_SESSION['oauth_display'] = $displayname;
   if ( is_user_logged_in() ) { 
       $_SESSION['oauth_token']   = $client->access_token;
@@ -412,20 +408,6 @@ function blaat_auth_link_display(){
       printf( __("Your %s account has been linked", "blaat_auth"), $service );
     } else {
       echo "local known, no oauth. we need link form";
-      $table_name = $wpdb->prefix . "bs_oauth_sessions";
-      $user_id    = $user->ID;
-      $query = $wpdb->prepare("SELECT service_id FROM $table_name WHERE `user_id` = %d",$user_id);
-      $linked_services = $wpdb->get_results($query,ARRAY_A);
-       
-      $table_name = $wpdb->prefix . "bs_oauth_services";
-      $query = $wpdb->prepare("SELECT * FROM $table_name");
-      $available_services = $wpdb->get_results($query,ARRAY_A);
-
-      echo "<pre>Linked:
-"; print_r($linked_services); echo "
-Available:
-"; print_r($available_services); echo "</pre>";
-      
     }      
   } else {
     // oauth user, no wp-user
@@ -447,24 +429,19 @@ Available:
 }
 
 function blaat_auth_register_display() {
-  if (is_user_logged_in()) {
-    _e("You cannot register a new account since you are already logged in.","blaat_auth");
+  session_start();
+    if (isset($_SESSION['oauth_id'])     && isset($_SESSION['oauth_token']) &&
+        isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
+
+    $service = $_SESSION['oauth_display'];
+    printf( __("You are authenticated to %s","blaat_auth") , $service );
+    echo "<br>";
+    _e("Please provide a username and e-mail address to complete your signup","blaat_auth");
+    echo "<br>";
+    printf( __("If you already have an account, please click <a href='%s'>here</a> to link it","blaat_auth") , site_url("/".get_option("link_page")));
+    echo "<br>";
   } else {
-
-    session_start();
-      if (isset($_SESSION['oauth_id'])     && isset($_SESSION['oauth_token']) &&
-          isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
-
-      $service = $_SESSION['oauth_display'];
-      printf( __("You are authenticated to %s","blaat_auth") , $service );
-      echo "<br>";
-      _e("Please provide a username and e-mail address to complete your signup","blaat_auth");
-      echo "<br>";
-      printf( __("If you already have an account, please click <a href='%s'>here</a> to link it.","blaat_auth") , site_url("/".get_option("link_page")));
-      echo "<br>";
-    } else {
-      _e("Please provice a username and password to sign up","blaat_auth");
-    } 
+    _e("Please provice a username and password to sign up","blaat_auth");
   }
 }
 
