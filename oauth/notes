@@ -14,3 +14,4 @@ we retrieve a token from Google as well.
 
 Therefore, we must store them somewhere. Perhaps we should add them to
 the class, or store them in the database
+https://www.googleapis.com/auth/userinfo
