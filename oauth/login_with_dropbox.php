@@ -2,10 +2,13 @@
 /*
  * login_with_dropbox.php
  *
- * @(#) $Id: login_with_dropbox.php,v 1.1 2012/10/31 11:05:14 mlemos Exp $
+ * @(#) $Id: login_with_dropbox.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 

@@ -2,7 +2,7 @@
 /*
  * mysqli_oauth_client.php
  *
- * @(#) $Id: mysqli_oauth_client.php,v 1.1 2013/04/23 09:05:41 mlemos Exp $
+ * @(#) $Id: mysqli_oauth_client.php,v 1.4 2013/07/02 05:19:31 mlemos Exp $
  *
  */
 
@@ -42,7 +42,7 @@ class mysqli_oauth_client_class extends database_oauth_client_class
 		return parent::Finalize($success);
 	}
 
-	Function Query($sql, $parameters, &$results)
+	Function Query($sql, $parameters, &$results, $result_types = null)
 	{
 		if($this->debug)
 			$this->OutputDebug('Query: '.$sql);
@@ -71,6 +71,8 @@ class mysqli_oauth_client_class extends database_oauth_client_class
 					break;
 			}
 			$types .= $t;
+			if($this->debug)
+				$this->OutputDebug('Query parameter type: '.$t.' value: '.$v[$p]);
 			$prepared[] = &$v[$p++];
 		}
 		array_unshift($prepared, $types);
@@ -80,12 +82,45 @@ class mysqli_oauth_client_class extends database_oauth_client_class
 			$statement->close();
 			return $this->SetError($statement->error);
 		}
-		if(($result = $statement->get_result()))
+		$fields = $statement->field_count;
+		if($fields)
 		{
+			$row = $bind = array();
+			for($f = 0; $f < $fields; ++$f)
+			{
+				$row[$f] = null;
+				$bind[$f] = &$row[$f];
+			}
+			if(!call_user_func_array(array($statement, 'bind_result'), $bind))
+			{
+				$statement->close();
+				return $this->SetError($statement->error);
+			}
 			$rows = array();
-			while(($row = $result->fetch_array(MYSQLI_NUM)))
+			while(($success = $statement->fetch()) !== null)
+			{
+				if(!$success)
+				{
+					$statement->close();
+					return $this->SetError($statement->error);
+				}
+				if(IsSet($result_types))
+				{
+					$tc = count($result_types);
+					for($c = 0; $c < $tc; ++$c)
+					{
+						if(!IsSet($row[$c]))
+							continue;
+						switch($result_types[$c])
+						{
+							case 'b':
+								$row[$c] = ($row[$c] === 'Y');
+								break;
+						}
+					}
+				}
 				$rows[] = $row;
-			$result->free();
+			}
 			$results['rows'] = $rows;
 		}
 		elseif(strlen($error = $statement->error))

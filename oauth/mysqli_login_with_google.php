@@ -2,10 +2,13 @@
 /*
  * mysqli_login_with_google.php
  *
- * @(#) $Id: mysqli_login_with_google.php,v 1.1 2013/04/23 09:05:41 mlemos Exp $
+ * @(#) $Id: mysqli_login_with_google.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 	require('database_oauth_client.php');

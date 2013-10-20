@@ -1,8 +1,8 @@
 <?php
 /*
- * login_with_twitter.php
+ * mysqli_login_with_twitter.php
  *
- * @(#) $Id: login_with_twitter.php,v 1.6 2013/07/31 11:48:04 mlemos Exp $
+ * @(#) $Id: mysqli_login_with_twitter.php,v 1.4 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
@@ -11,14 +11,42 @@
 	 */
 	require('http.php');
 	require('oauth_client.php');
+	require('database_oauth_client.php');
+	require('mysqli_oauth_client.php');
 
-	$client = new oauth_client_class;
-	$client->debug = 1;
-	$client->debug_http = 1;
+	/*
+	 * Create an object of the sub-class of the OAuth client class that is
+	 * specialized in storing and retrieving access tokens from MySQL
+	 * databases using the mysqli extension
+	 * 
+	 * If you use a different database, replace this class by another
+	 * specialized in accessing that type of database
+	 */
+	$client = new mysqli_oauth_client_class;
+
+	/*
+	 * Define options specific to your database connection  
+	 */
+	$client->database = array(
+		'host'=>'',
+		'user'=>'oauth',
+		'password'=>'oauth',
+		'name'=>'oauth',
+		'port'=>0,
+		'socket'=>'/var/lib/mysql/mysql.sock'
+	);
 	$client->server = 'Twitter';
+
+	/*
+	 * Set the offline access only if you need to call an API
+	 * when the user is not present and the token may expire
+	 */
+	$client->offline = true;
+
+	$client->debug = true;
+	$client->debug_http = true;
 	$client->redirect_uri = 'http://'.$_SERVER['HTTP_HOST'].
-		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_twitter.php';
-//	$client->redirect_uri = 'oob';
+		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/mysqli_login_with_twitter.php';
 
 	$client->client_id = ''; $application_line = __LINE__;
 	$client->client_secret = '';
@@ -35,38 +63,28 @@
 	{
 		if(($success = $client->Process()))
 		{
-			if(strlen($client->access_token))
+			if(strlen($client->authorization_error))
+			{
+				$client->error = $client->authorization_error;
+				$success = false;
+			}
+			elseif(strlen($client->access_token))
 			{
 				$success = $client->CallAPI(
 					'https://api.twitter.com/1.1/account/verify_credentials.json', 
 					'GET', array(), array('FailOnAccessError'=>true), $user);
 
-/*
-				$values = array(
-					'status'=>str_repeat('x', 140)
-				);
-				$success = $client->CallAPI(
-					'https://api.twitter.com/1.1/statuses/update.json', 
-					'POST', $values, array('FailOnAccessError'=>true), $update);
-				if(!$success)
-					error_log(print_r($update->errors[0]->code, 1));
-*/
-
-/* Tweet with an attached image
- 
-				$success = $client->CallAPI(
-					"https://api.twitter.com/1.1/statuses/update_with_media.json",
-					'POST', array(
-						'status'=>'This is a test tweet to evaluate the PHP OAuth API support to upload image files sent at '.strftime("%Y-%m-%d %H:%M:%S"),
-						'media[]'=>'php-oauth.png'
-					),array(
-						'FailOnAccessError'=>true,
-						'Files'=>array(
-							'media[]'=>array(
-							)
-						)
-					), $user);
-*/
+				/*
+				 * Once you were able to access the user account using the API
+				 * you should associate the current OAuth access token a specific
+				 * user, so you can call the API without the user presence, just
+				 * specifying the user id in your database.
+				 *
+				 * In this example the user id is 1 . Your application should
+				 * determine the right user is to associate.
+				 */
+				if($success)
+					$success = $client->SetUser(1);
 			}
 		}
 		$success = $client->Finalize($success);
@@ -75,7 +93,6 @@
 		exit;
 	if($success)
 	{
-		$client->ResetAccessToken();
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -84,7 +101,7 @@
 </head>
 <body>
 <?php
-		echo '<h1>', HtmlSpecialChars($user->name), 
+		echo '<h1>', HtmlSpecialChars($user->name),
 			' you have logged in successfully with Twitter!</h1>';
 		echo '<pre>', HtmlSpecialChars(print_r($user, 1)), '</pre>';
 ?>

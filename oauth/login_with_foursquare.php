@@ -1,8 +1,8 @@
 <?php
 /*
- * login_with_bitbucket.php
+ * login_with_foursquare.php
  *
- * @(#) $Id: login_with_bitbucket.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
+ * @(#) $Id: login_with_foursquare.php,v 1.1 2013/10/13 09:41:36 mlemos Exp $
  *
  */
 
@@ -13,31 +13,40 @@
 	require('oauth_client.php');
 
 	$client = new oauth_client_class;
-	$client->debug = false;
+	$client->server = 'Foursquare';
+
+	$client->debug = true;
 	$client->debug_http = true;
-	$client->server = 'Bitbucket';
 	$client->redirect_uri = 'http://'.$_SERVER['HTTP_HOST'].
-		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_bitbucket.php';
+		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_foursquare.php';
 
 	$client->client_id = ''; $application_line = __LINE__;
 	$client->client_secret = '';
 
 	if(strlen($client->client_id) == 0
 	|| strlen($client->client_secret) == 0)
-		die('Please go to Bitbucket page to Manage Account '.
-			'https://bitbucket.org/account/ , click on Integrated Applications, '.
-			'then Add Consumer, and in the line '.$application_line.
-			' set the client_id with Key and client_secret with Secret. '.
-			'The URL must be '.$client->redirect_uri);
+		die('Please go to Foursquare user applications page '.
+			'https://foursquare.com/developers/apps , create a new application,'.
+			' and in the line '.$application_line.' set the client_id to Client ID'.
+			' and client_secret with Client Secret. '.
+			' The callback URL must be '.$client->redirect_uri);
 
+	/* API permissions
+	 */
+	$client->scope = '';
 	if(($success = $client->Initialize()))
 	{
 		if(($success = $client->Process()))
 		{
-			if(strlen($client->access_token))
+			if(strlen($client->authorization_error))
+			{
+				$client->error = $client->authorization_error;
+				$success = false;
+			}
+			elseif(strlen($client->access_token))
 			{
 				$success = $client->CallAPI(
-					'https://api.bitbucket.org/1.0/user', 
+					'https://api.foursquare.com/v2/users/self?v=20131013',
 					'GET', array(), array('FailOnAccessError'=>true), $user);
 			}
 		}
@@ -51,12 +60,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>Bitbucket OAuth client results</title>
+<title>Foursquare OAuth client results</title>
 </head>
 <body>
 <?php
-		echo '<h1>', HtmlSpecialChars($user->user->first_name), 
-			' you have logged in successfully with Bitbucket!</h1>';
+		echo '<h1>', HtmlSpecialChars($user->response->user->firstName),
+			' you have logged in successfully with Foursquare!</h1>';
 		echo '<pre>', HtmlSpecialChars(print_r($user, 1)), '</pre>';
 ?>
 </body>

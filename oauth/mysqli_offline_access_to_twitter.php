@@ -1,8 +1,8 @@
 <?php
 /*
- * mysqli_offline_access_to_google.php
+ * mysqli_offline_access_to_twitter.php
  *
- * @(#) $Id: mysqli_offline_access_to_google.php,v 1.3 2013/07/31 11:48:04 mlemos Exp $
+ * @(#) $Id: mysqli_offline_access_to_twitter.php,v 1.3 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
@@ -41,7 +41,7 @@
 		'socket'=>'/var/lib/mysql/mysql.sock'
 	);
 
-	$client->server = 'Google';
+	$client->server = 'Twitter';
 
 	/*
 	 * Set the offline access only if you need to call an API
@@ -49,7 +49,7 @@
 	 */
 	$client->offline = true;
 
-	$client->debug = false;
+	$client->debug = true;
 	$client->debug_http = true;
 
 	$client->client_id = ''; $application_line = __LINE__;
@@ -57,10 +57,11 @@
 
 	if(strlen($client->client_id) == 0
 	|| strlen($client->client_secret) == 0)
-		die('Please go to Google APIs console page '.
-			'http://code.google.com/apis/console in the API access tab, '.
-			'create a new client ID, and in the line '.$application_line.
-			' set the client_id to Client ID and client_secret with Client Secret.');
+		die('Please go to Twitter Apps page https://dev.twitter.com/apps/new , '.
+			'create an application, and in the line '.$application_line.
+			' set the client_id to Consumer key and client_secret with Consumer secret. '.
+			'The Callback URL must be '.$client->redirect_uri.' If you want to post to '.
+			'the user timeline, make sure the application you create has write permissions');
 
 	if(($success = $client->Initialize()))
 	{
@@ -69,8 +70,24 @@
 		 * because the access token will be retrieved from the database
 		 */
 		$success = $client->CallAPI(
-			'https://www.googleapis.com/oauth2/v1/userinfo',
+			'https://api.twitter.com/1.1/account/verify_credentials.json', 
 			'GET', array(), array('FailOnAccessError'=>true), $user);
+
+/* Tweet with an attached image
+ 
+				$success = $client->CallAPI(
+					"https://api.twitter.com/1.1/statuses/update_with_media.json",
+					'POST', array(
+						'status'=>'This is a test tweet to evaluate the PHP OAuth API support to upload image files sent at '.strftime("%Y-%m-%d %H:%M:%S"),
+						'media[]'=>'php-oauth.png'
+					),array(
+						'FailOnAccessError'=>true,
+						'Files'=>array(
+							'media[]'=>array(
+							)
+						)
+					), $user);
+*/
 		$success = $client->Finalize($success);
 	}
 	if($client->exit)

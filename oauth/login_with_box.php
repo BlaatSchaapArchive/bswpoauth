@@ -2,10 +2,13 @@
 /*
  * login_with_box.php
  *
- * @(#) $Id: login_with_box.php,v 1.1 2013/03/15 04:16:53 mlemos Exp $
+ * @(#) $Id: login_with_box.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 

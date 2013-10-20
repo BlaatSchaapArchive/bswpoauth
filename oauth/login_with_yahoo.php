@@ -2,16 +2,19 @@
 /*
  * login_with_yahoo.php
  *
- * @(#) $Id: login_with_yahoo.php,v 1.1 2012/10/05 09:23:25 mlemos Exp $
+ * @(#) $Id: login_with_yahoo.php,v 1.3 2013/10/17 05:23:22 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 
 	$client = new oauth_client_class;
-	$client->debug = 1;
-	$client->debug_http = 1;
+	$client->debug = false;
+	$client->debug_http = true;
 	$client->server = 'Yahoo';
 	$client->redirect_uri = 'http://'.$_SERVER['HTTP_HOST'].
 		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_yahoo.php';
@@ -21,8 +24,8 @@
 
 	if(strlen($client->client_id) == 0
 	|| strlen($client->client_secret) == 0)
-		die('Please go to Yahoo Apps page https://developer.apps.yahoo.com/wsregapp/ , '.
-			'create an application, and in the line '.$application_line.
+		die('Please go to Yahoo Apps page https://developer.apps.yahoo.com/projects/ , '.
+			'create a project, and in the line '.$application_line.
 			' set the client_id to Consumer key and client_secret with Consumer secret. '.
 			'The Callback URL must be '.$client->redirect_uri).' Make sure you enable the '.
 			'necessary permissions to execute the API calls your application needs.';
@@ -45,6 +48,11 @@
 	}
 	if($client->exit)
 		exit;
+	if(strlen($client->authorization_error))
+	{
+		$client->error = $client->authorization_error;
+		$success = false;
+	}
 	if($success)
 	{
 ?>

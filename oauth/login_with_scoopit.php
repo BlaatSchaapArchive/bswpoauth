@@ -2,10 +2,13 @@
 /*
  * login_with_scoopit.php
  *
- * @(#) $Id: login_with_scoopit.php,v 1.1 2013/01/10 10:11:33 mlemos Exp $
+ * @(#) $Id: login_with_scoopit.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 

@@ -2,10 +2,13 @@
 /*
  * test_oauth_client.php
  *
- * @(#) $Id: test_oauth_client.php,v 1.4 2012/10/05 09:22:40 mlemos Exp $
+ * @(#) $Id: test_oauth_client.php,v 1.5 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 

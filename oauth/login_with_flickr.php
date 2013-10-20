@@ -2,10 +2,13 @@
 /*
  * login_with_flickr.php
  *
- * @(#) $Id: login_with_flickr.php,v 1.3 2013/03/29 08:07:27 mlemos Exp $
+ * @(#) $Id: login_with_flickr.php,v 1.4 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 

@@ -2,10 +2,13 @@
 /*
  * login_with_google.php
  *
- * @(#) $Id: login_with_google.php,v 1.6 2013/03/15 04:19:34 mlemos Exp $
+ * @(#) $Id: login_with_google.php,v 1.7 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 
@@ -14,15 +17,15 @@
 
 	// set the offline access only if you need to call an API
 	// when the user is not present and the token may expire
-	$client->offline = false;
+	$client->offline = true;
 
 	$client->debug = false;
 	$client->debug_http = true;
 	$client->redirect_uri = 'http://'.$_SERVER['HTTP_HOST'].
 		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_google.php';
 
-	$client->client_id = '315675841040.apps.googleusercontent.com'; $application_line = __LINE__;
-	$client->client_secret = 'xM_c6aMnDSIVvbTnDaLrHS1p';
+	$client->client_id = ''; $application_line = __LINE__;
+	$client->client_secret = '';
 
 	if(strlen($client->client_id) == 0
 	|| strlen($client->client_secret) == 0)

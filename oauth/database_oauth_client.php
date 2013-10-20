@@ -2,7 +2,7 @@
 /*
  * database_oauth_client.php
  *
- * @(#) $Id: database_oauth_client.php,v 1.2 2013/04/23 11:44:20 mlemos Exp $
+ * @(#) $Id: database_oauth_client.php,v 1.7 2013/07/02 05:19:31 mlemos Exp $
  *
  */
 
@@ -27,9 +27,10 @@ class database_oauth_client_class extends oauth_client_class
 	var $session = '';
 	var $user = 0;
 	var $session_cookie = 'oauth_session';
+	var $session_path = '/';
 	var $sessions = array();
 
-	Function Query($sql, $parameters, &$results)
+	Function Query($sql, $parameters, &$results, $result_types = null)
 	{
 		return $this->SetError('Database Query is not implemented');
 	}
@@ -39,16 +40,24 @@ class database_oauth_client_class extends oauth_client_class
 		if(strlen($this->session)
 		|| IsSet($_COOKIE[$this->session_cookie]))
 		{
+			if($this->debug)
+				$this->OutputDebug(strlen($this->session) ? 'Checking OAuth session '.$this->session : 'Checking OAuth session from cookie '.$_COOKIE[$this->session_cookie]);
 			if(!$this->GetOAuthSession(strlen($this->session) ? $this->session : $_COOKIE[$this->session_cookie], $this->server, $session))
 				return($this->SetError('OAuth session error: '.$this->error));
 		}
 		else
+		{
+			if($this->debug)
+				$this->OutputDebug('No OAuth session is set');
 			$session = null;
+		}
 		if(!IsSet($session))
 		{
+			if($this->debug)
+				$this->OutputDebug('Creating a new OAuth session');
 			if(!$this->CreateOAuthSession($this->server, $session))
 				return($this->SetError('OAuth session error: '.$this->error));
-			SetCookie($this->session_cookie, $session->session);
+			SetCookie($this->session_cookie, $session->session, 0, $this->session_path);
 		}
 		$this->session = $session->session;
 		return true;
@@ -111,11 +120,14 @@ class database_oauth_client_class extends oauth_client_class
 
 	Function GetUserSession($user, &$oauth_session)
 	{
+		if($this->debug)
+			$this->OutputDebug('Getting the OAuth session for user '.$user);
 		$parameters = array(
 			'i', $user,
 			's', $this->server
 		);
-		if(!$this->Query('SELECT id, session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token FROM oauth_session WHERE user=? AND server=?', $parameters, $results))
+		$result_types = array(   'i','s',     's',   's',          's',                 'ts',   'b',        's',  's',    'ts',     's');
+		if(!$this->Query('SELECT id, session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token FROM oauth_session WHERE user=? AND server=?', $parameters, $results, $result_types))
 			return false;
 		if(count($results['rows']) === 0)
 		{
@@ -124,6 +136,7 @@ class database_oauth_client_class extends oauth_client_class
 		}
 		$this->SetOAuthSession($oauth_session, $results['rows'][0]);
 		$this->sessions[$oauth_session->session][$this->server] = $oauth_session;
+		$this->session = $oauth_session->session;
 		return true;
 	}
 
@@ -138,7 +151,8 @@ class database_oauth_client_class extends oauth_client_class
 			's', $session,
 			's', $server
 		);
-		if(!$this->Query('SELECT id, session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token FROM oauth_session WHERE session=? AND server=?', $parameters, $results))
+		$result_types = array(   'i','s',     's',   's',          's',                 'ts',   'b',        's',  's',    'ts',     's');
+		if(!$this->Query('SELECT id, session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token FROM oauth_session WHERE session=? AND server=?', $parameters, $results, $result_types))
 			return false;
 		if(count($results['rows']) === 0)
 		{
@@ -185,9 +199,10 @@ class database_oauth_client_class extends oauth_client_class
 			's', $oauth_session->server,
 			'ts', $oauth_session->creation,
 			's', $oauth_session->refresh_token,
+			'i', $this->user,
 			'i', $oauth_session->id
 		);
-		return $this->Query('UPDATE oauth_session SET session=?, state=?, access_token=?, access_token_secret=?, expiry=?, authorized=?, type=?, server=?, creation=?, refresh_token=? WHERE id=?', $parameters, $results);
+		return $this->Query('UPDATE oauth_session SET session=?, state=?, access_token=?, access_token_secret=?, expiry=?, authorized=?, type=?, server=?, creation=?, refresh_token=?, user=? WHERE id=?', $parameters, $results);
 	}
 
 	Function GetAccessToken(&$access_token)
@@ -217,7 +232,7 @@ class database_oauth_client_class extends oauth_client_class
 			if(strlen($session->type))
 				$access_token['type'] = $session->type;
 			if(strlen($session->refresh_token))
-				$access_token['refresh_token'] = $session->refresh_token;
+				$access_token['refresh'] = $session->refresh_token;
 		}
 		else
 			$access_token = array();
@@ -228,7 +243,7 @@ class database_oauth_client_class extends oauth_client_class
 	{
 		if($this->debug)
 			$this->OutputDebug('Resetting the access token status for OAuth server located at '.$this->access_token_url);
-		SetCookie($this->session_cookie, '');
+		SetCookie($this->session_cookie, '', 0, $this->session_path);
 		return true;
 	}
 

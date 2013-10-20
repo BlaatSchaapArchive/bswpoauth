@@ -2,10 +2,13 @@
 /*
  * login_with_rightsignature.php
  *
- * @(#) $Id: login_with_rightsignature.php,v 1.1 2013/03/26 06:31:27 mlemos Exp $
+ * @(#) $Id: login_with_rightsignature.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 

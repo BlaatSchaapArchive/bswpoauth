@@ -2,15 +2,19 @@
 /*
  * login_with_tumblr.php
  *
- * @(#) $Id: login_with_tumblr.php,v 1.2 2012/10/05 09:22:40 mlemos Exp $
+ * @(#) $Id: login_with_tumblr.php,v 1.3 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 
 	$client = new oauth_client_class;
 	$client->debug = 1;
+	$client->debug_http = 1;
 	$client->server = 'Tumblr';
 	$client->redirect_uri = 'http://'.$_SERVER['HTTP_HOST'].
 		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_tumblr.php';

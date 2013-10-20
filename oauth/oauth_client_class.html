@@ -7,7 +7,7 @@
 <center><h1>Class: OAuth client</h1></center>
 <hr />
 <ul>
-<p><b>Version:</b> <tt>@(#) $Id: oauth_client.php,v 1.58 2013/04/11 09:33:16 mlemos Exp $</tt></p>
+<p><b>Version:</b> <tt>@(#) $Id: oauth_client.php,v 1.74 2013/10/17 04:45:34 mlemos Exp $</tt></p>
 <h2><a name="table_of_contents">Contents</a></h2>
 <ul>
 <li><a href="#2.1.1">Summary</a></li>
@@ -21,47 +21,54 @@
 </ul>
 <li><a href="#4.1.1">Variables</a></li>
 <ul>
-<li><a href="#5.2.31">error</a></li>
-<li><a href="#5.2.32">debug</a></li>
-<li><a href="#5.2.33">debug_http</a></li>
-<li><a href="#5.2.34">exit</a></li>
-<li><a href="#5.2.35">debug_output</a></li>
-<li><a href="#5.2.36">debug_prefix</a></li>
-<li><a href="#5.2.37">server</a></li>
-<li><a href="#5.2.38">request_token_url</a></li>
-<li><a href="#5.2.39">dialog_url</a></li>
-<li><a href="#5.2.40">offline_dialog_url</a></li>
-<li><a href="#5.2.41">append_state_to_redirect_uri</a></li>
-<li><a href="#5.2.42">access_token_url</a></li>
-<li><a href="#5.2.43">oauth_version</a></li>
-<li><a href="#5.2.44">url_parameters</a></li>
-<li><a href="#5.2.45">authorization_header</a></li>
-<li><a href="#5.2.46">token_request_method</a></li>
-<li><a href="#5.2.47">signature_method</a></li>
-<li><a href="#5.2.48">redirect_uri</a></li>
-<li><a href="#5.2.49">client_id</a></li>
-<li><a href="#5.2.50">client_secret</a></li>
-<li><a href="#5.2.51">scope</a></li>
-<li><a href="#5.2.52">offline</a></li>
-<li><a href="#5.2.53">access_token</a></li>
-<li><a href="#5.2.54">access_token_secret</a></li>
-<li><a href="#5.2.55">access_token_expiry</a></li>
-<li><a href="#5.2.56">access_token_type</a></li>
-<li><a href="#5.2.57">refresh_token</a></li>
-<li><a href="#5.2.58">access_token_error</a></li>
-<li><a href="#5.2.59">authorization_error</a></li>
-<li><a href="#5.2.60">response_status</a></li>
+<li><a href="#5.2.37">error</a></li>
+<li><a href="#5.2.38">debug</a></li>
+<li><a href="#5.2.39">debug_http</a></li>
+<li><a href="#5.2.40">exit</a></li>
+<li><a href="#5.2.41">debug_output</a></li>
+<li><a href="#5.2.42">debug_prefix</a></li>
+<li><a href="#5.2.43">server</a></li>
+<li><a href="#5.2.44">request_token_url</a></li>
+<li><a href="#5.2.45">dialog_url</a></li>
+<li><a href="#5.2.46">offline_dialog_url</a></li>
+<li><a href="#5.2.47">append_state_to_redirect_uri</a></li>
+<li><a href="#5.2.48">access_token_url</a></li>
+<li><a href="#5.2.49">oauth_version</a></li>
+<li><a href="#5.2.50">url_parameters</a></li>
+<li><a href="#5.2.51">authorization_header</a></li>
+<li><a href="#5.2.52">token_request_method</a></li>
+<li><a href="#5.2.53">signature_method</a></li>
+<li><a href="#5.2.54">redirect_uri</a></li>
+<li><a href="#5.2.55">client_id</a></li>
+<li><a href="#5.2.56">client_secret</a></li>
+<li><a href="#5.2.57">api_key</a></li>
+<li><a href="#5.2.58">get_token_with_api_key</a></li>
+<li><a href="#5.2.59">scope</a></li>
+<li><a href="#5.2.60">offline</a></li>
+<li><a href="#5.2.61">access_token</a></li>
+<li><a href="#5.2.62">access_token_secret</a></li>
+<li><a href="#5.2.63">access_token_expiry</a></li>
+<li><a href="#5.2.64">access_token_type</a></li>
+<li><a href="#5.2.65">default_access_token_type</a></li>
+<li><a href="#5.2.66">access_token_parameter</a></li>
+<li><a href="#5.2.67">access_token_response</a></li>
+<li><a href="#5.2.68">store_access_token_response</a></li>
+<li><a href="#5.2.69">refresh_token</a></li>
+<li><a href="#5.2.70">access_token_error</a></li>
+<li><a href="#5.2.71">authorization_error</a></li>
+<li><a href="#5.2.72">response_status</a></li>
 </ul>
 <li><a href="#6.1.1">Functions</a></li>
 <ul>
-<li><a href="#7.2.9">StoreAccessToken</a></li>
-<li><a href="#9.2.10">GetAccessToken</a></li>
-<li><a href="#11.2.11">ResetAccessToken</a></li>
-<li><a href="#11.2.12">CallAPI</a></li>
-<li><a href="#13.2.13">Initialize</a></li>
-<li><a href="#13.2.14">Process</a></li>
-<li><a href="#13.2.15">Finalize</a></li>
-<li><a href="#15.2.16">Output</a></li>
+<li><a href="#7.2.10">Redirect</a></li>
+<li><a href="#9.2.11">StoreAccessToken</a></li>
+<li><a href="#11.2.12">GetAccessToken</a></li>
+<li><a href="#13.2.13">ResetAccessToken</a></li>
+<li><a href="#13.2.14">CallAPI</a></li>
+<li><a href="#15.2.15">Initialize</a></li>
+<li><a href="#15.2.16">Process</a></li>
+<li><a href="#15.2.17">Finalize</a></li>
+<li><a href="#17.2.18">Output</a></li>
 </ul>
 </ul>
 <p><a href="#table_of_contents">Top of the table of contents</a></p>
@@ -77,7 +84,7 @@
 <h3><a name="3.2.0.1">Copyright</a></h3>
 <p>Copyright &copy; (C) Manuel Lemos 2012</p>
 <h3><a name="3.2.0.2">Version</a></h3>
-<p>@(#) $Id: oauth_client.php,v 1.58 2013/04/11 09:33:16 mlemos Exp $</p>
+<p>@(#) $Id: oauth_client.php,v 1.74 2013/10/17 04:45:34 mlemos Exp $</p>
 <h3><a name="3.2.0.3">Purpose</a></h3>
 <p>This class serves two main purposes:</p>
 <p> 1) Implement the OAuth protocol to retrieve a token from a server to authorize the access to an API on behalf of the current user.</p>
@@ -87,7 +94,7 @@
 <p> This class supports either OAuth protocol versions 1.0, 1.0a and 2.0. It abstracts the differences between these protocol versions, so the class usage is the same independently of the OAuth version of the server.</p>
 <p> The class also provides built-in support to several popular OAuth servers, so you do not have to manually configure all the details to access those servers. Just set the <tt><a href="#variable_server">server</a></tt> variable to configure the class to access one of the built-in supported servers.</p>
 <p> If you need to access one type of server that is not yet directly supported by the class, you need to configure it explicitly setting the variables: <tt><a href="#variable_oauth_version">oauth_version</a></tt>, <tt><a href="#variable_url_parameters">url_parameters</a></tt>, <tt><a href="#variable_authorization_header">authorization_header</a></tt>, <tt><a href="#variable_request_token_url">request_token_url</a></tt>, <tt><a href="#variable_dialog_url">dialog_url</a></tt>, <tt><a href="#variable_offline_dialog_url">offline_dialog_url</a></tt>, <tt><a href="#variable_append_state_to_redirect_uri">append_state_to_redirect_uri</a></tt> and <tt><a href="#variable_access_token_url">access_token_url</a></tt>.</p>
-<p> Before proceeding to the actual OAuth authorization process, you need to have registered your application with the OAuth server. The registration provides you values to set the variables <tt><a href="#variable_client_id">client_id</a></tt> and  <tt><a href="#variable_client_secret">client_secret</a></tt>.</p>
+<p> Before proceeding to the actual OAuth authorization process, you need to have registered your application with the OAuth server. The registration provides you values to set the variables <tt><a href="#variable_client_id">client_id</a></tt> and  <tt><a href="#variable_client_secret">client_secret</a></tt>. Some servers also provide an additional value to set the <tt><a href="#variable_api_key">api_key</a></tt> variable.</p>
 <p> You also need to set the variables <tt><a href="#variable_redirect_uri">redirect_uri</a></tt> and <tt><a href="#variable_scope">scope</a></tt> before calling the <tt><a href="#function_Process">Process</a></tt> function to make the class perform the necessary interactions with the OAuth server.</p>
 <p> The OAuth protocol involves multiple steps that include redirection to the OAuth server. There it asks permission to the current user to grant your application access to APIs on his/her behalf. When there is a redirection, the class will set the <tt><a href="#variable_exit">exit</a></tt> variable to 1. Then your script should exit immediately without outputting anything.</p>
 <p> When the OAuth access token is successfully obtained, the following variables are set by the class with the obtained values: <tt><a href="#variable_access_token">access_token</a></tt>, <tt><a href="#variable_access_token_secret">access_token_secret</a></tt>, <tt><a href="#variable_access_token_expiry">access_token_expiry</a></tt>, <tt><a href="#variable_access_token_type">access_token_type</a></tt>. You may want to store these values to use them later when calling the server APIs.</p>
@@ -121,18 +128,24 @@
 <li><tt><a href="#variable_redirect_uri">redirect_uri</a></tt></li><br />
 <li><tt><a href="#variable_client_id">client_id</a></tt></li><br />
 <li><tt><a href="#variable_client_secret">client_secret</a></tt></li><br />
+<li><tt><a href="#variable_api_key">api_key</a></tt></li><br />
+<li><tt><a href="#variable_get_token_with_api_key">get_token_with_api_key</a></tt></li><br />
 <li><tt><a href="#variable_scope">scope</a></tt></li><br />
 <li><tt><a href="#variable_offline">offline</a></tt></li><br />
 <li><tt><a href="#variable_access_token">access_token</a></tt></li><br />
 <li><tt><a href="#variable_access_token_secret">access_token_secret</a></tt></li><br />
 <li><tt><a href="#variable_access_token_expiry">access_token_expiry</a></tt></li><br />
 <li><tt><a href="#variable_access_token_type">access_token_type</a></tt></li><br />
+<li><tt><a href="#variable_default_access_token_type">default_access_token_type</a></tt></li><br />
+<li><tt><a href="#variable_access_token_parameter">access_token_parameter</a></tt></li><br />
+<li><tt><a href="#variable_access_token_response">access_token_response</a></tt></li><br />
+<li><tt><a href="#variable_store_access_token_response">store_access_token_response</a></tt></li><br />
 <li><tt><a href="#variable_refresh_token">refresh_token</a></tt></li><br />
 <li><tt><a href="#variable_access_token_error">access_token_error</a></tt></li><br />
 <li><tt><a href="#variable_authorization_error">authorization_error</a></tt></li><br />
 <li><tt><a href="#variable_response_status">response_status</a></tt></li><br />
 <p><a href="#table_of_contents">Table of contents</a></p>
-<h3><a name="variable_error"></a><li><a name="5.2.31">error</a></li></h3>
+<h3><a name="variable_error"></a><li><a name="5.2.37">error</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -145,7 +158,7 @@
 <p> This allows programs using this class to safely call several functions that may fail and only check the failure condition after the last function call.</p>
 <p> Just set this variable to an empty string to clear the error condition.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_debug"></a><li><a name="5.2.32">debug</a></li></h3>
+<h3><a name="variable_debug"></a><li><a name="5.2.38">debug</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>bool</i></tt></p>
 <h3>Default value</h3>
@@ -155,7 +168,7 @@
 <h3>Usage</h3>
 <p>Set this variable to 1 if you need to check what is going on during calls to the class. When enabled, the debug output goes either to the variable <tt><a href="#variable_debug_output">debug_output</a></tt> and the PHP error log.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_debug_http"></a><li><a name="5.2.33">debug_http</a></li></h3>
+<h3><a name="variable_debug_http"></a><li><a name="5.2.39">debug_http</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>bool</i></tt></p>
 <h3>Default value</h3>
@@ -165,7 +178,7 @@
 <h3>Usage</h3>
 <p>Set this variable to 1 if you want to inspect the data exchange with the OAuth server.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_exit"></a><li><a name="5.2.34">exit</a></li></h3>
+<h3><a name="variable_exit"></a><li><a name="5.2.40">exit</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>bool</i></tt></p>
 <h3>Default value</h3>
@@ -175,7 +188,7 @@
 <h3>Usage</h3>
 <p>Check this variable after calling the <tt><a href="#function_Process">Process</a></tt> function and exit your script immediately if the variable is set to 1.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_debug_output"></a><li><a name="5.2.35">debug_output</a></li></h3>
+<h3><a name="variable_debug_output"></a><li><a name="5.2.41">debug_output</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -185,7 +198,7 @@
 <h3>Usage</h3>
 <p>Inspect this variable if you need to see what happened during the class function calls.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_debug_prefix"></a><li><a name="5.2.36">debug_prefix</a></li></h3>
+<h3><a name="variable_debug_prefix"></a><li><a name="5.2.42">debug_prefix</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -195,7 +208,7 @@
 <h3>Usage</h3>
 <p>Change this variable if you prefer the debug output lines to be prefixed with a different text.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_server"></a><li><a name="5.2.37">server</a></li></h3>
+<h3><a name="variable_server"></a><li><a name="5.2.43">server</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -204,10 +217,10 @@
 <p>Identify the type of OAuth server to access.</p>
 <h3>Usage</h3>
 <p>The class provides built-in support to several types of OAuth servers. This means that the class can automatically initialize several configuration variables just by setting this server variable.</p>
-<p> Currently it supports the following servers: 'Bitbucket', 'Box', 'Dropbox', 'Eventful', 'Facebook', 'Fitbit', 'Flickr', 'Foursquare', 'github', 'Google', 'Instagram', 'LinkedIn', 'Microsoft', 'Scoop.it', 'StockTwits', 'Tumblr', 'Twitter', 'XING' and 'Yahoo'. Please contact the author if you would like to ask to add built-in support for other types of OAuth servers.</p>
+<p> Currently it supports the following servers: 'Bitbucket', 'Box', 'Disqus', 'Dropbox', 'Eventful', 'Facebook', 'Fitbit', 'Flickr', 'Foursquare', 'github', 'Google', 'Instagram', 'LinkedIn', 'Microsoft', 'Salesforce', 'Scoop.it', 'StockTwits', 'SurveyMonkey', 'Tumblr', 'Twitter', 'XING' and 'Yahoo'. Please contact the author if you would like to ask to add built-in support for other types of OAuth servers.</p>
 <p> If you want to access other types of OAuth servers that are not yet supported, set this variable to an empty string and configure other variables with values specific to those servers.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_request_token_url"></a><li><a name="5.2.38">request_token_url</a></li></h3>
+<h3><a name="variable_request_token_url"></a><li><a name="5.2.44">request_token_url</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -219,7 +232,7 @@
 <p> For OAuth 1.0 and 1.0a servers, the request token URL can have certain marks that will act as template placeholders which will be replaced with given values before requesting the authorization token. Currently it supports the following placeholder marks:</p>
 <p> {SCOPE} - scope of the requested permissions to the granted by the OAuth server with the user permissions</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_dialog_url"></a><li><a name="5.2.39">dialog_url</a></li></h3>
+<h3><a name="variable_dialog_url"></a><li><a name="5.2.45">dialog_url</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -233,8 +246,9 @@
 <p> {CLIENT_ID} - client application identifier registered at the server</p>
 <p> {SCOPE} - scope of the requested permissions to the granted by the OAuth server with the user permissions</p>
 <p> {STATE} - identifier of the OAuth session state</p>
+<p> {API_KEY} - API key to access the server</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_offline_dialog_url"></a><li><a name="5.2.40">offline_dialog_url</a></li></h3>
+<h3><a name="variable_offline_dialog_url"></a><li><a name="5.2.46">offline_dialog_url</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -245,7 +259,7 @@
 <p>Set this variable to the OAuth request token URL when you are not accessing one of the built-in supported OAuth servers and the OAuth server supports offline access.</p>
 <p> It should have the same format as the <tt><a href="#variable_dialog_url">dialog_url</a></tt> variable.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_append_state_to_redirect_uri"></a><li><a name="5.2.41">append_state_to_redirect_uri</a></li></h3>
+<h3><a name="variable_append_state_to_redirect_uri"></a><li><a name="5.2.47">append_state_to_redirect_uri</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -255,7 +269,7 @@
 <h3>Usage</h3>
 <p>Set this variable  when you are not accessing one of the built-in supported OAuth servers if the OAuth server has a bug that makes it not pass back the OAuth state identifier in a request variable named state.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_access_token_url"></a><li><a name="5.2.42">access_token_url</a></li></h3>
+<h3><a name="variable_access_token_url"></a><li><a name="5.2.48">access_token_url</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -265,7 +279,7 @@
 <h3>Usage</h3>
 <p>Set this variable to the OAuth access token URL when you are not accessing one of the built-in supported OAuth servers.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_oauth_version"></a><li><a name="5.2.43">oauth_version</a></li></h3>
+<h3><a name="variable_oauth_version"></a><li><a name="5.2.49">oauth_version</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -275,7 +289,7 @@
 <h3>Usage</h3>
 <p>Set this variable to the OAuth server protocol version when you are not accessing one of the built-in supported OAuth servers.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_url_parameters"></a><li><a name="5.2.44">url_parameters</a></li></h3>
+<h3><a name="variable_url_parameters"></a><li><a name="5.2.50">url_parameters</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>bool</i></tt></p>
 <h3>Default value</h3>
@@ -285,7 +299,7 @@
 <h3>Usage</h3>
 <p>Set this variable to 1 if the API you need to call requires that the call parameters always be passed via the API URL.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_authorization_header"></a><li><a name="5.2.45">authorization_header</a></li></h3>
+<h3><a name="variable_authorization_header"></a><li><a name="5.2.51">authorization_header</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>bool</i></tt></p>
 <h3>Default value</h3>
@@ -295,7 +309,7 @@
 <h3>Usage</h3>
 <p>Set this variable to 1 if the OAuth server requires that the OAuth parameters be passed using the HTTP Authorization instead of the request URI parameters.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_token_request_method"></a><li><a name="5.2.46">token_request_method</a></li></h3>
+<h3><a name="variable_token_request_method"></a><li><a name="5.2.52">token_request_method</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -305,7 +319,7 @@
 <h3>Usage</h3>
 <p>Set this variable to 'POST' if the OAuth server does not support requesting tokens using the HTTP GET method.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_signature_method"></a><li><a name="5.2.47">signature_method</a></li></h3>
+<h3><a name="variable_signature_method"></a><li><a name="5.2.53">signature_method</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -315,7 +329,7 @@
 <h3>Usage</h3>
 <p>Currently it supports 'PLAINTEXT' and 'HMAC-SHA1'.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_redirect_uri"></a><li><a name="5.2.48">redirect_uri</a></li></h3>
+<h3><a name="variable_redirect_uri"></a><li><a name="5.2.54">redirect_uri</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -325,7 +339,7 @@
 <h3>Usage</h3>
 <p>Set this variable to the current script page URL before proceeding the the OAuth authorization process.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_client_id"></a><li><a name="5.2.49">client_id</a></li></h3>
+<h3><a name="variable_client_id"></a><li><a name="5.2.55">client_id</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -335,7 +349,7 @@
 <h3>Usage</h3>
 <p>Set this variable to the application identifier that is provided by the OAuth server when you register the application.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_client_secret"></a><li><a name="5.2.50">client_secret</a></li></h3>
+<h3><a name="variable_client_secret"></a><li><a name="5.2.56">client_secret</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -345,7 +359,27 @@
 <h3>Usage</h3>
 <p>Set this variable to the application secret that is provided by the OAuth server when you register the application.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_scope"></a><li><a name="5.2.51">scope</a></li></h3>
+<h3><a name="variable_api_key"></a><li><a name="5.2.57">api_key</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>string</i></tt></p>
+<h3>Default value</h3>
+<p><tt>''</tt></p>
+<h3>Purpose</h3>
+<p>Identifier of your API key provided by the OAuth server</p>
+<h3>Usage</h3>
+<p>Set this variable to the API key if the OAuth server requires one.</p>
+<p><a href="#variables">Variables</a></p>
+<h3><a name="variable_get_token_with_api_key"></a><li><a name="5.2.58">get_token_with_api_key</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>bool</i></tt></p>
+<h3>Default value</h3>
+<p><tt>0</tt></p>
+<h3>Purpose</h3>
+<p>Option to determine if the access token should be retrieved using the API key value instead of the client secret.</p>
+<h3>Usage</h3>
+<p>Set this variable to 1 if the OAuth server requires that the client secret be set to the API key when retrieving the OAuth token.</p>
+<p><a href="#variables">Variables</a></p>
+<h3><a name="variable_scope"></a><li><a name="5.2.59">scope</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -355,7 +389,7 @@
 <h3>Usage</h3>
 <p>Check the documentation of the APIs that your application needs to call to set this variable with the identifiers of the permissions that the user needs to grant to your application.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_offline"></a><li><a name="5.2.52">offline</a></li></h3>
+<h3><a name="variable_offline"></a><li><a name="5.2.60">offline</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>bool</i></tt></p>
 <h3>Default value</h3>
@@ -365,7 +399,7 @@
 <h3>Usage</h3>
 <p>Set this variable to 1 if the server supports renewing expired tokens automatically when the user is not present.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_access_token"></a><li><a name="5.2.53">access_token</a></li></h3>
+<h3><a name="variable_access_token"></a><li><a name="5.2.61">access_token</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -375,7 +409,7 @@
 <h3>Usage</h3>
 <p>Check this variable to get the obtained access token upon successful OAuth authorization.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_access_token_secret"></a><li><a name="5.2.54">access_token_secret</a></li></h3>
+<h3><a name="variable_access_token_secret"></a><li><a name="5.2.62">access_token_secret</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -385,7 +419,7 @@
 <h3>Usage</h3>
 <p>If the OAuth protocol version is 1.0 or 1.0a, check this variable to get the obtained access token secret upon successful OAuth authorization.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_access_token_expiry"></a><li><a name="5.2.55">access_token_expiry</a></li></h3>
+<h3><a name="variable_access_token_expiry"></a><li><a name="5.2.63">access_token_expiry</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -395,7 +429,7 @@
 <h3>Usage</h3>
 <p>Check this variable to get the obtained access token expiry time upon successful OAuth authorization. If this variable is empty, that means no expiry time was set.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_access_token_type"></a><li><a name="5.2.56">access_token_type</a></li></h3>
+<h3><a name="variable_access_token_type"></a><li><a name="5.2.64">access_token_type</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -405,7 +439,43 @@
 <h3>Usage</h3>
 <p>Check this variable to get the obtained access token type upon successful OAuth authorization.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_refresh_token"></a><li><a name="5.2.57">refresh_token</a></li></h3>
+<h3><a name="variable_default_access_token_type"></a><li><a name="5.2.65">default_access_token_type</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>string</i></tt></p>
+<h3>Default value</h3>
+<p><tt>''</tt></p>
+<h3>Purpose</h3>
+<p>Type of access token to be assumed when the OAuth server does not specify an access token type.</p>
+<h3>Usage</h3>
+<p>Set this variable if the server requires a certain type of access token to be used but it does not specify a token type when the access token is returned.</p>
+<p><a href="#variables">Variables</a></p>
+<h3><a name="variable_access_token_parameter"></a><li><a name="5.2.66">access_token_parameter</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>string</i></tt></p>
+<h3>Default value</h3>
+<p><tt>''</tt></p>
+<h3>Purpose</h3>
+<p>Name of the access token parameter to be passed in API call requests.</p>
+<h3>Usage</h3>
+<p>Set this variable to a non-empty string to override the default name for the access token parameter which is 'oauth_token' of OAuth 1 and 'access_token' for OAuth 2.</p>
+<p><a href="#variables">Variables</a></p>
+<h3><a name="variable_access_token_response"></a><li><a name="5.2.67">access_token_response</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>array</i></tt></p>
+<h3>Purpose</h3>
+<p>The original response for the access token request</p>
+<h3>Usage</h3>
+<p>Check this variable if the OAuth server returns custom parameters in the request to obtain the access token.</p>
+<p><a href="#variables">Variables</a></p>
+<h3><a name="variable_store_access_token_response"></a><li><a name="5.2.68">store_access_token_response</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>array</i></tt></p>
+<h3>Purpose</h3>
+<p>Option to determine if the original response for the access token request should be stored in the <tt><a href="#variable_access_token_response">access_token_response</a></tt> variable.</p>
+<h3>Usage</h3>
+<p>Set this variable to 1 if the OAuth server returns custom parameters in the request to obtain the access token that may be needed in subsequent API calls.</p>
+<p><a href="#variables">Variables</a></p>
+<h3><a name="variable_refresh_token"></a><li><a name="5.2.69">refresh_token</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -415,7 +485,7 @@
 <h3>Usage</h3>
 <p>Check this variable to get the obtained refresh token upon successful OAuth authorization.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_access_token_error"></a><li><a name="5.2.58">access_token_error</a></li></h3>
+<h3><a name="variable_access_token_error"></a><li><a name="5.2.70">access_token_error</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -425,7 +495,7 @@
 <h3>Usage</h3>
 <p>Check this variable to determine if there was an error while calling the Web services API when using the <tt><a href="#function_CallAPI">CallAPI</a></tt> function.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_authorization_error"></a><li><a name="5.2.59">authorization_error</a></li></h3>
+<h3><a name="variable_authorization_error"></a><li><a name="5.2.71">authorization_error</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>string</i></tt></p>
 <h3>Default value</h3>
@@ -435,7 +505,7 @@
 <h3>Usage</h3>
 <p>Check this variable to determine if there was an error while trying to obtain the OAuth access token.</p>
 <p><a href="#variables">Variables</a></p>
-<h3><a name="variable_response_status"></a><li><a name="5.2.60">response_status</a></li></h3>
+<h3><a name="variable_response_status"></a><li><a name="5.2.72">response_status</a></li></h3>
 <h3>Type</h3>
 <p><tt><i>int</i></tt></p>
 <h3>Default value</h3>
@@ -452,6 +522,7 @@
 <ul>
 <h2><li><a name="functions"></a><a name="6.1.1">Functions</a></li></h2>
 <ul>
+<li><tt><a href="#function_Redirect">Redirect</a></tt></li><br />
 <li><tt><a href="#function_StoreAccessToken">StoreAccessToken</a></tt></li><br />
 <li><tt><a href="#function_GetAccessToken">GetAccessToken</a></tt></li><br />
 <li><tt><a href="#function_ResetAccessToken">ResetAccessToken</a></tt></li><br />
@@ -461,7 +532,21 @@
 <li><tt><a href="#function_Finalize">Finalize</a></tt></li><br />
 <li><tt><a href="#function_Output">Output</a></tt></li><br />
 <p><a href="#table_of_contents">Table of contents</a></p>
-<h3><a name="function_StoreAccessToken"></a><li><a name="7.2.9">StoreAccessToken</a></li></h3>
+<h3><a name="function_Redirect"></a><li><a name="7.2.10">Redirect</a></li></h3>
+<h3>Synopsis</h3>
+<p><tt><i></i> Redirect(</tt><ul>
+<tt><i>string</i> </tt><tt><a href="#argument_Redirect_url">url</a></tt></ul>
+<tt>)</tt></p>
+<h3>Purpose</h3>
+<p>Redirect the user browser to a given page.</p>
+<h3>Usage</h3>
+<p>This function is meant to be only be called from inside the class. By default it issues HTTP 302 response status and sets the redirection location to a given URL. Sub-classes may override this function to implement a different way to redirect the user browser.</p>
+<h3>Arguments</h3>
+<ul>
+<p><tt><b><a name="argument_Redirect_url">url</a></b></tt> - String with the full URL of the page to redirect.</p>
+</ul>
+<p><a href="#functions">Functions</a></p>
+<h3><a name="function_StoreAccessToken"></a><li><a name="9.2.11">StoreAccessToken</a></li></h3>
 <h3>Synopsis</h3>
 <p><tt><i>bool</i> StoreAccessToken(</tt><ul>
 <tt>(input and output) <i>array</i> </tt><tt><a href="#argument_StoreAccessToken_access_token">access_token</a></tt></ul>
@@ -483,7 +568,7 @@
 <h3>Return value</h3>
 <p>This function should return 1 if the access token was stored successfully.</p>
 <p><a href="#functions">Functions</a></p>
-<h3><a name="function_GetAccessToken"></a><li><a name="9.2.10">GetAccessToken</a></li></h3>
+<h3><a name="function_GetAccessToken"></a><li><a name="11.2.12">GetAccessToken</a></li></h3>
 <h3>Synopsis</h3>
 <p><tt><i>bool</i> GetAccessToken(</tt><ul>
 <tt>(output) <i>string &amp;</i> </tt><tt><a href="#argument_GetAccessToken_access_token">access_token</a></tt></ul>
@@ -500,7 +585,7 @@
 <h3>Return value</h3>
 <p>This function should return 1 if the access token was retrieved successfully.</p>
 <p><a href="#functions">Functions</a></p>
-<h3><a name="function_ResetAccessToken"></a><li><a name="11.2.11">ResetAccessToken</a></li></h3>
+<h3><a name="function_ResetAccessToken"></a><li><a name="13.2.13">ResetAccessToken</a></li></h3>
 <h3>Synopsis</h3>
 <p><tt><i>bool</i> ResetAccessToken(</tt><tt>)</tt></p>
 <h3>Purpose</h3>
@@ -513,7 +598,7 @@
 <h3>Return value</h3>
 <p>This function should return 1 if the access token was resetted successfully.</p>
 <p><a href="#functions">Functions</a></p>
-<h3><a name="function_CallAPI"></a><li><a name="11.2.12">CallAPI</a></li></h3>
+<h3><a name="function_CallAPI"></a><li><a name="13.2.14">CallAPI</a></li></h3>
 <h3>Synopsis</h3>
 <p><tt><i>bool</i> CallAPI(</tt><ul>
 <tt><i>string</i> </tt><tt><a href="#argument_CallAPI_url">url</a></tt><tt>,</tt><br />
@@ -553,7 +638,7 @@
 <h3>Return value</h3>
 <p>This function returns 1 if the call was done successfully.</p>
 <p><a href="#functions">Functions</a></p>
-<h3><a name="function_Initialize"></a><li><a name="13.2.13">Initialize</a></li></h3>
+<h3><a name="function_Initialize"></a><li><a name="15.2.15">Initialize</a></li></h3>
 <h3>Synopsis</h3>
 <p><tt><i>bool</i> Initialize(</tt><tt>)</tt></p>
 <h3>Purpose</h3>
@@ -563,7 +648,7 @@
 <h3>Return value</h3>
 <p>This function returns 1 if it was able to successfully initialize the class for the specified server type.</p>
 <p><a href="#functions">Functions</a></p>
-<h3><a name="function_Process"></a><li><a name="13.2.14">Process</a></li></h3>
+<h3><a name="function_Process"></a><li><a name="15.2.16">Process</a></li></h3>
 <h3>Synopsis</h3>
 <p><tt><i>bool</i> Process(</tt><tt>)</tt></p>
 <h3>Purpose</h3>
@@ -573,7 +658,7 @@
 <h3>Return value</h3>
 <p>This function returns 1 if the OAuth protocol was processed without errors.</p>
 <p><a href="#functions">Functions</a></p>
-<h3><a name="function_Finalize"></a><li><a name="13.2.15">Finalize</a></li></h3>
+<h3><a name="function_Finalize"></a><li><a name="15.2.17">Finalize</a></li></h3>
 <h3>Synopsis</h3>
 <p><tt><i>bool</i> Finalize(</tt><ul>
 <tt><i>bool</i> </tt><tt><a href="#argument_Finalize_success">success</a></tt></ul>
@@ -589,7 +674,7 @@
 <h3>Return value</h3>
 <p>This function returns 1 if the function cleaned up any resources successfully.</p>
 <p><a href="#functions">Functions</a></p>
-<h3><a name="function_Output"></a><li><a name="15.2.16">Output</a></li></h3>
+<h3><a name="function_Output"></a><li><a name="17.2.18">Output</a></li></h3>
 <h3>Synopsis</h3>
 <p><tt><i></i> Output(</tt><tt>)</tt></p>
 <h3>Purpose</h3>

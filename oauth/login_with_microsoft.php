@@ -2,20 +2,25 @@
 /*
  * login_with_microsoft.php
  *
- * @(#) $Id: login_with_microsoft.php,v 1.1 2012/10/10 09:32:24 mlemos Exp $
+ * @(#) $Id: login_with_microsoft.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 
 	$client = new oauth_client_class;
 	$client->server = 'Microsoft';
-	$client->redirect_uri = 'http://blog.blaatschaap.be/wp-content/plugins/blaatoauth/oauth/login_with_microsoft.php'; /* 'http://'.$_SERVER['HTTP_HOST'].
-		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_microsoft.php'; */
+	$client->debug = false;
+	$client->debug_http = true;
+	$client->redirect_uri = 'http://'.$_SERVER['HTTP_HOST'].
+		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_microsoft.php';
 
-	$client->client_id = '000000004C0F3CA8'; $application_line = __LINE__;
-	$client->client_secret = 'jUDKzyEtKD2dpusGStVe3RHLNibNx0yS';
+	$client->client_id = ''; $application_line = __LINE__;
+	$client->client_secret = '';
 
 	if(strlen($client->client_id) == 0
 	|| strlen($client->client_secret) == 0)

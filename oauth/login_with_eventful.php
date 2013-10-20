@@ -2,10 +2,13 @@
 /*
  * login_with_eventful.php
  *
- * @(#) $Id: login_with_eventful.php,v 1.1 2013/02/20 11:44:29 mlemos Exp $
+ * @(#) $Id: login_with_eventful.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 

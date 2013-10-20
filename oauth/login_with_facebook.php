@@ -2,20 +2,25 @@
 /*
  * login_with_facebook.php
  *
- * @(#) $Id: login_with_facebook.php,v 1.2 2012/10/05 09:22:40 mlemos Exp $
+ * @(#) $Id: login_with_facebook.php,v 1.3 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 
 	$client = new oauth_client_class;
+	$client->debug = false;
+	$client->debug_http = true;
 	$client->server = 'Facebook';
 	$client->redirect_uri = 'http://'.$_SERVER['HTTP_HOST'].
 		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_facebook.php';
 
-	$client->client_id = '113065455412659'; $application_line = __LINE__;
-	$client->client_secret = '19293cff95c82317c8aae21114aa6d5c';
+	$client->client_id = ''; $application_line = __LINE__;
+	$client->client_secret = '';
 
 	if(strlen($client->client_id) == 0
 	|| strlen($client->client_secret) == 0)
@@ -25,7 +30,7 @@
 
 	/* API permissions
 	 */
-	$client->scope = '';//'email';
+	$client->scope = 'email';
 	if(($success = $client->Initialize()))
 	{
 		if(($success = $client->Process()))
@@ -48,14 +53,12 @@
 <html>
 <head>
 <title>Facebook OAuth client results</title>
-<meta charset=utf8>
 </head>
 <body>
 <?php
 		echo '<h1>', HtmlSpecialChars($user->name), 
 			' you have logged in successfully with Facebook!</h1>';
 		echo '<pre>', HtmlSpecialChars(print_r($user, 1)), '</pre>';
-                echo '<pre>', HtmlSpecialChars(print_r($_SESSION, 1)), '</pre>';
 ?>
 </body>
 </html>

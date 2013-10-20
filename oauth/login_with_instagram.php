@@ -2,15 +2,19 @@
 /*
  * login_with_instagram.php
  *
- * @(#) $Id: login_with_instagram.php,v 1.1 2013/01/10 05:29:04 mlemos Exp $
+ * @(#) $Id: login_with_instagram.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
+	/*
+	 *  Get the http.php file from http://www.phpclasses.org/httpclient
+	 */
 	require('http.php');
 	require('oauth_client.php');
 
 	$client = new oauth_client_class;
-	$client->debug = 1;
+	$client->debug = false;
+	$client->debug_http = true;
 	$client->server = 'Instagram';
 	$client->redirect_uri = 'http://'.$_SERVER['HTTP_HOST'].
 		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_instagram.php';

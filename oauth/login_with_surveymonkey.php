@@ -1,8 +1,8 @@
 <?php
 /*
- * login_with_stocktwits.php
+ * login_with_surveymonkey.php
  *
- * @(#) $Id: login_with_stocktwits.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
+ * @(#) $Id: login_with_surveymonkey.php,v 1.2 2013/07/31 11:48:04 mlemos Exp $
  *
  */
 
@@ -13,25 +13,28 @@
 	require('oauth_client.php');
 
 	$client = new oauth_client_class;
-	$client->server = 'StockTwits';
-	$client->debug = true;
+	$client->debug = false;
 	$client->debug_http = true;
+	$client->server = 'SurveyMonkey';
 	$client->redirect_uri = 'http://'.$_SERVER['HTTP_HOST'].
-		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_stocktwits.php';
+		dirname(strtok($_SERVER['REQUEST_URI'],'?')).'/login_with_surveymonkey.php';
 
-	$client->client_id = ''; $application_line = __LINE__;
+	$client->client_id = ''; $application_line = __LINE__; 
 	$client->client_secret = '';
+	$client->api_key = '';
 
 	if(strlen($client->client_id) == 0
 	|| strlen($client->client_secret) == 0)
-		die('Please go to StockTwits new application page '.
-			'http://stocktwits.com/developers/apps/new and in the line '.$application_line.
-			' set the client_id to Consumer key and client_secret with Consumer secret. '.
-			'The site domain must have the same domain of '.$client->redirect_uri);
+		die('Please go to SurveyMonkey applications page '.
+			'https://developer.surveymonkey.com/apps/register in the API access tab, '.
+			'create a new client ID, and in the line '.$application_line.
+			' set the client_id to SurveyMonkey user account, client_secret with '.
+			'shared secret and api_key with the API key '.
+			'The Callback URL must be '.$client->redirect_uri);
 
 	/* API permissions
 	 */
-	$client->scope = 'read,watch_lists,publish_messages,publish_watch_lists,direct_messages,follow_users,follow_stocks';
+	$client->scope = '';
 	if(($success = $client->Initialize()))
 	{
 		if(($success = $client->Process()))
@@ -43,9 +46,10 @@
 			}
 			elseif(strlen($client->access_token))
 			{
+				$parameters = new stdClass;
 				$success = $client->CallAPI(
-					'https://api.stocktwits.com/api/2/account/verify.json',
-					'GET', array(), array('FailOnAccessError'=>true), $user);
+					'https://api.surveymonkey.net/v2/surveys/get_survey_list?api_key='.$client->api_key,
+					'POST', $parameters, array('FailOnAccessError'=>true, 'RequestContentType'=>'application/json'), $surveys);
 			}
 		}
 		$success = $client->Finalize($success);
@@ -58,13 +62,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>StockTwits OAuth client results</title>
+<title>SurveyMonkey OAuth client results</title>
 </head>
 <body>
 <?php
-		echo '<h1>', HtmlSpecialChars($user->user->name),
-			' you have logged in successfully with StockTwits!</h1>';
-		echo '<pre>', HtmlSpecialChars(print_r($user, 1)), '</pre>';
+		echo '<h1>You have logged in successfully with SurveyMonkey!</h1>';
+		echo '<pre>Surveys: ', HtmlSpecialChars(print_r($surveys->data->surveys, 1)), '</pre>';
 ?>
 </body>
 </html>
