@@ -98,7 +98,7 @@ echo "
     <tr>
       <td>OAuth version:</td>
       <td>
-        <select>
+        <select name='oauth_version'>
           <option value='1.0'>1.0</option>
           <option value='1.0a'>1.0a</option>
           <option value='2.0' selected>2.0</option>
@@ -201,6 +201,54 @@ function blaat_oauth_add_process(){
   $result = $wpdb->query($query);
 
 }
+
+function blaat_oauth_add_custom_process(){
+  global $wpdb;
+  global $bs_oauth_plugin;
+
+  $service=$_POST['service'];
+  $displayname=$_POST['displayname'];
+  $client_id=$_POST['client_id'];
+  $client_secret=$_POST['client_secret'];
+  $default_scope=$_POST['default_scope'];
+  $enabled = (int) $_POST['client_enabled'];
+  
+  $table_name = $wpdb->prefix . "bs_oauth_custom";
+  $oauth_version=$_POST['oauth_version'];
+  $request_token_url=$_POST['request_token_url'];
+  $dialog_url=$_POST['dialog_url'];
+  $access_token_url=$_POST['access_token_url'];
+  $url_parameters=(int) $_POST['url_parameters'];
+  $authorization_header=(int) $_POST['authorization_header'];
+  $offline_dialog_url=$_POST['offline_dialog_url'];
+  $append_state_to_redirect_uri=$_POST['append_state_to_redirect_uri'];
+
+  $query = $wpdb->prepare(
+        "INSERT INTO $table_name ( `oauth_version`, `request_token_url`, `dialog_url`, `access_token_url`, `url_parameters`, 
+                                 `authorization_header`, `offline_dialog_url`, `append_state_to_redirect_uri` )
+         VALUES ( %s , %s , %s , %s, %d , %d , %s , %s ) " , 
+                                 $oauth_version, $request_token_url, $dialog_url, $access_token_url, $url_parameters,
+                                 $authorization_header, $offline_dialog_url, $append_state_to_redirect_uri);
+
+  //print_r($query);
+  //die();
+  $result = $wpdb->query($query);
+
+  $insert_id = $wpdb->insert_id;
+  $table_name = $wpdb->prefix . "bs_oauth_services";
+  $query = $wpdb->prepare(
+        "INSERT INTO $table_name
+        (        `enabled` , `display_name` , `custom_id` , `client_id` , `client_secret` , `default_scope` )
+        VALUES ( %d        ,  %s            ,  %d           , %s          , %s              , %s )",
+                 $enabled  , $displayname   , $insert_id    , $client_id  ,$client_secret   , $default_scope );
+  $result = $wpdb->query($query);
+
+
+}
+
+
+
+
 
 function blaat_oauth_delete_service(){
   global $wpdb;

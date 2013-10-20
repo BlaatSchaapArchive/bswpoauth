@@ -164,6 +164,7 @@ function blaat_oauth_config_page() {
 	//echo '<p>Here is where the form would go if I actually had options.</p>';
 	//echo '</div>';
         if ($_POST['add_service']) blaat_oauth_add_process();
+        if ($_POST['add_custom_service']) blaat_oauth_add_custom_process();
         if ($_POST['delete_service']) blaat_oauth_delete_service();
         if ($_POST['update_service']) blaat_oauth_update_service();
         echo "<h2>Configured Services</h2><hr>";
@@ -184,6 +185,7 @@ function blaat_oauth_process_login($client, $displayname){
       $_SESSION['oauth_token']   = $client->access_token;
       $_SESSION['oauth_expiry']  = $client->access_token_expiry;
       $_SESSION['oauth_scope']   = $client->scope;
+      //die("link");
       header("Location: ".site_url("/".get_option("link_page")));     
   } else {
     $service_id = $_SESSION['oauth_id'];
@@ -198,6 +200,7 @@ function blaat_oauth_process_login($client, $displayname){
       unset ($_SESSION['oauth_id']);
       wp_set_current_user ($result['user_id']);
       wp_set_auth_cookie($result['user_id']);
+      //die("login");
       header("Location: ".site_url("/".get_option("login_page")));     
       
     } else {
@@ -205,6 +208,7 @@ function blaat_oauth_process_login($client, $displayname){
       $_SESSION['oauth_token']   = $client->access_token;
       $_SESSION['oauth_expiry']  = $client->access_token_expiry;
       $_SESSION['oauth_scope']   = $client->scope;
+      //die("register");
       header("Location: ".site_url("/".get_option("register_page")));
     }
   }
@@ -220,20 +224,35 @@ function blaat_oauth_process($process){
     $table_name = $wpdb->prefix . "bs_oauth_services";
     $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE id = %d", $_SESSION['oauth_id']);
     $results = $wpdb->get_results($query,ARRAY_A);
-
     $result = $results[0];
-
-    if ($result['custom_id']) {
-      echo "custom service";
-      
-    } else {
-      $client = new oauth_client_class;
+ 
+    $client = new oauth_client_class;
       $client->redirect_uri  = site_url("/".get_option("login_page"));
-      $client->server        = $result['client_name'];
       $client->client_id     = $result['client_id'];
       $client->client_secret = $result['client_secret'];
       $client->scope         = $result['default_scope'];
+
+    if ($result['custom_id']) {
+      //echo "custom service";
+      $table_name = $wpdb->prefix . "bs_oauth_custom";
+      $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE id = %d", $result['custom_id']);
+      $customs = $wpdb->get_results($query,ARRAY_A);
+      $custom = $customs[0];
+
+      $client->oauth_version                 = $custom['oauth_version'];
+      $client->request_token_url             = $custom['request_token_url'];
+      $client->dialog_url                    = $custom['dialog_url'];
+      $client->access_token_url              = $custom['access_token_url'];
+      $client->url_parameters                = $custom['url_parameters'];
+      $client->authorization_header          = $custom['authorization_header'];
+      $client->offline_dialog_url            = $custom['offline_dialog_url'];
+      $client->append_state_to_redirect_uri  = $custom['append_state_to_redirect_uri'];
+
+      
+    } else {
+      $client->server        = $result['client_name'];
     }
+  
 
     if(($success = $client->Initialize())){
       if(($success = $client->Process())){
@@ -488,7 +507,7 @@ function blaat_auth_display($content) {
   }
 }
 
-wp_register_style('necolas-css3-social-signin-buttons', plugin_dir_url(__FILE__) . 'necolas-css3-social-signin-buttons/auth-buttons.css');
+wp_register_style('necolas-css3-social-signin-buttons', plugin_dir_url(__FILE__) . 'css/auth-buttons.css');
 wp_enqueue_style( 'necolas-css3-social-signin-buttons');
 
 wp_register_style("blaat_auth" , plugin_dir_url(__FILE__) . "blaat_auth.css");
