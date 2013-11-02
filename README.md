@@ -8,6 +8,7 @@ The project is work in progress. Authentication works, but some
 work needs to be done in the configuration pages. 
 
 Known Issues:
+
 Authentication to VK.com does not work. This must be investigated.
 Configure a known-to-work service through the "Custom Service" 
 option, to verify the problem is not in the way Custom Services
