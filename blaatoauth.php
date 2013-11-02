@@ -430,7 +430,6 @@ function blaat_auth_link_display(){
       unset($_SESSION['oauth_display']);
       printf( __("Your %s account has been linked", "blaat_auth"), $service );
     } else {
-      echo "local known, no oauth. we need link form";
       $table_name = $wpdb->prefix . "bs_oauth_sessions";
       $user_id    = $user->ID;
       $query = $wpdb->prepare("SELECT service_id FROM $table_name WHERE `user_id` = %d",$user_id);
@@ -440,11 +439,22 @@ function blaat_auth_link_display(){
       $query = $wpdb->prepare("SELECT * FROM $table_name");
       $available_services = $wpdb->get_results($query,ARRAY_A);
 
-      echo "<pre>Linked:
-"; print_r($linked_services); echo "
-Available:
-"; print_r($available_services); echo "</pre>";
-      
+      $linked = Array();
+      foreach ($linked_services as $linked_service) {
+        $linked[]=$linked_service['service_id'];
+      }  
+      foreach ($available_services as $available_service) {
+        $class = "btn-auth btn-".strtolower($available_service['client_name']);
+        $HTML = "<button class='$class' name='\$ACTION' type=submit value='".$available_service['id']."'>". $available_service['display_name']."</button>";
+
+        if (in_array($available_service['id'],$linked)) {
+          $unlinkHTML .= "<button class='$class' name='oauth_unlink' type=submit value='".$available_service['id']."'>". $available_service['display_name']."</button>";
+        } else {
+          $linkHTML .= "<button class='$class' name='oauth_link' type=submit value='".$available_service['id']."'>". $available_service['display_name']."</button>";
+
+        }
+      }
+      echo "<div>Link:<br> $linkHTML</div><div>Unlink:<br> $unlinkHTML</div>";
     }      
   } else {
     // oauth user, no wp-user
