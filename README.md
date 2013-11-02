@@ -14,4 +14,3 @@ Configure a known-to-work service through the "Custom Service"
 option, to verify the problem is not in the way Custom Services
 are handled by the plugin code. Otherwise this is an incompatibility
 between OAuth implementations.
-
