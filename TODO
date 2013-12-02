@@ -4,6 +4,9 @@ TODO:
 20131202
 --------
 
+Remove hard coded strings, --> translations
+Delete custom
+
 Page: OAuth Configuration
          Saving Changes
            Built-in service
@@ -20,7 +23,11 @@ Page: Register
         Implement signing up with service
 
 
+
+
+
 More service button icons
 Add service button override
+
 
 Possibly default scopes ?
