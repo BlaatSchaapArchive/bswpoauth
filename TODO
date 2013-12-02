@@ -1,0 +1,26 @@
+---------------------------------------------------------------------
+TODO:
+
+20131202
+--------
+
+Page: OAuth Configuration
+         Saving Changes
+           Built-in service
+           Manual Configured service
+
+Page: OAuth Add
+       Check if library has new built-in services
+       
+Page: Link
+        Implement service linking support
+
+Page: Register
+        Implement register page
+        Implement signing up with service
+
+
+More service button icons
+Add service button override
+
+Possibly default scopes ?
