@@ -79,104 +79,104 @@ echo "
 
 
 function blaat_oauth_add_custom_page(){
-//$ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING'];
-$ACTION="admin.php?page=blaat_oauth_services";
+  $ACTION="admin.php?page=blaat_oauth_services";
+  ?>
+  <div class="wrap">
+  <?php screen_icon(); ?>
+  <h2>
+  <?php _e("BlaatSchaap OAuth Configuration","blaat_auth"); ?>
+  </h2>
 
-        echo '<div class="wrap">';
-        screen_icon();
-        echo "<h2>BlaatSchaap OAuth Configuration</h2>";
 
-echo "
-<form method='post' action='$ACTION'>
-  <table class='form-table'>
-    <tr>
-      <td>Display name:</td>
-      <td>
-        <input type='text' name='displayname'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>OAuth version:</td>
-      <td>
-        <select name='oauth_version'>
-          <option value='1.0'>1.0</option>
-          <option value='1.0a'>1.0a</option>
-          <option value='2.0' selected>2.0</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td>Request Token URL (1.0 and 1.0a only)</td>
-      <td>
-        <input type='text' name='request_token_url'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Dialog URL</td>
-      <td>
-        <input type='text' name='dialog_url'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Access Token URL</td>
-      <td>
-        <input type='text' name='access_token_url'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Offline Dialog URL (optional)</td>
-      <td>
-        <input type='text' name='offline_dialog_url'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Append state to redirect (optional)</td>
-      <td>
-        <input type='text' name='append_state_to_redirect_uri'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>URL Parameters</td>
-      <td>
-        <input type='checkbox' name='url_parameters'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Authorisation Header</td>
-      <td>
-        <input type='checkbox' name='authorization_header' value=1 checked></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Client ID:</td>
-      <td>
-        <input type='text' name='client_id'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Client Secret:</td>
-      <td>
-        <input type='text' name='client_secret'></input>
-      </td>
-    </tr>
-    </tr>
-      <td>Default Scope:</td>
-      <td>
-        <input type='text' name='default_scope'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Enabled:</td>
-      <td><input type='checkbox' name='client_enabled'></input>
-    </tr>
-    <tr>
-      <td></td>
-      <td><input type='submit' name='add_custom_service' value='Add'></input>
-    </tr>
-  </table>
-</form>
-";
-
+  <form method='post' action='<?php echo $ACTION ; ?>'>
+    <table class='form-table'>
+      <tr>
+        <td>Display name:</td>
+        <td>
+	  <input type='text' name='displayname'></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("OAuth version","blaat_auth"); ?> </td>
+        <td>
+	        <select name='oauth_version'>
+	          <option value='1.0'>1.0</option>
+	          <option value='1.0a'>1.0a</option>
+	          <option value='2.0' selected>2.0</option>
+	        </select>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("Request Token URL (1.0 and 1.0a only)","blaat_auth"); ?></td>
+        <td>
+	  <input type='text' name='request_token_url'></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("Dialog URL","blaat_auth"); ?></td>
+        <td>
+	  <input type='text' name='dialog_url'></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("Access Token URL","blaat_auth"); ?></td>
+        <td>
+	  <input type='text' name='access_token_url'></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("Offline Dialog URL (optional)","blaat_auth"); ?></td>
+        <td>
+	  <input type='text' name='offline_dialog_url'></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("Append state to redirect (optional)","blaat_auth"); ?></td>
+        <td>
+	  <input type='text' name='append_state_to_redirect_uri'></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("URL Parameters","blaat_auth"); ?></td>
+        <td>
+	  <input type='checkbox' name='url_parameters'></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("Authorisation Header","blaat_auth"); ?></td>
+        <td>
+	  <input type='checkbox' name='authorization_header' value=1 checked></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("Client ID","blaat_auth"); ?></td>
+        <td>
+	  <input type='text' name='client_id'></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("Client Secret","blaat_auth"); ?></td>
+        <td>
+	  <input type='text' name='client_secret'></input>
+        </td>
+      </tr>
+      </tr>
+        <td><?php _e("Default Scope","blaat_auth"); ?></td>
+        <td>
+	  <input type='text' name='default_scope'></input>
+        </td>
+      </tr>
+      <tr>
+        <td><?php _e("Enabled","blaat_auth"); ?></td>
+        <td><input type='checkbox' name='client_enabled'></input>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input type='submit' name='add_custom_service' value='<?php _e("Add","blaat_auth"); ?>'></input>
+      </tr>
+    </table>
+  </form>
+  <?php
 }
 
 function blaat_oauth_add_process(){
