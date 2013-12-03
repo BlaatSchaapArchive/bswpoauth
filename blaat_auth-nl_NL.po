@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: BlaatSchaap OAuth Plugin v0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2013-12-02 15:25:22+0000\n"
+"PO-Revision-Date: 2013-12-02 15:48:51+0000\n"
 "Last-Translator: andre <andre@blaatschaap.be>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -84,7 +84,7 @@ msgstr "Als je al een account hebt, klik dan <a href='%s'>hier</a> om deze te ko
 msgid "Please provice a username and password to sign up"
 msgstr "Voer een gebruikersnaam en wachtwoord in om je aan te melden"
 
-#: bs_oauth_config.php:266
+#: bs_oauth_config.php:271
 #@ blaat_auth
 msgid "Not Implemented!"
 msgstr "Niet geïmplementeerd!"
@@ -96,89 +96,89 @@ msgid "BlaatSchaap OAuth Configuration"
 msgstr "BlaatSchaap OAuth Configuratie"
 
 #: bs_oauth_config.php:14
-#: bs_oauth_config.php:294
+#: bs_oauth_config.php:299
 #@ blaat_auth
 msgid "Service"
 msgstr "Dienst"
 
 #: bs_oauth_config.php:42
-#: bs_oauth_config.php:354
+#: bs_oauth_config.php:358
 #@ blaat_auth
 msgid "Display name"
 msgstr "Weergavenaam"
 
 #: bs_oauth_config.php:48
 #: bs_oauth_config.php:150
-#: bs_oauth_config.php:360
+#: bs_oauth_config.php:364
 #@ blaat_auth
 msgid "Client ID"
 msgstr ""
 
 #: bs_oauth_config.php:54
 #: bs_oauth_config.php:156
-#: bs_oauth_config.php:366
+#: bs_oauth_config.php:370
 #@ blaat_auth
 msgid "Client Secret"
 msgstr ""
 
 #: bs_oauth_config.php:60
 #: bs_oauth_config.php:162
-#: bs_oauth_config.php:372
+#: bs_oauth_config.php:376
 #@ blaat_auth
 msgid "Default Scope"
 msgstr "Standaard scope"
 
 #: bs_oauth_config.php:66
 #: bs_oauth_config.php:168
-#: bs_oauth_config.php:378
+#: bs_oauth_config.php:382
 #@ blaat_auth
 msgid "Enabled"
 msgstr "Ingeschakeld"
 
 #: bs_oauth_config.php:98
-#: bs_oauth_config.php:301
+#: bs_oauth_config.php:305
 #@ blaat_auth
 msgid "OAuth version"
 msgstr "OAuth versie"
 
 #: bs_oauth_config.php:108
-#: bs_oauth_config.php:311
+#: bs_oauth_config.php:315
 #@ blaat_auth
 msgid "Request Token URL (1.0 and 1.0a only)"
 msgstr "Request Token URL (Alleen voor 1.0 en 1.0a)"
 
 #: bs_oauth_config.php:114
-#: bs_oauth_config.php:317
+#: bs_oauth_config.php:321
 #@ blaat_auth
 msgid "Dialog URL"
 msgstr ""
 
 #: bs_oauth_config.php:120
-#: bs_oauth_config.php:323
+#: bs_oauth_config.php:327
 #@ blaat_auth
 msgid "Access Token URL"
 msgstr ""
 
 #: bs_oauth_config.php:126
-#: bs_oauth_config.php:329
+#: bs_oauth_config.php:333
 #@ blaat_auth
 msgid "Offline Dialog URL (optional)"
 msgstr "Offline Dialog URL (optioneel)"
 
 #: bs_oauth_config.php:132
-#: bs_oauth_config.php:335
+#: bs_oauth_config.php:339
 #@ blaat_auth
 msgid "Append state to redirect (optional)"
 msgstr "Append state to redirect (optioneel)"
 
 #: bs_oauth_config.php:138
-#: bs_oauth_config.php:340
+#: bs_oauth_config.php:344
 #@ blaat_auth
 msgid "URL Parameters"
 msgstr ""
 
 #: bs_oauth_config.php:144
-#: bs_oauth_config.php:346
+#: bs_oauth_config.php:350
 #@ blaat_auth
 msgid "Authorisation Header"
 msgstr ""
@@ -187,4 +187,9 @@ msgstr ""
 #@ blaat_auth
 msgid "Add"
 msgstr "Toevoegen"
+
+#: bs_oauth_config.php:304
+#@ blaat_auth
+msgid "Custom"
+msgstr ""
 
