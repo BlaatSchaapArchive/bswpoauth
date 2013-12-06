@@ -50,7 +50,9 @@ if (!function_exists("blaat_plugins_auth_page")) {
     //echo "Thank you for using the BlaatSchaap Coding Projects WordPress Authentication Plugins";
     echo '<div class="wrap">';
     
-    echo '<h2>BlaatSchaap WordPress Authentication Plugins</h2>';
+    echo '<h2>';
+    _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
+    echo '</h2>';
     echo '<form method="post" action="options.php">';
     settings_fields( 'blaat_auth_pages' ); 
     //do_settings( 'blaat_auth_pages' );  undefined? it was mentioned
@@ -147,6 +149,8 @@ function blaat_oauth_menu() {
   add_menu_page('BlaatSchaap', 'BlaatSchaap', 'manage_options', 'blaat_plugins', 'blaat_plugins_page');
   add_submenu_page('blaat_plugins', "" , "" , 'manage_options', 'blaat_plugins', 'blaat_plugins_page');
 
+
+  //TODO :: Add translation functions to this!
   add_submenu_page('blaat_plugins', "Auth Pages" , "Auth pages" , 'manage_options', 'blaat_auth_pages_plugins', 'blaat_plugins_auth_page');
   add_submenu_page('blaat_plugins' , 'OAuth Configuration', 'OAuth Configuration', 'manage_options', 'blaat_oauth_services', 'blaat_oauth_config_page' );
   add_submenu_page('blaat_plugins' , 'OAuth Add Service',   'OAuth Add', 'manage_options', 'blaat_oauth_add', 'blaat_oauth_add_page' );
@@ -160,9 +164,10 @@ function blaat_oauth_config_page() {
 	}
 	echo '<div class="wrap">';
         screen_icon();
-        echo "<h2>BlaatSchaap OAuth Configuration</h2>";
-	//echo '<p>Here is where the form would go if I actually had options.</p>';
-	//echo '</div>';
+        echo "<h2>";
+        _e("BlaatSchaap OAuth Configuration","blaat_auth");
+        echo "</h2>";
+
         if ($_POST['add_service']) blaat_oauth_add_process();
         if ($_POST['add_custom_service']) blaat_oauth_add_custom_process();
         if ($_POST['delete_service']) blaat_oauth_delete_service();
@@ -436,7 +441,7 @@ function blaat_auth_link_display(){
       $linked_services = $wpdb->get_results($query,ARRAY_A);
        
       $table_name = $wpdb->prefix . "bs_oauth_services";
-      $query = $wpdb->prepare("SELECT * FROM $table_name");
+      $query = "SELECT * FROM $table_name";
       $available_services = $wpdb->get_results($query,ARRAY_A);
 
       $linked = Array();

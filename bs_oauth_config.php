@@ -11,7 +11,7 @@ function blaat_oauth_add_page(){
   <form method='post' action='<?php echo $ACTION; ?>'>
     <table class='form-table'>
       <tr>
-        <td><?php _e("Service","blaat_auth");?></td>
+        <th><label><?php _e("Service","blaat_auth");?></td>
         <td>
           <select name='service'> 
             <option value='Bitbucket'>Bitbucket</option>
@@ -39,31 +39,31 @@ function blaat_oauth_add_page(){
         </td>
       </tr>
       <tr>
-        <td><?php _e("Display name","blaat_auth");?></td>
+        <th><label><?php _e("Display name","blaat_auth");?></td>
         <td>
           <input type='text' name='display_name'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Client ID","blaat_auth");?></td>
+        <th><label><?php _e("Client ID","blaat_auth");?></td>
         <td>
           <input type='text' name='client_id'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Client Secret","blaat_auth");?></td>
+        <th><label><?php _e("Client Secret","blaat_auth");?></td>
         <td>
           <input type='text' name='client_secret'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Default Scope","blaat_auth");?></td>
+        <th><label><?php _e("Default Scope","blaat_auth");?></td>
         <td>
           <input type='text' name='default_scope'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Enabled","blaat_auth");?></td>
+        <th><label><?php _e("Enabled","blaat_auth");?></td>
         <td><input type='checkbox' name='client_enabled' value=1></input>
       </tr>
       <tr>
@@ -95,7 +95,7 @@ function blaat_oauth_add_custom_page(){
         </td>
       </tr>
       <tr>
-        <td><?php _e("OAuth version","blaat_auth"); ?> </td>
+        <th><label><?php _e("OAuth version","blaat_auth"); ?> </td>
         <td>
 	        <select name='oauth_version'>
 	          <option value='1.0'>1.0</option>
@@ -105,67 +105,67 @@ function blaat_oauth_add_custom_page(){
         </td>
       </tr>
       <tr>
-        <td><?php _e("Request Token URL (1.0 and 1.0a only)","blaat_auth"); ?></td>
+        <th><label><?php _e("Request Token URL (1.0 and 1.0a only)","blaat_auth"); ?></label></th>
         <td>
 	  <input type='text' name='request_token_url'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Dialog URL","blaat_auth"); ?></td>
+        <th><label><?php _e("Dialog URL","blaat_auth"); ?></label></th>
         <td>
 	  <input type='text' name='dialog_url'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Access Token URL","blaat_auth"); ?></td>
+        <th><label><?php _e("Access Token URL","blaat_auth"); ?></label></th>
         <td>
 	  <input type='text' name='access_token_url'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Offline Dialog URL (optional)","blaat_auth"); ?></td>
+        <th><label><?php _e("Offline Dialog URL (optional)","blaat_auth"); ?></label></th>
         <td>
 	  <input type='text' name='offline_dialog_url'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Append state to redirect (optional)","blaat_auth"); ?></td>
+        <th><label><?php _e("Append state to redirect (optional)","blaat_auth"); ?></label></th>
         <td>
 	  <input type='text' name='append_state_to_redirect_uri'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("URL Parameters","blaat_auth"); ?></td>
+        <th><label><?php _e("URL Parameters","blaat_auth"); ?></label></th>
         <td>
 	  <input type='checkbox' name='url_parameters'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Authorisation Header","blaat_auth"); ?></td>
+        <th><label><?php _e("Authorisation Header","blaat_auth"); ?></label></th>
         <td>
 	  <input type='checkbox' name='authorization_header' value=1 selected></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Client ID","blaat_auth"); ?></td>
+        <th><label><?php _e("Client ID","blaat_auth"); ?></label></th>
         <td>
 	  <input type='text' name='client_id'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Client Secret","blaat_auth"); ?></td>
+        <th><label><?php _e("Client Secret","blaat_auth"); ?></label></th>
         <td>
 	  <input type='text' name='client_secret'></input>
         </td>
       </tr>
       </tr>
-        <td><?php _e("Default Scope","blaat_auth"); ?></td>
+        <th><label><?php _e("Default Scope","blaat_auth"); ?></label></th>
         <td>
 	  <input type='text' name='default_scope'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Enabled","blaat_auth"); ?></td>
+        <th><label><?php _e("Enabled","blaat_auth"); ?></label></th>
         <td><input type='checkbox' name='client_enabled'></input>
       </tr>
       <tr>
@@ -289,6 +289,11 @@ function blaat_oauth_update_service(){
 
   $data_id = array();
   $data_id['id']  = $_POST['id'];
+  echo "<pre>\nTable Name : $table_name \n New data:\n";
+  print_r($new_data);
+  echo "\nData ID:\n";
+  print_r($data_id);
+  echo "\n</pre>";
   $wpdb->update($table_name, $new_data, $data_id);
 
   if (isset($_POST['custom_id'])){
@@ -320,29 +325,46 @@ function blaat_oauth_list_services(){
   $ACTION=htmlspecialchars($_SERVER['REQUEST_URI']);// . '?' . $_SERVER['QUERY_STRING'];
   $table_name  = $wpdb->prefix . "bs_oauth_services";
   $table_name2 = $wpdb->prefix . "bs_oauth_custom";
+  /*
   $results = $wpdb->get_results("select * from $table_name
           LEFT OUTER JOIN $table_name2 on ${table_name}.custom_id = ${table_name2}.id",ARRAY_A);
+  */
+
+  /* Selecting all rows manually due both tables having a column id
+     The WordPress Database Class does not understand it should use
+     the first one, the way it would work with for example the old mysql_* 
+     database interface
+  */
+  $results = $wpdb->get_results("select ${table_name}.id id, client_name, 
+                    enabled, display_name, custom_id, client_id, client_secret,
+                    default_scope, oauth_version, request_token_url, 
+                    dialog_url, access_token_url, url_parameters, 
+                    authorization_header, offline_dialog_url, 
+                    append_state_to_redirect_uri
+          from $table_name
+          LEFT OUTER JOIN $table_name2 on ${table_name}.custom_id = ${table_name2}.id",ARRAY_A);
+
 
   foreach ($results as $result){
     $enabled= $result['enabled'] ? "checked" : "";
     ?>
+  </pre>
   <form method='post' action='<?php echo $ACTION ?>'>
-    <input type=hidden name=id value='<?php echo $result['id']; ?>'>
+    <input type='hidden' name='id' value='<?php echo $result['id']; ?>'>
     <table class='form-table'>
       <tr>
-        <td><?php _e("Service","blaat_auth"); ?></td>
+        <th><label><?php _e("Service","blaat_auth"); ?></label></th>
         <?php
-        if (strlen($result['client_name'])) {
+        if (!$result['custom_id']) {
           ?><td><?php echo $result['client_name'] ?></td>
         <?php } else { ?>
-          <td><?php _e("Custom","blaat_auth"); ?> 
+          <td><?php _e("Custom","blaat_auth"); ?></td> 
             <input type="hidden" name="custom_id" value="<?php 
-              echo $result['custom_id'];
-            ?>">
-          </td>
+              echo $result['custom_id']; ?>">
+          
         </tr>
         <tr>
-          <td><?php _e("OAuth version","blaat_auth"); ?></td>
+          <th><label><?php _e("OAuth version","blaat_auth"); ?></label></th>
           <td>
             <select name='oauth_version'>
               <option value='1.0' 
@@ -358,41 +380,41 @@ function blaat_oauth_list_services(){
           </td>
         </tr>
         <tr>
-          <td><?php _e("Request Token URL (1.0 and 1.0a only)","blaat_auth"); ?></td>
+          <th><label><?php _e("Request Token URL (1.0 and 1.0a only)","blaat_auth"); ?></label></th>
           <td>
             <input type='text' name='request_token_url'
               value='<?php echo $result['request_token_url']; ?>'></input>
           </td>
         </tr>
         <tr>
-          <td><?php _e("Dialog URL","blaat_auth"); ?></td>
+          <th><label><?php _e("Dialog URL","blaat_auth"); ?></label></th>
           <td>
             <input type='text' name='dialog_url' 
                 value='<?php echo $result['dialog_url']; ?>'></input>
           </td>
         </tr>
         <tr>
-          <td><?php _e("Access Token URL","blaat_auth"); ?></td>
+          <th><label><?php _e("Access Token URL","blaat_auth"); ?></label></th>
           <td>
             <input type='text' name='access_token_url'
               value='<?php echo $result['access_token_url']; ?>'></input>
           </td>
         </tr>
         <tr>
-          <td><?php _e("Offline Dialog URL (optional)","blaat_auth"); ?></td>
+          <th><label><?php _e("Offline Dialog URL (optional)","blaat_auth"); ?></label></th>
           <td>
             <input type='text' name='offline_dialog_url'
               value='<?php echo $result['offline_dialog_url']; ?>'></input>
           </td>
         </tr>
         <tr>
-          <td><?php _e("Append state to redirect (optional)","blaat_auth"); ?></td>
+          <th><label><?php _e("Append state to redirect (optional)","blaat_auth"); ?></label></th>
           <td>
             <input type='text' name='append_state_to_redirect_uri'
                 value='<?php echo $result['append_state_to_redirect_ur']; ?>' ></input>
           </td>
         </tr>
-          <td><?php _e("URL Parameters","blaat_auth"); ?></td>
+          <th><label><?php _e("URL Parameters","blaat_auth"); ?></label></th>
           <td>
             <input type='checkbox' name='url_parameters' value=1
               <?php  if ($result['url_parameters']) echo "checked"; ?>
@@ -400,7 +422,7 @@ function blaat_oauth_list_services(){
           </td>
         </tr>
         <tr>
-          <td><?php _e("Authorisation Header","blaat_auth"); ?></td>
+          <th><label><?php _e("Authorisation Header","blaat_auth"); ?></label></th>
           <td>
             <input type='checkbox' name='authorization_header' value=1 
               <?php  if ($result['authorization_header']) echo "checked"; ?>
@@ -410,31 +432,31 @@ function blaat_oauth_list_services(){
       }
       ?>
       </tr><tr>
-        <td><?php _e("Display name","blaat_auth"); ?></td>
+        <th><label><?php _e("Display name","blaat_auth"); ?></label></th>
         <td>
           <input type='text' name='display_name' value='<?php echo $result['display_name']; ?>'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Client ID","blaat_auth"); ?></td>
+        <th><label><?php _e("Client ID","blaat_auth"); ?></label></th>
         <td>
           <input type='text' name='client_id' value='<?php echo $result['client_id']; ?>'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Client Secret","blaat_auth"); ?></td>
+        <th><label><?php _e("Client Secret","blaat_auth"); ?></label></th>
         <td>
           <input type='text' name='client_secret' value='<?php echo $result['client_secret']; ?>'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Default Scope","blaat_auth"); ?></td>
+        <th><label><?php _e("Default Scope","blaat_auth"); ?></label></th>
         <td>
           <input type='text' name='default_scope' value='<?php echo $result['default_scope']; ?>'></input>
         </td>
       </tr>
       <tr>
-        <td><?php _e("Enabled","blaat_auth"); ?></td>
+        <th><label><?php _e("Enabled","blaat_auth"); ?></label></th>
         <td><input type='checkbox' name='client_enabled' value=1 <?php echo $enabled; ?>></input>
       </tr>
       <tr>

@@ -4,6 +4,7 @@ TODO:
 20131202
 --------
 
+
 Remove hard coded strings, --> translations
 Delete custom
 
@@ -11,12 +12,15 @@ Page: OAuth Configuration
          Saving Changes
            Built-in service
            Manual Configured service
+      FIXME:: Basic configuarion not saving (custom is)
 
 Page: OAuth Add
        Check if library has new built-in services
        
 Page: Link
         Implement service linking support
+        FIXME:: Only show enabled services
+
 
 Page: Register
         Implement register page
