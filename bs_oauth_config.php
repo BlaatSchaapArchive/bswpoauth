@@ -289,11 +289,7 @@ function blaat_oauth_update_service(){
 
   $data_id = array();
   $data_id['id']  = $_POST['id'];
-  echo "<pre>\nTable Name : $table_name \n New data:\n";
-  print_r($new_data);
-  echo "\nData ID:\n";
-  print_r($data_id);
-  echo "\n</pre>";
+
   $wpdb->update($table_name, $new_data, $data_id);
 
   if (isset($_POST['custom_id'])){

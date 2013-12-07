@@ -5,6 +5,8 @@ TODO:
 --------
 
 
+
+
 Remove hard coded strings, --> translations
 Delete custom
 
@@ -35,3 +37,11 @@ Add service button override
 
 
 Possibly default scopes ?
+
+20131207
+---------
+
+CHange login / linking  :::  After some debugging, I believe:::
+
+linking must happen on the /login landing page
+there it must be processed, and forwarded afterwards! 
