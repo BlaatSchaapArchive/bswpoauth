@@ -38,10 +38,11 @@ Add service button override
 
 Possibly default scopes ?
 
-20131207
+20131219
 ---------
 
-CHange login / linking  :::  After some debugging, I believe:::
+Linking support complete!
 
-linking must happen on the /login landing page
-there it must be processed, and forwarded afterwards! 
+TODO:: Registration support
+
+Unsetting setting variables!

@@ -292,6 +292,7 @@ function blaat_oauth_process($process){
  
 }
 
+/*  DEPRECATED
 function blaat_oauth_loginform () {
   echo "<div>";
   global $wpdb;
@@ -309,8 +310,9 @@ function blaat_oauth_loginform () {
  
   echo "</div>";
 }
+*/
 
-
+/*  DEPRECATED
 function blaat_oauth_unlinkform(){
   global $wpdb;
   $table_name_sess = $wpdb->prefix . "bs_oauth_sessions";
@@ -327,7 +329,9 @@ function blaat_oauth_unlinkform(){
     echo "<button name=oauth_unlink type=submit value='".$result['id']."'>". $result['display_name']."</button>";
   }
 }
+*/
 
+/*  DEPRECATED
 function blaat_oauth_linkform() {
   echo "</table>";
   echo "<h3>BlaatSchaap OAuth options</h3>";
@@ -339,10 +343,10 @@ function blaat_oauth_linkform() {
   blaat_oauth_unlinkform();
   echo "</td></tr>";
 }
+*/
 
-
-add_filter("login_form",   blaat_oauth_loginform );
-add_filter('authenticate', blaat_oauth_do_login,90  );
+//add_filter("login_form",   blaat_oauth_loginform );
+//add_filter('authenticate', blaat_oauth_do_login,90  );
 
 
 add_action('personal_options_update', blaat_oauth_link_update);
@@ -369,7 +373,7 @@ function blaat_oauth_link_update($user_id) {
 
 
 add_action("admin_menu", blaat_oauth_menu);
-add_action("personal_options", blaat_oauth_linkform);
+//add_action("personal_options", blaat_oauth_linkform);
 
 
 function blaat_oauth_signup_message($message){
@@ -495,6 +499,7 @@ function blaat_auth_link_display(){
                                                     $user_id , $service_id , $token , $expiry , $scope  );
       $wpdb->query($query);
       unset($_SESSION['oauth_id']);
+      unset($_SESSION['oauth_link']);
       unset($_SESSION['oauth_token']);
       unset($_SESSION['oauth_expiry']);
       unset($_SESSION['oauth_scope']);
@@ -559,23 +564,74 @@ function blaat_auth_link_display(){
 }
 
 function blaat_auth_register_display() {
+    echo "DEBUG POST:<pre>";
+    print_r($_POST);
+    echo "</pre>";
+
+    echo "DEBUG SESSION:<pre>";
+    print_r($_SESSION);
+    echo "</pre>";
+
   if (is_user_logged_in()) {
     _e("You cannot register a new account since you are already logged in.","blaat_auth");
   } else {
 
     session_start();
-      if (isset($_SESSION['oauth_id'])     && isset($_SESSION['oauth_token']) &&
-          isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
+    if (isset($_SESSION['oauth_id'])     && isset($_SESSION['oauth_token']) &&
+        isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
 
       $service = $_SESSION['oauth_display'];
       printf( __("You are authenticated to %s","blaat_auth") , $service );
       echo "<br>";
-      _e("Please provide a username and e-mail address to complete your signup","blaat_auth");
-      echo "<br>";
-      printf( __("If you already have an account, please click <a href='%s'>here</a> to link it.","blaat_auth") , site_url("/".get_option("link_page")));
-      echo "<br>";
+      if (isset($_POST['username']) && isset($_POST['email'])) {
+        $user_id = wp_create_user( $_POST['username'], $random_password, $_POST['email'] ) ;
+        if (is_numeric($user_id)) {
+          $reg_ok=true;
+          $_SESSION['oauth_registered']=1;
+          wp_set_current_user ($user_id);
+          wp_set_auth_cookie($user_id);
+          header("Location: ".site_url("/".get_option("login_page")));         
+        } else {
+          $reg_ok=false;
+          $error = __($user_id->get_error_message());
+        }
+      } else {
+        $reg_ok=false;
+        // no username/password given
+        $error = __("No username/e-mail address given","blaat_auth");
+      } 
+      if ($reg_ok){
+      } else {
+        if (isset($error)) {
+          echo "<div class='error'>$error</div>";
+        }
+        _e("Please provide a username and e-mail address to complete your signup","blaat_auth");
+         ?><form method=post>
+          <table>
+            <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
+            <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
+            <tr><td rowspan=2><button type=submit><?php _e("Register"); ?></button></td></tr>
+          </table>
+        </form>
+        <?php
+        printf( __("If you already have an account, please click <a href='%s'>here</a> to link it.","blaat_auth") , site_url("/".get_option("link_page")));
+
+      }
+
+
+    
     } else {
-      _e("Please provice a username and password to sign up","blaat_auth");
+      _e("Please enter a username, password and e-mail, or select a service to sign up","blaat_auth");
+      ?>
+      <form method=post>
+        <table>
+          <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
+          <tr><td><?php _e("Password"); ?></td><td><input type='password' name='password'></td></tr>
+          <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
+          <tr><td rowspan=2><button type=submit><?php _e("Register"); ?></button></td></tr>
+        </table>
+      </form>
+      <?php // we also need a service list here
     } 
   }
 }
