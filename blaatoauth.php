@@ -395,16 +395,23 @@ add_filter( 'the_content', 'blaat_auth_display' );
 
 
 function blaat_auth_login_display(){
-  
+    /*
+    echo "DEBUG POST:<pre>";
+    print_r($_POST);
+    echo "</pre>";
+
+    echo "DEBUG SESSION:<pre>";
+    print_r($_SESSION);
+    echo "</pre>";
+    */
   if (!is_user_logged_in()) blaat_oauth_do_login();
 
   if ( is_user_logged_in() ) {
-    if (isset($_SESSION['oauth_link'])) {
-        // Need to set these!!!
-        //$_SESSION['oauth_token']   = $client->access_token;
-        //$_SESSION['oauth_expiry']  = $client->access_token_expiry;
-        //$_SESSION['oauth_scope']   = $client->scope;
-        header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
+    if (isset($_POST['oauth_link']) || $_SESSION['oauth_link']) {
+      // process linking here, after that, redirect to link_page        
+      //header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
+      //die("should link");      
+      blaat_oauth_do_login();  
     } else 
     _e("Logged in","blaat_auth");
   } else {
@@ -437,25 +444,40 @@ function blaat_auth_login_display(){
 function blaat_auth_link_display(){
   session_start();
   global $wpdb;
-
+    /*
+    echo "DEBUG POST:<pre>";
+    print_r($_POST);
+    echo "</pre>";
+    */
   if (is_user_logged_in()) {
 
     if (isset($_POST['oauth_link'])){
         $_SESSION['oauth_link']=$_POST['oauth_link'];
-        blaat_oauth_do_login($user);  
+        blaat_oauth_do_login($user);
+
       }
+
       if (isset($_POST['oauth_unlink'])){
         $table_name = $wpdb->prefix . "bs_oauth_sessions";
         // Not an ideal query... however, the form generation code would need
         // a complete rewrite to support supplying the service id entry.
+        /**/
+
+        $table_name2 = $wpdb->prefix . "bs_oauth_services";
+        $query2 = $wpdb->prepare("Select display_name from $table_name2 where id = %d", $_POST['oauth_unlink'] );
+        $service_name = $wpdb->get_results($query2,ARRAY_A);
+        $service = $service_name[0]['display_name'];
+        
         $query = $wpdb->prepare ("Delete from $table_name where user_id = %d AND service_id = %d", get_current_user_id(), $_POST['oauth_unlink'] );
         $wpdb->query($query);
-        _e("You are now unlinked","blaat_auth");    
+        printf( __("You are now unlinked from %s.", "blaat_auth"), $service );
+        
       }
-
+    /*
     echo "DEBUG:<pre>";
     print_r($_SESSION);
     echo "</pre>";
+    */ 
     $user = wp_get_current_user();
     if (isset($_SESSION['oauth_id'])     && isset($_SESSION['oauth_token']) &&
         isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
@@ -478,7 +500,7 @@ function blaat_auth_link_display(){
       unset($_SESSION['oauth_scope']);
       unset($_SESSION['oauth_display']);
       printf( __("Your %s account has been linked", "blaat_auth"), $service );
-    } else {
+    } /* else */ {
       
 
       $table_name = $wpdb->prefix . "bs_oauth_sessions";
@@ -508,10 +530,10 @@ function blaat_auth_link_display(){
         //kanske?
         //unset($_SESSION['OAUTH_STATE']);
       }
-      echo "<form method=post><div class='link authservices'><div class='blocktitle'>".
+      echo "<form method=post action='". site_url("/".get_option("login_page"))  ."'><div class='link authservices'><div class='blocktitle'>".
               __("Link your account to","blaat_auth") .  "</div>".
               $linkHTML . "
-           </div>
+           </div></form><form method=post>
            <div class='unlink authservices'><div class='blocktitle'>".
               __("Unlink your account from","blaat_auth") . "</div>".
              $unlinkHTML . "

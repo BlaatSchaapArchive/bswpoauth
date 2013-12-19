@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: BlaatSchaap OAuth Plugin v0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2013-12-02 15:48:51+0000\n"
+"PO-Revision-Date: 2013-12-19 16:23:39+0000\n"
 "Last-Translator: andre <andre@blaatschaap.be>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -20,75 +20,76 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Textdomain-Support: yes"
 
-#: blaatoauth.php:73
+#: blaatoauth.php:75
 #@ default
 msgid "Save Changes"
 msgstr ""
 
-#: blaatoauth.php:159
+#: blaatoauth.php:163
 #@ default
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: blaatoauth.php:381
+#: blaatoauth.php:419
 #@ blaat_auth
 msgid "Log in with a local account"
 msgstr "Inloggen met een lokale account"
 
-#: blaatoauth.php:385
+#: blaatoauth.php:423
 #@ blaat_auth
 msgid "Log in with"
 msgstr "Inloggen met"
 
-#: blaatoauth.php:431
+#: blaatoauth.php:502
 #, php-format
 #@ blaat_auth
 msgid "Your %s account has been linked"
 msgstr "Je %s account is nu gekoppeld"
 
-#: blaatoauth.php:469
+#: blaatoauth.php:552
 #, php-format
 #@ blaat_auth
 msgid "Please provide a local account to link to %s"
 msgstr "Voer een lokale account in om met %s te koppelen"
 
-#: blaatoauth.php:473
+#: blaatoauth.php:556
 #@ blaat_auth
 msgid "You need to be logged in to use this feature"
 msgstr "Je moet ingelogd zijn om dit te kunnen doen"
 
-#: blaatoauth.php:480
+#: blaatoauth.php:563
 #@ blaat_auth
 msgid "You cannot register a new account since you are already logged in."
 msgstr "Je kan geen nieuwe account aanmaken omdat je al ingelogd bent."
 
-#: blaatoauth.php:488
+#: blaatoauth.php:571
 #, php-format
 #@ blaat_auth
 msgid "You are authenticated to %s"
 msgstr "Je bent geäuthenticeerd door %s"
 
-#: blaatoauth.php:490
+#: blaatoauth.php:573
 #@ blaat_auth
 msgid "Please provide a username and e-mail address to complete your signup"
 msgstr "Voer een gebruikersnaam en e-mailadres in om je aanmelding te voltooien"
 
-#: blaatoauth.php:492
+#: blaatoauth.php:575
 #, php-format
 #@ blaat_auth
 msgid "If you already have an account, please click <a href='%s'>here</a> to link it."
 msgstr "Als je al een account hebt, klik dan <a href='%s'>hier</a> om deze te koppelen."
 
-#: blaatoauth.php:495
+#: blaatoauth.php:578
 #@ blaat_auth
 msgid "Please provice a username and password to sign up"
 msgstr "Voer een gebruikersnaam en wachtwoord in om je aan te melden"
 
-#: bs_oauth_config.php:271
+#: bs_oauth_config.php:272
 #@ blaat_auth
 msgid "Not Implemented!"
 msgstr "Niet geïmplementeerd!"
 
+#: blaatoauth.php:168
 #: bs_oauth_config.php:9
 #: bs_oauth_config.php:85
 #@ blaat_auth
@@ -96,89 +97,89 @@ msgid "BlaatSchaap OAuth Configuration"
 msgstr "BlaatSchaap OAuth Configuratie"
 
 #: bs_oauth_config.php:14
-#: bs_oauth_config.php:299
+#: bs_oauth_config.php:352
 #@ blaat_auth
 msgid "Service"
 msgstr "Dienst"
 
 #: bs_oauth_config.php:42
-#: bs_oauth_config.php:358
+#: bs_oauth_config.php:431
 #@ blaat_auth
 msgid "Display name"
 msgstr "Weergavenaam"
 
 #: bs_oauth_config.php:48
 #: bs_oauth_config.php:150
-#: bs_oauth_config.php:364
+#: bs_oauth_config.php:437
 #@ blaat_auth
 msgid "Client ID"
 msgstr ""
 
 #: bs_oauth_config.php:54
 #: bs_oauth_config.php:156
-#: bs_oauth_config.php:370
+#: bs_oauth_config.php:443
 #@ blaat_auth
 msgid "Client Secret"
 msgstr ""
 
 #: bs_oauth_config.php:60
 #: bs_oauth_config.php:162
-#: bs_oauth_config.php:376
+#: bs_oauth_config.php:449
 #@ blaat_auth
 msgid "Default Scope"
 msgstr "Standaard scope"
 
 #: bs_oauth_config.php:66
 #: bs_oauth_config.php:168
-#: bs_oauth_config.php:382
+#: bs_oauth_config.php:455
 #@ blaat_auth
 msgid "Enabled"
 msgstr "Ingeschakeld"
 
 #: bs_oauth_config.php:98
-#: bs_oauth_config.php:305
+#: bs_oauth_config.php:363
 #@ blaat_auth
 msgid "OAuth version"
 msgstr "OAuth versie"
 
 #: bs_oauth_config.php:108
-#: bs_oauth_config.php:315
+#: bs_oauth_config.php:379
 #@ blaat_auth
 msgid "Request Token URL (1.0 and 1.0a only)"
 msgstr "Request Token URL (Alleen voor 1.0 en 1.0a)"
 
 #: bs_oauth_config.php:114
-#: bs_oauth_config.php:321
+#: bs_oauth_config.php:386
 #@ blaat_auth
 msgid "Dialog URL"
 msgstr ""
 
 #: bs_oauth_config.php:120
-#: bs_oauth_config.php:327
+#: bs_oauth_config.php:393
 #@ blaat_auth
 msgid "Access Token URL"
 msgstr ""
 
 #: bs_oauth_config.php:126
-#: bs_oauth_config.php:333
+#: bs_oauth_config.php:400
 #@ blaat_auth
 msgid "Offline Dialog URL (optional)"
 msgstr "Offline Dialog URL (optioneel)"
 
 #: bs_oauth_config.php:132
-#: bs_oauth_config.php:339
+#: bs_oauth_config.php:407
 #@ blaat_auth
 msgid "Append state to redirect (optional)"
 msgstr "Append state to redirect (optioneel)"
 
 #: bs_oauth_config.php:138
-#: bs_oauth_config.php:344
+#: bs_oauth_config.php:413
 #@ blaat_auth
 msgid "URL Parameters"
 msgstr ""
 
 #: bs_oauth_config.php:144
-#: bs_oauth_config.php:350
+#: bs_oauth_config.php:421
 #@ blaat_auth
 msgid "Authorisation Header"
 msgstr ""
@@ -188,8 +189,34 @@ msgstr ""
 msgid "Add"
 msgstr "Toevoegen"
 
-#: bs_oauth_config.php:304
+#: bs_oauth_config.php:357
 #@ blaat_auth
 msgid "Custom"
-msgstr ""
+msgstr "Aangepast"
+
+#: blaatoauth.php:54
+#@ blaat_auth
+msgid "BlaatSchaap WordPress Authentication Plugins"
+msgstr "BlaatSchaap WordPress Authorisatie Plugins"
+
+#: blaatoauth.php:416
+#@ blaat_auth
+msgid "Logged in"
+msgstr "Ingelogd"
+
+#: blaatoauth.php:473
+#, php-format
+#@ blaat_auth
+msgid "You are now unlinked from %s."
+msgstr "Je bent ontkoppeld van %s"
+
+#: blaatoauth.php:534
+#@ blaat_auth
+msgid "Link your account to"
+msgstr "Koppel je account met"
+
+#: blaatoauth.php:538
+#@ blaat_auth
+msgid "Unlink your account from"
+msgstr "Ontkoppel je account van"
 
