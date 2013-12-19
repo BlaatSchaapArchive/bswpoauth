@@ -486,7 +486,7 @@ function blaat_auth_register_display() {
       } else {
         $reg_ok=false;
         // no username/password given
-        $error = __("No username/e-mail address given","blaat_auth");
+        //$error = __("No username/e-mail address given","blaat_auth");
       } 
       if ($reg_ok){
       } else {
@@ -505,17 +505,36 @@ function blaat_auth_register_display() {
         printf( __("If you already have an account, please click <a href='%s'>here</a> to link it.","blaat_auth") , site_url("/".get_option("link_page")));
       }
     } else {
-      _e("Please enter a username, password and e-mail, or select a service to sign up","blaat_auth");
-      ?>
-      <form method=post>
-        <table>
-          <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
-          <tr><td><?php _e("Password"); ?></td><td><input type='password' name='password'></td></tr>
-          <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
-          <tr><td rowspan=2><button type=submit><?php _e("Register"); ?></button></td></tr>
-        </table>
-      </form>
-      <?php // we also need a service list here
+      if(isset($_POST['username']) && isset($_POST['email']) && isset($_POST['password'])){
+        $user_id = wp_create_user( $_POST['username'], $_POST['password'] , $_POST['email'] ) ;
+        if (is_numeric($user_id)) {
+          $reg_ok=true;
+          $_SESSION['oauth_registered']=1;
+          wp_set_current_user ($user_id);
+          wp_set_auth_cookie($user_id);
+          header("Location: ".site_url("/".get_option("login_page")));         
+        } else {
+          $reg_ok=false;
+          $error = __($user_id->get_error_message());
+        }
+      } else {
+        // no username/password/email given
+        //$error = __("No username/e-mail/password address given","blaat_auth");
+      } 
+      if($reg_ok){
+      } else {
+        _e("Please enter a username, password and e-mail, or select a service to sign up","blaat_auth");
+        ?>
+        <form method=post>
+          <table>
+            <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
+            <tr><td><?php _e("Password"); ?></td><td><input type='password' name='password'></td></tr>
+            <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
+            <tr><td rowspan=2><button type=submit><?php _e("Register"); ?></button></td></tr>
+          </table>
+        </form>
+        <?php // we also need a service list here
+      }
     } 
   }
 }
