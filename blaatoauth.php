@@ -348,7 +348,7 @@ function blaat_auth_login_display(){
     global $bs_oauth_plugin;
     global $_SERVER;
     //$ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING']; 
-    $ACTION=site_url("/".get_option("login_page");
+    $ACTION=site_url("/".get_option("login_page"));
     $table_name = $wpdb->prefix . "bs_oauth_services";
     $results = $wpdb->get_results("select * from $table_name where enabled=1 ",ARRAY_A);
     echo "<form>";
