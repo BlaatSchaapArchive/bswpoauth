@@ -20,6 +20,7 @@ function blaat_register_pageoptions(){
   register_setting( 'blaat_auth_pages', 'login_page' );
   register_setting( 'blaat_auth_pages', 'register_page' );
   register_setting( 'blaat_auth_pages', 'link_page' );
+  register_setting( 'blaat_auth_pages', 'logout_frontpage' );
 }
 
 if (!function_exists("blaat_page_select")) {
@@ -41,6 +42,7 @@ if (!function_exists("blaat_page_select")) {
 
 if (!function_exists("blaat_plugins_page")) {
   function blaat_plugins_page(){
+    // TODO:: MAKE TRANSLATABLE
     echo "BlaatSchaap Plugins";
   }
 }
@@ -48,7 +50,7 @@ if (!function_exists("blaat_plugins_page")) {
 if (!function_exists("blaat_plugins_auth_page")) {
   function blaat_plugins_auth_page(){
     echo '<div class="wrap">';
-    
+    // TODO:: MAKE TRANSLATABLE
     echo '<h2>';
     _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
     echo '</h2>';
@@ -68,6 +70,14 @@ if (!function_exists("blaat_plugins_auth_page")) {
     echo '<tr><td>Link page</td><td>';
     echo blaat_page_select("link_page");
     echo '</td></tr>';
+
+    echo '<tr><td>';
+    _e("Redirect to frontpage after logout", "blaat_auth") ;
+    echo "</td><td>";
+    $checked = get_option('logout_frontpage') ? "checked" : "";
+    echo "<input type=checkbox name='logout_frontpage' value='1' $checked>";
+    echo "</td></tr>";
+     
 
     echo '</table><input name="Submit" type="submit" value="';
     echo  esc_attr_e('Save Changes') ;
@@ -523,7 +533,11 @@ function blaat_auth_register_display() {
       } 
       if($reg_ok){
       } else {
-        _e("Please enter a username, password and e-mail, or select a service to sign up","blaat_auth");
+        //_e("Please enter a username, password and e-mail, or select a service to sign up","blaat_auth");
+
+/**/
+        echo "<div id='blaat_auth_local'>";
+        echo "<p>" .  __("Enter a username, password and e-mail address to sign up","blaat_auth") . "</p>" ; 
         ?>
         <form method=post>
           <table>
@@ -533,7 +547,28 @@ function blaat_auth_register_display() {
             <tr><td rowspan=2><button type=submit><?php _e("Register"); ?></button></td></tr>
           </table>
         </form>
-        <?php // we also need a service list here
+        <?php         
+        echo "</div>";
+        echo "<div id='blaat_auth_buttons'>";
+        echo "<p>" . __("Sign up with","blaat_auth") . "</p>";
+        global $wpdb;
+        global $bs_oauth_plugin;
+        global $_SERVER;
+        //$ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING']; 
+        $ACTION=site_url("/".get_option("login_page"));
+        $table_name = $wpdb->prefix . "bs_oauth_services";
+        $results = $wpdb->get_results("select * from $table_name where enabled=1 ",ARRAY_A);
+        echo "<form>";
+        foreach ($results as $result){
+          $class = "btn-auth btn-".strtolower($result['client_name']);
+          echo "<button class='$class' name=oauth_id type=submit value='".$result['id']."'>". $result['display_name']."</button>";
+        }
+        echo "</form>";
+        echo "</div>";
+
+/**/
+
+
       }
     } 
   }
@@ -564,5 +599,14 @@ wp_enqueue_style( 'necolas-css3-social-signin-buttons');
 
 wp_register_style("blaat_auth" , plugin_dir_url(__FILE__) . "blaat_auth.css");
 wp_enqueue_style( "blaat_auth");
+
+if (get_option("logout_frontpage")) {
+  add_action('wp_logout','go_frontpage');
+}
+function go_frontpage(){
+  wp_redirect( home_url() );
+  exit();
+}
+
 
 ?>
