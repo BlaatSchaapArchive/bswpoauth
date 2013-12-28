@@ -46,3 +46,12 @@ Linking support complete!
 TODO:: Registration support
 
 Unsetting setting variables!
+
+
+20131228
+-------------
+
+TODO:: Gegevens onthouden weg bij linken
+TODO:: Adding a (custom) service: enabled not saved
+Note: VK.com not working. Should file a bug upstream
+

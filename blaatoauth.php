@@ -42,15 +42,13 @@ if (!function_exists("blaat_page_select")) {
 
 if (!function_exists("blaat_plugins_page")) {
   function blaat_plugins_page(){
-    // TODO:: MAKE TRANSLATABLE
-    echo "BlaatSchaap Plugins";
+    e_("BlaatSchaap Plugins","blaat_auth");
   }
 }
 
 if (!function_exists("blaat_plugins_auth_page")) {
   function blaat_plugins_auth_page(){
     echo '<div class="wrap">';
-    // TODO:: MAKE TRANSLATABLE
     echo '<h2>';
     _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
     echo '</h2>';
@@ -59,15 +57,15 @@ if (!function_exists("blaat_plugins_auth_page")) {
 
     echo '<table class="form-table">';
 
-    echo '<tr><td>Login page</td><td>';
+    echo '<tr><td>'. __("Login page","blaat_auth") .'</td><td>';
     echo blaat_page_select("login_page");
     echo '</td></tr>';
     
-    echo '<tr><td>Register page</td><td>';
+    echo '<tr><td>'. __("Register page","blaat_auth") .'</td><td>';
     echo blaat_page_select("register_page");
     echo '</td></tr>';
 
-    echo '<tr><td>Link page</td><td>';
+    echo '<tr><td>'. __("Link page","blaat_auth") .'</td><td>';
     echo blaat_page_select("link_page");
     echo '</td></tr>';
 
@@ -151,11 +149,27 @@ function blaat_oauth_menu() {
   add_submenu_page('blaat_plugins', "" , "" , 'manage_options', 'blaat_plugins', 'blaat_plugins_page');
 
 
-  //TODO :: Add translation functions to this!
-  add_submenu_page('blaat_plugins', "Auth Pages" , "Auth pages" , 'manage_options', 'blaat_auth_pages_plugins', 'blaat_plugins_auth_page');
-  add_submenu_page('blaat_plugins' , 'OAuth Configuration', 'OAuth Configuration', 'manage_options', 'blaat_oauth_services', 'blaat_oauth_config_page' );
-  add_submenu_page('blaat_plugins' , 'OAuth Add Service',   'OAuth Add', 'manage_options', 'blaat_oauth_add', 'blaat_oauth_add_page' );
-  add_submenu_page('blaat_plugins' , 'OAuth Add Custom Service',   'OAuth Add Custom', 'manage_options', 'blaat_oauth_custom', 'blaat_oauth_add_custom_page' );
+
+  add_submenu_page('blaat_plugins',   __('Auth Pages',"blaat_auth") , 
+                                      __("Auth pages","blaat_auth") , 
+                                      'manage_options', 
+                                      'blaat_auth_pages_plugins', 
+                                       'blaat_plugins_auth_page');
+  add_submenu_page('blaat_plugins' ,  __('OAuth Configuration',"blaat_auth"), 
+                                      __('OAuth Configuration',"blaat_auth"), 
+                                      'manage_options', 
+                                      'blaat_oauth_services', 
+                                      'blaat_oauth_config_page' );
+  add_submenu_page('blaat_plugins' ,  __('OAuth Add Service',"blaat_auth"),   
+                                      __('OAuth Add',"blaat_auth"), 
+                                      'manage_options', 
+                                      'blaat_oauth_add', 
+                                      'blaat_oauth_add_page' );
+  add_submenu_page('blaat_plugins' ,  __('OAuth Add Custom Service',"blaat_auth"),   
+                                      __('OAuth Add Custom',"blaat_auth"), 
+                                      'manage_options', 
+                                      'blaat_oauth_custom', 
+                                      'blaat_oauth_add_custom_page' );
   add_action( 'admin_init', 'blaat_register_pageoptions' );
 }
 

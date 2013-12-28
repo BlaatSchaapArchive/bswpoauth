@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: BlaatSchaap OAuth Plugin v0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2013-12-19 16:23:39+0000\n"
+"PO-Revision-Date: 2013-12-28 13:07:23+0000\n"
 "Last-Translator: andre <andre@blaatschaap.be>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -20,76 +20,71 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Textdomain-Support: yes"
 
-#: blaatoauth.php:75
+#: blaatoauth.php:81
 #@ default
 msgid "Save Changes"
 msgstr ""
 
-#: blaatoauth.php:163
+#: blaatoauth.php:178
 #@ default
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: blaatoauth.php:419
+#: blaatoauth.php:366
 #@ blaat_auth
 msgid "Log in with a local account"
 msgstr "Inloggen met een lokale account"
 
-#: blaatoauth.php:423
+#: blaatoauth.php:370
 #@ blaat_auth
 msgid "Log in with"
 msgstr "Inloggen met"
 
-#: blaatoauth.php:502
+#: blaatoauth.php:430
 #, php-format
 #@ blaat_auth
 msgid "Your %s account has been linked"
 msgstr "Je %s account is nu gekoppeld"
 
-#: blaatoauth.php:552
+#: blaatoauth.php:476
 #, php-format
 #@ blaat_auth
 msgid "Please provide a local account to link to %s"
 msgstr "Voer een lokale account in om met %s te koppelen"
 
-#: blaatoauth.php:556
+#: blaatoauth.php:480
 #@ blaat_auth
 msgid "You need to be logged in to use this feature"
 msgstr "Je moet ingelogd zijn om dit te kunnen doen"
 
-#: blaatoauth.php:563
+#: blaatoauth.php:488
 #@ blaat_auth
 msgid "You cannot register a new account since you are already logged in."
 msgstr "Je kan geen nieuwe account aanmaken omdat je al ingelogd bent."
 
-#: blaatoauth.php:571
+#: blaatoauth.php:496
 #, php-format
 #@ blaat_auth
 msgid "You are authenticated to %s"
 msgstr "Je bent geäuthenticeerd door %s"
 
-#: blaatoauth.php:573
+#: blaatoauth.php:520
 #@ blaat_auth
 msgid "Please provide a username and e-mail address to complete your signup"
 msgstr "Voer een gebruikersnaam en e-mailadres in om je aanmelding te voltooien"
 
-#: blaatoauth.php:575
+#: blaatoauth.php:529
 #, php-format
 #@ blaat_auth
 msgid "If you already have an account, please click <a href='%s'>here</a> to link it."
 msgstr "Als je al een account hebt, klik dan <a href='%s'>hier</a> om deze te koppelen."
-
-#: blaatoauth.php:578
-#@ blaat_auth
-msgid "Please provice a username and password to sign up"
-msgstr "Voer een gebruikersnaam en wachtwoord in om je aan te melden"
 
 #: bs_oauth_config.php:272
 #@ blaat_auth
 msgid "Not Implemented!"
 msgstr "Niet geïmplementeerd!"
 
-#: blaatoauth.php:168
+#: blaatoauth.php:183
 #: bs_oauth_config.php:9
 #: bs_oauth_config.php:85
 #@ blaat_auth
@@ -194,29 +189,133 @@ msgstr "Toevoegen"
 msgid "Custom"
 msgstr "Aangepast"
 
-#: blaatoauth.php:54
+#: blaatoauth.php:53
 #@ blaat_auth
 msgid "BlaatSchaap WordPress Authentication Plugins"
 msgstr "BlaatSchaap WordPress Authorisatie Plugins"
 
-#: blaatoauth.php:416
+#: blaatoauth.php:363
 #@ blaat_auth
 msgid "Logged in"
 msgstr "Ingelogd"
 
-#: blaatoauth.php:473
+#: blaatoauth.php:408
 #, php-format
 #@ blaat_auth
 msgid "You are now unlinked from %s."
 msgstr "Je bent ontkoppeld van %s"
 
-#: blaatoauth.php:534
+#: blaatoauth.php:458
 #@ blaat_auth
 msgid "Link your account to"
 msgstr "Koppel je account met"
 
-#: blaatoauth.php:538
+#: blaatoauth.php:462
 #@ blaat_auth
 msgid "Unlink your account from"
 msgstr "Ontkoppel je account van"
+
+#: blaatoauth.php:60
+#@ blaat_auth
+msgid "Login page:"
+msgstr "Loginpagina:"
+
+#: blaatoauth.php:64
+#@ blaat_auth
+msgid "Register page"
+msgstr "Registreerpagina"
+
+#: blaatoauth.php:68
+#@ blaat_auth
+msgid "Link page"
+msgstr "Linkpagina"
+
+#: blaatoauth.php:73
+#@ blaat_auth
+msgid "Redirect to frontpage after logout"
+msgstr "Ga naar de voorpagina na uitloggen"
+
+#: blaatoauth.php:153
+#@ blaat_auth
+msgid "Auth Pages"
+msgstr "Auth pagina's"
+
+#: blaatoauth.php:154
+#@ blaat_auth
+msgid "Auth pages"
+msgstr "Auth pagina's"
+
+#: blaatoauth.php:158
+#: blaatoauth.php:159
+#@ blaat_auth
+msgid "OAuth Configuration"
+msgstr "OAuth instellingen"
+
+#: blaatoauth.php:163
+#@ blaat_auth
+msgid "OAuth Add Service"
+msgstr "OAuth dienst toevoegen"
+
+#: blaatoauth.php:164
+#@ blaat_auth
+msgid "OAuth Add"
+msgstr "OAuth toevoegen"
+
+#: blaatoauth.php:168
+#@ blaat_auth
+msgid "OAuth Add Custom Service"
+msgstr "OAuth aangepaste dienst toevoegen"
+
+#: blaatoauth.php:169
+#@ blaat_auth
+msgid "OAuth Add Custom"
+msgstr "OAuth aangepast toevoegen"
+
+#: blaatoauth.php:288
+#@ blaat_auth
+msgid "OAuth error: the token is missing"
+msgstr "OAuth fout: het token ontbreekt"
+
+#: blaatoauth.php:292
+#@ blaat_auth
+msgid "OAuth error: processing error"
+msgstr "OAuth fout: verwerkingsfout"
+
+#: blaatoauth.php:296
+#@ blaat_auth
+msgid "OAuth error: initialisation error"
+msgstr "OAuth fout: initialisatiefout"
+
+#: blaatoauth.php:523
+#: blaatoauth.php:558
+#@ default
+msgid "Username"
+msgstr ""
+
+#: blaatoauth.php:524
+#: blaatoauth.php:560
+#@ default
+msgid "E-mail Address"
+msgstr ""
+
+#: blaatoauth.php:525
+#: blaatoauth.php:561
+#@ default
+msgid "Register"
+msgstr ""
+
+#: blaatoauth.php:554
+#@ blaat_auth
+msgid "Enter a username, password and e-mail address to sign up"
+msgstr "Voer een gebruikersnaam, wachtwoord en e-mail adres in om je te registreren"
+
+#: blaatoauth.php:559
+#@ default
+msgid "Password"
+msgstr ""
+
+#: blaatoauth.php:567
+#@ blaat_auth
+msgid "Sign up with"
+msgstr "Registreren met"
 
