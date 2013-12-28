@@ -16,6 +16,7 @@ function blaat_oauth_add_page(){
           <select name='service'> 
             <option value='Bitbucket'>Bitbucket</option>
             <option value='Box'>Box</option>
+            <option value='Disqus'>Disqus</option>
             <option value='Dropbox'>Dropbox</option>
             <option value='Eventful'>Eventful</option>
             <option value='Evernote'>Evernote</option>
@@ -29,6 +30,7 @@ function blaat_oauth_add_page(){
             <option value='LinkedIn'>LinkedIn</option>
             <option value='Microsoft'>Microsoft</option>
             <option value='RightSignature'>RightSignature</option>
+            <option value='Salesforce'>Salesforce</option>
             <option value='Scoop.it'>Scoop.it</option>
             <option value='StockTwits'>StockTwits</option>
             <option value='Tumblr'>Tumblr</option>
