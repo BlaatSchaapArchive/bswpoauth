@@ -9,20 +9,23 @@ Author URI: http://andre.blaatschaap.be
 License: BSD
 */
 
-
+//------------------------------------------------------------------------------
+require_once("oauth/oauth_client.php");
+require_once("oauth/http.php");
+require_once("bs_oauth_config.php");
+//------------------------------------------------------------------------------
 session_start();
 ob_start();
-
-
+//------------------------------------------------------------------------------
 load_plugin_textdomain('blaat_auth', false, basename( dirname( __FILE__ ) ) . '/languages' );
-
+//------------------------------------------------------------------------------
 function blaat_register_pageoptions(){
   register_setting( 'blaat_auth_pages', 'login_page' );
   register_setting( 'blaat_auth_pages', 'register_page' );
   register_setting( 'blaat_auth_pages', 'link_page' );
   register_setting( 'blaat_auth_pages', 'logout_frontpage' );
 }
-
+//------------------------------------------------------------------------------
 if (!function_exists("blaat_page_select")) {
   function blaat_page_select($item){
     $pages = get_pages();
@@ -39,13 +42,13 @@ if (!function_exists("blaat_page_select")) {
     return $blaat;  
   }
 }
-
+//------------------------------------------------------------------------------
 if (!function_exists("blaat_plugins_page")) {
   function blaat_plugins_page(){
     e_("BlaatSchaap Plugins","blaat_auth");
   }
 }
-
+//------------------------------------------------------------------------------
 if (!function_exists("blaat_plugins_auth_page")) {
   function blaat_plugins_auth_page(){
     echo '<div class="wrap">';
@@ -83,12 +86,7 @@ if (!function_exists("blaat_plugins_auth_page")) {
 
   }
 }
-
-
-require_once("oauth/oauth_client.php");
-require_once("oauth/http.php");
-require_once("bs_oauth_config.php");
-
+//------------------------------------------------------------------------------
 function  blaat_oauth_install() {
   global $wpdb;
   global $bs_oauth_plugin;
@@ -142,8 +140,7 @@ function  blaat_oauth_install() {
     $result = $wpdb->query($query);
   }
 }
-
-
+//------------------------------------------------------------------------------
 function blaat_oauth_menu() {
   add_menu_page('BlaatSchaap', 'BlaatSchaap', 'manage_options', 'blaat_plugins', 'blaat_plugins_page');
   add_submenu_page('blaat_plugins', "" , "" , 'manage_options', 'blaat_plugins', 'blaat_plugins_page');
@@ -172,7 +169,7 @@ function blaat_oauth_menu() {
                                       'blaat_oauth_add_custom_page' );
   add_action( 'admin_init', 'blaat_register_pageoptions' );
 }
-
+//------------------------------------------------------------------------------
 function blaat_oauth_config_page() {
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
@@ -182,22 +179,26 @@ function blaat_oauth_config_page() {
         echo "<h2>";
         _e("BlaatSchaap OAuth Configuration","blaat_auth");
         echo "</h2>";
+        ?><p><?php  _e("Documentation:","blaat_auth");?>
+          <a href="http://code.blaatschaap.be/bscp/oauth-plugin-for-wordpress/" target="_blank">
+            http://code.blaatschaap.be/bscp/oauth-plugin-for-wordpress/
+          </a>
+        </p><?php
 
         if ($_POST['add_service']) blaat_oauth_add_process();
         if ($_POST['add_custom_service']) blaat_oauth_add_custom_process();
         if ($_POST['delete_service']) blaat_oauth_delete_service();
         if ($_POST['update_service']) blaat_oauth_update_service();
-        echo "<h2>Configured Services</h2><hr>";
+        echo "<h2>"; _e("Configured Services","blaat_auth"); echo "</h2><hr>";
         blaat_oauth_list_services();
         echo '<hr>';
 
 }
-
-
+//------------------------------------------------------------------------------
 function blaat_oauth_do_login(){
   blaat_oauth_process("blaat_oauth_process_login");
 }
-
+//------------------------------------------------------------------------------
 function blaat_oauth_process_login($client, $displayname){
   global $wpdb;
   $_SESSION['oauth_display'] = $displayname;
@@ -235,7 +236,7 @@ function blaat_oauth_process_login($client, $displayname){
     }
   }
 }
-
+//------------------------------------------------------------------------------
 function blaat_oauth_process($process){
    
    session_start();
@@ -300,59 +301,7 @@ function blaat_oauth_process($process){
     return $user;
   }
 }
-
-// just in case we want to add those again, but for now we use our own forms
-//add_filter("login_form",   blaat_oauth_loginform );
-//add_filter('authenticate', blaat_oauth_do_login,90  );
-//add_action('personal_options_update', blaat_oauth_link_update);
-//add_action("personal_options", blaat_oauth_linkform);
-
-/*  This code is not in use anymore? as they came from the removed stuff above! 
-
-function blaat_oauth_link_update($user_id) {
-  if ($_REQUEST['oauth_id']) {
-    if ( current_user_can('edit_user',$user_id) ) {
-      $user=wp_get_current_user();
-      blaat_oauth_do_login($user);
-    }
-  }
-  if ($_REQUEST['oauth_unlink']) {
-    if ( current_user_can('edit_user',$user_id) ) {
-      global $wpdb;
-      $table_name =  $wpdb->prefix . "bs_oauth_sessions";
-      $query = $wpdb->prepare("Delete from $table_name where id = %d" , $_REQUEST['oauth_unlink']);
-      $wpdb->query($query);
-    }
-  }
-}
-*/
-
-add_action("admin_menu", blaat_oauth_menu);
-
-/*
-function blaat_oauth_signup_message($message){
-    global $wpdb;
-    $table_name = $wpdb->prefix . "bs_oauth_services";
-    $query = $wpdb->prepare("SELECT display_name FROM $table_name  WHERE id = %d", $_SESSION['oauth_id']);    
-    $results = $wpdb->get_results($query, ARRAY_A);  
-    $result = $results[0];
-    $service = $result['display_name'];
-    $signupmessage = "This $service account is not linked to any user. Please sign up by providing a username and email address";
-    return '<p class="message register">' . $signupmessage . '</p>';
-}
-
-if ($_GET['oauth_signup']) {
-  add_action('login_message', 'blaat_oauth_signup_message');
-}
-*/
-
-register_activation_hook(__FILE__, 'blaat_oauth_install');
-
-
-
-add_filter( 'the_content', 'blaat_auth_display' );
-
-
+//------------------------------------------------------------------------------
 function blaat_auth_login_display(){
   if (!is_user_logged_in()) blaat_oauth_do_login();
 
@@ -371,7 +320,6 @@ function blaat_auth_login_display(){
     global $wpdb;
     global $bs_oauth_plugin;
     global $_SERVER;
-    //$ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING']; 
     $ACTION=site_url("/".get_option("login_page"));
     $table_name = $wpdb->prefix . "bs_oauth_services";
     $results = $wpdb->get_results("select * from $table_name where enabled=1 ",ARRAY_A);
@@ -385,7 +333,7 @@ function blaat_auth_login_display(){
     echo "</div>";
   }
 }
-
+//------------------------------------------------------------------------------
 function blaat_auth_link_display(){
   session_start();
   global $wpdb;
@@ -481,9 +429,8 @@ function blaat_auth_link_display(){
     } 
   }
 }
-
+//------------------------------------------------------------------------------
 function blaat_auth_register_display() {
-
   if (is_user_logged_in()) {
     _e("You cannot register a new account since you are already logged in.","blaat_auth");
   } else {
@@ -510,7 +457,6 @@ function blaat_auth_register_display() {
       } else {
         $reg_ok=false;
         // no username/password given
-        //$error = __("No username/e-mail address given","blaat_auth");
       } 
       if ($reg_ok){
       } else {
@@ -543,13 +489,9 @@ function blaat_auth_register_display() {
         }
       } else {
         // no username/password/email given
-        //$error = __("No username/e-mail/password address given","blaat_auth");
       } 
       if($reg_ok){
       } else {
-        //_e("Please enter a username, password and e-mail, or select a service to sign up","blaat_auth");
-
-/**/
         echo "<div id='blaat_auth_local'>";
         echo "<p>" .  __("Enter a username, password and e-mail address to sign up","blaat_auth") . "</p>" ; 
         ?>
@@ -568,7 +510,6 @@ function blaat_auth_register_display() {
         global $wpdb;
         global $bs_oauth_plugin;
         global $_SERVER;
-        //$ACTION=$_SERVER['REQUEST_URI'];// . '?' . $_SERVER['QUERY_STRING']; 
         $ACTION=site_url("/".get_option("login_page"));
         $table_name = $wpdb->prefix . "bs_oauth_services";
         $results = $wpdb->get_results("select * from $table_name where enabled=1 ",ARRAY_A);
@@ -579,15 +520,11 @@ function blaat_auth_register_display() {
         }
         echo "</form>";
         echo "</div>";
-
-/**/
-
-
       }
     } 
   }
 }
-
+//------------------------------------------------------------------------------
 function blaat_auth_display($content) {
   $login_page    = get_option('login_page');
   $link_page     = get_option('link_page');
@@ -617,10 +554,24 @@ wp_enqueue_style( "blaat_auth");
 if (get_option("logout_frontpage")) {
   add_action('wp_logout','go_frontpage');
 }
+//------------------------------------------------------------------------------
 function go_frontpage(){
   wp_redirect( home_url() );
   exit();
 }
+//------------------------------------------------------------------------------
+
+// just in case we want to add those again, but for now we use our own forms
+//add_filter("login_form",   blaat_oauth_loginform );
+//add_filter('authenticate', blaat_oauth_do_login,90  );
+//add_action('personal_options_update', blaat_oauth_link_update);
+//add_action("personal_options", blaat_oauth_linkform);
+
+
+add_action("admin_menu", blaat_oauth_menu);
+register_activation_hook(__FILE__, 'blaat_oauth_install');
+add_filter( 'the_content', 'blaat_auth_display' );
+
 
 
 ?>

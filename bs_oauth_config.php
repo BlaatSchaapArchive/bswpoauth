@@ -1,5 +1,6 @@
 <?php
 
+//------------------------------------------------------------------------------
 function blaat_oauth_add_page(){
   global $_SERVER;
   $ACTION="admin.php?page=blaat_oauth_services";
@@ -7,7 +8,11 @@ function blaat_oauth_add_page(){
   <div class="wrap">
   <?php screen_icon(); ?>
   <h2><?php _e("BlaatSchaap OAuth Configuration","blaat_auth");?></h2>
-
+  <p><?php  _e("Documentation:","blaat_auth");?>
+    <a href="http://code.blaatschaap.be/bscp/oauth-plugin-for-wordpress/" target="_blank">
+      http://code.blaatschaap.be/bscp/oauth-plugin-for-wordpress/
+    </a>
+  </p>
   <form method='post' action='<?php echo $ACTION; ?>'>
     <table class='form-table'>
       <tr>
@@ -76,8 +81,7 @@ function blaat_oauth_add_page(){
   </form>
   <?php
 }
-
-
+//------------------------------------------------------------------------------
 function blaat_oauth_add_custom_page(){
   $ACTION="admin.php?page=blaat_oauth_services";
   ?>
@@ -86,8 +90,11 @@ function blaat_oauth_add_custom_page(){
   <h2>
   <?php _e("BlaatSchaap OAuth Configuration","blaat_auth"); ?>
   </h2>
-
-
+  <p><?php  _e("Documentation:","blaat_auth");?>
+    <a href="http://code.blaatschaap.be/bscp/oauth-plugin-for-wordpress/" target="_blank">
+      http://code.blaatschaap.be/bscp/oauth-plugin-for-wordpress/
+    </a>
+  </p>
   <form method='post' action='<?php echo $ACTION ; ?>'>
     <table class='form-table'>
       <tr>
@@ -168,7 +175,7 @@ function blaat_oauth_add_custom_page(){
       </tr>
       <tr>
         <th><label><?php _e("Enabled","blaat_auth"); ?></label></th>
-        <td><input type='checkbox' name='client_enabled'></input>
+        <td><input type='checkbox' name='client_enabled' value=1></input>
       </tr>
       <tr>
         <td></td>
@@ -178,7 +185,7 @@ function blaat_oauth_add_custom_page(){
   </form>
   <?php
 }
-
+//------------------------------------------------------------------------------
 function blaat_oauth_add_process(){
   global $wpdb;
   global $bs_oauth_plugin;
@@ -201,7 +208,7 @@ function blaat_oauth_add_process(){
   $result = $wpdb->query($query);
 
 }
-
+//------------------------------------------------------------------------------
 function blaat_oauth_add_custom_process(){
   global $wpdb;
   global $bs_oauth_plugin;
@@ -230,8 +237,6 @@ function blaat_oauth_add_custom_process(){
                                  $oauth_version, $request_token_url, $dialog_url, $access_token_url, $url_parameters,
                                  $authorization_header, $offline_dialog_url, $append_state_to_redirect_uri);
 
-  //print_r($query);
-  //die();
   $result = $wpdb->query($query);
 
   $insert_id = $wpdb->insert_id;
@@ -245,7 +250,7 @@ function blaat_oauth_add_custom_process(){
 
 
 }
-
+//------------------------------------------------------------------------------
 function blaat_oauth_delete_service(){
   global $wpdb;
   global $bs_oauth_plugin;
@@ -266,7 +271,7 @@ function blaat_oauth_delete_service(){
   $query = $wpdb->prepare("DELETE FROM $table_name  WHERE id = %d", $_POST['id']);
   $wpdb->query($query);
 }
-
+//------------------------------------------------------------------------------
 if (!function_exists("blaat_not_implemented")) {
   function blaat_not_implemented() {
       ?>
@@ -276,8 +281,7 @@ if (!function_exists("blaat_not_implemented")) {
       <?php
   }
 }
-
-
+//------------------------------------------------------------------------------
 function blaat_oauth_update_service(){
   global $wpdb;
   $table_name = $wpdb->prefix . "bs_oauth_services";
@@ -310,12 +314,9 @@ function blaat_oauth_update_service(){
     $data_id = array();
     $data_id['id']  = $_POST['custom_id'];
     $wpdb->update($table_name, $new_data, $data_id);
-    
   }
-   
-
 }
-
+//------------------------------------------------------------------------------
 function blaat_oauth_list_services(){
   global $wpdb;
   global $bs_oauth_plugin;
@@ -467,6 +468,6 @@ function blaat_oauth_list_services(){
   <?php
   }
 }
-
+//------------------------------------------------------------------------------
 
 ?>
