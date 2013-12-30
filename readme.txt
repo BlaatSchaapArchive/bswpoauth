@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== BlaatSchaap OAuth ===
 Contributors: GromBeestje
 Donate link: http://code.blaatschaap.be/donations/
 Tags: oauth, authentication

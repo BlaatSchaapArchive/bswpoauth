@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: BlaatSchaap OAuth Plugin
+Plugin Name: BlaatSchaap OAuth 
 Plugin URI: http://code.blaatschaap.be
 Description: Log in with an OAuth Provider
 Version: 0.1
