@@ -13,12 +13,36 @@ function blaat_oauth_add_page(){
       http://code.blaatschaap.be/bscp/oauth-plugin-for-wordpress/
     </a>
   </p>
+  <?php echo getcwd();?>
   <form method='post' action='<?php echo $ACTION; ?>'>
     <table class='form-table'>
       <tr>
         <th><label><?php _e("Service","blaat_auth");?></td>
         <td>
-          <select name='service'> 
+          <select name='service'>
+          <?php 
+            $oauth_servers_file = @file_get_contents(plugin_dir_path(__FILE__) . "oauth/oauth_configuration.json");
+            if ($oauth_servers_file) {
+              $oauth_servers = @json_decode($oauth_servers_file);
+              echo "<pre>fileCOntent:\n"; print_r($oauth_servers); echo "</pre>";
+              if ($oauth_servers) {
+              // services defined in code  ?>
+            <option value='Facebook'>Facebook</option>
+            <option value='github'>github</option>
+            <option value='Google'>Google</option>
+            <option value='LinkedIn'>LinkedIn</option>
+            <option value='Microsoft'>Microsoft</option>
+            <option value='Twitter'>Twitter</option>
+            <option value='Yahoo'>Yahoo</option>
+
+                <?php
+                foreach ($oauth_servers->servers as $oauth_server => $oauth_config) {
+                  echo "<option value='$oauth_server'>$oauth_server</option>";
+                }
+              } else $error =  "could not parse file";
+            } else $error= "could not open file";
+     
+            if (isset($error)){?>
             <option value='Bitbucket'>Bitbucket</option>
             <option value='Box'>Box</option>
             <option value='Disqus'>Disqus</option>
@@ -42,6 +66,7 @@ function blaat_oauth_add_page(){
             <option value='Twitter'>Twitter</option>
             <option value='XING'>XING</option>
             <option value='Yahoo'>Yahoo</option>
+            <?php } ?> 
           </select>
         </td>
       </tr>

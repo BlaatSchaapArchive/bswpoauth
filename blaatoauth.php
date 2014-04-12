@@ -3,7 +3,7 @@
 Plugin Name: BlaatSchaap OAuth 
 Plugin URI: http://code.blaatschaap.be
 Description: Log in with an OAuth Provider
-Version: 0.1
+Version: 0.2
 Author: André van Schoubroeck
 Author URI: http://andre.blaatschaap.be
 License: BSD
@@ -17,6 +17,7 @@ require_once("bs_oauth_config.php");
 session_start();
 ob_start();
 //------------------------------------------------------------------------------
+load_plugin_textdomain('blaatschaap', false, basename( dirname( __FILE__ ) ) . '/languages' );
 load_plugin_textdomain('blaat_auth', false, basename( dirname( __FILE__ ) ) . '/languages' );
 //------------------------------------------------------------------------------
 function blaat_register_pageoptions(){
@@ -42,10 +43,41 @@ if (!function_exists("blaat_page_select")) {
     return $blaat;  
   }
 }
+
 //------------------------------------------------------------------------------
 if (!function_exists("blaat_plugins_page")) {
   function blaat_plugins_page(){
-    e_("BlaatSchaap Plugins","blaat_auth");
+    echo '<div class="wrap">';
+    echo '<h2>';
+    _e("BlaatSchaap Plugins","blaatschaap");
+    echo '</h2>';
+    _e("Thank you for using BlaatSchaap plugins.","blaatschaap");
+
+    // ok, we need to detect installed plugins and so
+    if ( ! function_exists( 'get_plugins' ) ) {
+      require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+    $plugins = get_plugins();
+    function isBS($name){
+      return strpos($name, "BlaatSchaap") === 0;
+    }
+    echo "<p>";
+    _e("Installed plugins:","blaatschaap");
+    echo "</p>";
+    echo "<p><table>";
+    foreach ($plugins as $file => $plugin) {
+     if (isBS($plugin['Name'])) {
+        echo "<tr><td>".$plugin['Name']."</td><td>".$plugin['Version']."</td><td>";
+        echo is_plugin_active($file) ? _e("active","blaatschaap") : _e("inactive","blaatschaap");
+        echo "</td></tr>";
+      }
+    }
+    echo "</table></p>";
+    ?><table>
+  	<tr><td>Bitcoin</td><td>1NMv9ETkYrMeg53hN66egrFQ4tnaPLmM29</td></tr>
+  	<tr><td>Litecoin</td><td>LVPQtPn93GaAeczhUSengQzkQNpe3pZjnT</td></tr>
+      </table><?php
+    echo '</div>';
   }
 }
 //------------------------------------------------------------------------------
@@ -257,6 +289,7 @@ function blaat_oauth_process($process){
     $result = $results[0];
  
     $client = new oauth_client_class;
+    $client->configuration_file = plugin_dir_path(__FILE__) . '/oauth/oauth_configuration.json';
     $client->redirect_uri  = site_url("/".get_option("login_page"));
     $client->client_id     = $result['client_id'];
     $client->client_secret = $result['client_secret'];
