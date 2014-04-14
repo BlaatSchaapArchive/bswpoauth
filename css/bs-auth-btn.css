@@ -1,0 +1,45 @@
+.bs-auth-btn {
+  border: 1px black solid;
+  background-image: linear-gradient(#ccc,#eee);
+  height: 36px;
+  min-width: 128px;
+  margin-right:8px;
+  margin-bottom:8px;
+  text-align: left;
+  padding: 1px;
+}
+
+.bs-auth-btn-text {
+  padding-left:6px; 
+  padding-right:6px;
+  font-family: sans-serif;
+  height: 32px;
+  vertical-align:middle;
+  display:table-cell;  
+}
+
+.bs-auth-btn:hover {
+  background-image: linear-gradient(#aaa,#ccc);
+}
+
+.bs-auth-btn-preview{
+  width:32px;
+  height:32px;
+  background-color:white;
+  display:inline-block;
+}
+
+.bs-auth-btn-logo {
+  width:32px;
+  height:32px;
+  float: left;
+}
+/*****************************************************************************/
+
+.bs-auth-btn-logo-facebook{
+  background-image:url('facebook.png');
+}
+
+.bs-auth-btn-logo-github{
+  background-image:url('github.png');
+}
