@@ -358,8 +358,9 @@ function blaat_auth_login_display(){
     $results = $wpdb->get_results("select * from $table_name where enabled=1 ",ARRAY_A);
     echo "<form>";
     foreach ($results as $result){
-      $class = "btn-auth btn-".strtolower($result['client_name']);
-      echo "<button class='$class' name=oauth_id type=submit value='".$result['id']."'>". $result['display_name']."</button>";
+      //$class = "btn-auth btn-".strtolower($result['client_name']);
+      $service=strtolower($result['client_name']);
+      echo "<button class='bs-auth-btn' name=oauth_id type=submit value='".$result['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $result['display_name']."</span></button>";
     }
 
     echo "</form>";
@@ -578,8 +579,11 @@ function blaat_auth_display($content) {
   }
 }
 
-wp_register_style('necolas-css3-social-signin-buttons', plugin_dir_url(__FILE__) . 'css/auth-buttons.css');
-wp_enqueue_style( 'necolas-css3-social-signin-buttons');
+//wp_register_style('necolas-css3-social-signin-buttons', plugin_dir_url(__FILE__) . 'css/auth-buttons.css');
+//wp_enqueue_style( 'necolas-css3-social-signin-buttons');
+
+wp_register_style("blaat_auth_btn" , plugin_dir_url(__FILE__) . "css/bs-auth-btn.css");
+wp_enqueue_style( "blaat_auth_btn");
 
 wp_register_style("blaat_auth" , plugin_dir_url(__FILE__) . "blaat_auth.css");
 wp_enqueue_style( "blaat_auth");
