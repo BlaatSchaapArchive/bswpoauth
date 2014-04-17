@@ -3,7 +3,7 @@
 Plugin Name: BlaatSchaap OAuth 
 Plugin URI: http://code.blaatschaap.be
 Description: Log in with an OAuth Provider
-Version: 0.2
+Version: 0.3
 Author: André van Schoubroeck
 Author URI: http://andre.blaatschaap.be
 License: BSD
@@ -122,11 +122,14 @@ if (!function_exists("blaat_plugins_auth_page")) {
 function  blaat_oauth_install() {
   global $wpdb;
   global $bs_oauth_plugin;
-
+  $dbver = 2;
+  $live_dbver = get_option( "bs_oauth_dbversion" );
   $table_name = $wpdb->prefix . "bs_oauth_sessions";
-  if($wpdb->get_var("show tables like '$table_name'") != $table_name) {
+
+  if ($dbver != live_dbver) {
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     $query = "CREATE TABLE $table_name (
-              `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+              `id` INT NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
               `user_id` INT NOT NULL DEFAULT 0,
               `service_id` TEXT NOT NULL ,
               `token` TEXT NOT NULL ,
@@ -135,31 +138,30 @@ function  blaat_oauth_install() {
               `type` TEXT NULL DEFAULT NULL ,
               `refresh` TEXT NULL DEFAULT NULL,
               `scope` TEXT NOT NULL DEFAULT ''
-              ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT = 'OAuth Sessions';";
-    $result = $wpdb->query($query);
-  }
+              );";
+    dbDelta($query);
 
  
-  $table_name = $wpdb->prefix . "bs_oauth_services";
-  if($wpdb->get_var("show tables like '$table_name'") != $table_name) {
+    $table_name = $wpdb->prefix . "bs_oauth_services";
     $query = "CREATE TABLE $table_name (
-              `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+              `id` INT NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
               `enabled` BOOLEAN NOT NULL DEFAULT FALSE ,
               `display_name` TEXT NOT NULL ,
               `client_name` TEXT NULL DEFAULT NULL ,
               `custom_id` INT NULL DEFAULT NULL ,
               `client_id` TEXT NOT NULL ,
               `client_secret` TEXT NOT NULL,
-              `default_scope` TEXT NOT NULL DEFAULT ''
-              ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT = 'OAuth Services';";
-    $result = $wpdb->query($query);
-  }
+              `default_scope` TEXT NOT NULL DEFAULT '',
+              `customlogo_url` TEXT NULL DEFAULT NULL,
+              `customlogo_filename` TEXT NULL DEFAULT NULL,
+              `customlogo_enabled` BOOLEAN DEFAULT FALSE
+              );";
+    dbDelta($query);
 
 
   $table_name = $wpdb->prefix . "bs_oauth_custom";
-  if($wpdb->get_var("show tables like '$table_name'") != $table_name) {
     $query = "CREATE TABLE $table_name (
-              `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+              `id` INT NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
               `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
               `request_token_url` TEXT NULL DEFAULT NULL,
               `dialog_url` TEXT NOT NULL,
@@ -168,8 +170,9 @@ function  blaat_oauth_install() {
               `authorization_header` BOOLEAN DEFAULT TRUE,
               `offline_dialog_url` TEXT NULL DEFAULT NULL,
               `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL
-              ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT = 'OAuth Custom Services';";
-    $result = $wpdb->query($query);
+              );";
+    dbDelta($query);
+    set_option( "bs_oauth_dbversion" , 2);
   }
 }
 //------------------------------------------------------------------------------
@@ -359,7 +362,12 @@ function blaat_auth_login_display(){
     echo "<form>";
     foreach ($results as $result){
       //$class = "btn-auth btn-".strtolower($result['client_name']);
-      $service=strtolower($result['client_name']);
+      if(!$result['customlogo_enabled']) 
+        $service=strtolower($result['client_name']); 
+      else {
+        $service="custom-".$result['id'];
+        echo "<style>.bs-auth-btn-logo-".$service." {background-image:url('" .$result['customlogo_url']."');}</style>";
+      }
       echo "<button class='bs-auth-btn' name=oauth_id type=submit value='".$result['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $result['display_name']."</span></button>";
     }
 
@@ -428,10 +436,20 @@ function blaat_auth_link_display(){
     foreach ($available_services as $available_service) {
       $class = "btn-auth btn-".strtolower($available_service['client_name']);
 
+      if(!$available_service['customlogo_enabled'])
+        $service=strtolower($available_service['client_name']);
+      else {
+        $service="custom-".$available_service['id'];
+        echo "<style>.bs-auth-btn-logo-".$service." {background-image:url('" .$available_service['customlogo_url']."');}</style>";
+      }
+
+
       if (in_array($available_service['id'],$linked)) {
-        $unlinkHTML .= "<button class='$class' name='oauth_unlink' type=submit value='".$available_service['id']."'>". $available_service['display_name']."</button>";
+        $unlinkHTML .= "<button class='bs-auth-btn' name=oauth_unlink type=submit value='".$available_service['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $available_service['display_name']."</span></button>";
+        //$unlinkHTML .= "<button class='$class' name='oauth_unlink' type=submit value='".$available_service['id']."'>". $available_service['display_name']."</button>";
       } else {
-        $linkHTML .= "<button class='$class' name='oauth_link' type=submit value='".$available_service['id']."'>". $available_service['display_name']."</button>";
+        $linkHTML .="<button class='bs-auth-btn' name=oauth_link type=submit value='".$available_service['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $available_service['display_name']."</span></button>";
+        //$linkHTML .= "<button class='$class' name='oauth_link' type=submit value='".$available_service['id']."'>". $available_service['display_name']."</button>";
       }
       unset($_SESSION['oauth_id']);
       unset($_SESSION['oauth_link']);

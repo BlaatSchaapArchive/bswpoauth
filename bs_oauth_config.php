@@ -326,7 +326,50 @@ function blaat_oauth_update_service(){
   $new_data["client_secret"] = $_POST["client_secret"];
   $new_data["default_scope"] = $_POST["default_scope"];
   $new_data["enabled"] = $_POST["client_enabled"];
+  $new_data["customlogo_enabled"] = $_POST["customlogo_enabled"];
 
+  //How to detect if a file was uploaded??
+  if ($_FILES['newlogo']['size']){
+    if ( ! function_exists( 'wp_handle_upload' ) ) require_once( ABSPATH . 'wp-admin/includes/file.php' );
+    $uploadedfile = $_FILES['newlogo'];
+    global $bs_set_filename;
+    $bs_set_filename="cstlogo_".$_POST['id'].".png";
+
+    /* delete if file already exists */
+    /* PHP 5.4+ supports $path= wp_upload_dir($time)['path']; */
+    $php53 = wp_upload_dir($time); $php53_path=$php53['path'];
+    $bs_target_path=$php53_path."/$bs_set_filename";
+    //echo "<pre>"; print_r(wp_upload_dir($time)); echo "</pre>";
+    //echo "test ok: delete $bs_target_path";
+    if (file_exists($bs_target_path)) unlink($bs_target_path);  
+
+    $upload_overrides = array( 'test_form' => false, 'unique_filename_callback' => 'bs_upload_filename' );
+    $movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
+    if (isset($movefile['file'])){
+      $imginfo = getimagesize($movefile['file']);
+      if ($imginfo) {
+        $image  = file_get_contents($movefile['file']);
+        $source = imagecreatefromstring($image);
+        $target = imagecreatetruecolor(32,32);
+        imagecopyresized($target,$source,0,0,0,0,32,32,$imginfo[0],$imginfo[1]); 
+        imagepng($target,$movefile['file']);
+        imagedestroy($target);
+        imagedestroy($source);
+
+        $new_data["customlogo_url"] = $movefile['url'];
+        $new_data["customlogo_filename"] = $movefile['file'];
+        $new_data["customlogo_enabled"] = 1;
+
+	// TODO :: ERROR MESSAGES HANDLING
+	// TODO :: IS IT POSSIBLE TO STORE IT ELSEWHERE? (E.G. WITHOUT DATE IN PATH)
+	// TODO :: IF NOT, REMOVE OLD FILE
+
+        //echo "file saved as " .$movefile['file'];        
+      } else {echo "image error";}
+    } else {echo "upload error";}
+  } else {echo "no upload";}
+
+  
   $data_id = array();
   $data_id['id']  = $_POST['id'];
 
@@ -345,40 +388,15 @@ function blaat_oauth_update_service(){
     $new_data['authorization_header']=$_POST['authorization_header'];
     $new_data['url_parameters']=$_POST['url_parameters'];
 
+
     $data_id = array();
     $data_id['id']  = $_POST['custom_id'];
     $wpdb->update($table_name, $new_data, $data_id);
   }
+  global $SROLLPOS;
+  $SROLLPOS="<script>location.hash = '#serv-". htmlspecialchars($_POST['id']) ."';</script>";
 
-  if (@isset($_FILES['newlogo'])){
-    if ( ! function_exists( 'wp_handle_upload' ) ) require_once( ABSPATH . 'wp-admin/includes/file.php' );
-    $uploadedfile = $_FILES['newlogo'];
 
-//$overrides['unique_filename_callback']
-    global $bs_set_filename;
-    $bs_set_filename="cstlogo_".$_POST['id'].".png"; 
-    $upload_overrides = array( 'test_form' => false, 'unique_filename_callback' => 'bs_upload_filename' );
-    $movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
-    if (isset($movefile['file'])){
-      $imginfo = getimagesize($movefile['file']);
-      if ($imginfo) {
-        $image  = file_get_contents($movefile['file']);
-        $source = imagecreatefromstring($image);
-        $target = imagecreatetruecolor(32,32);
-        imagecopyresized($target,$source,0,0,0,0,32,32,$imginfo[0],$imginfo[1]); 
-        imagepng($target,$movefile['file']);
-        imagedestroy($target);
-        imagedestroy($source);
-        echo "this has to be stored somewhere ". $movefile['url'];
-	// TODO :: STORE NEW LOGO LOCATION
-	// TODO :: ERROR MESSAGES HANDLING
-	// TODO :: IS IT POSSIBLE TO STORE IT ELSEWHERE? (E.G. WITHOUT DATE IN PATH)
-	// TODO :: IF NOT, REMOVE OLD FILE
-
-        //echo "file saved as " .$movefile['file'];        
-      } else {echo "image error";}
-    } else {echo "upload error";}
-  } else {echo "no upload";}
 }
 //------------------------------------------------------------------------------
 function bs_upload_filename(){
@@ -408,7 +426,7 @@ function blaat_oauth_list_services(){
                     default_scope, oauth_version, request_token_url, 
                     dialog_url, access_token_url, url_parameters, 
                     authorization_header, offline_dialog_url, 
-                    append_state_to_redirect_uri
+                    append_state_to_redirect_uri, customlogo_url, customlogo_enabled
           from $table_name
           LEFT OUTER JOIN $table_name2 on ${table_name}.custom_id = ${table_name2}.id",ARRAY_A);
 
@@ -416,7 +434,7 @@ function blaat_oauth_list_services(){
   foreach ($results as $result){
     $enabled= $result['enabled'] ? "checked" : "";
     ?>
-  </pre>
+  <!--</pre>--> <a name="serv-<?php echo $result['id']; ?>"></a>
   <form method='post'  enctype="multipart/form-data" action='<?php echo $ACTION ?>'>
     <input type='hidden' name='id' value='<?php echo $result['id']; ?>'>
     <table class='form-table'>
@@ -526,13 +544,14 @@ function blaat_oauth_list_services(){
       <tr>
         <th><label><?php _e("Logo:","blaat_auth"); ?></label></th>
         <td>
+          <style>.bs-auth-btn-logo-cst<?php echo $result['id'] ?> { background-image:url('<?php echo $result['customlogo_url'];?>'); }</style>
           <?php
           if (!$result['custom_id']) {
             ?>
             <span class='bs-auth-btn-preview bs-auth-btn-logo-<?php echo strtolower($result['client_name']); ?>'></span>
-            <input type='radio' name='logo' value='default'>
+            <input type='radio' name='customlogo_enabled' value='0' <?php if(!$result['customlogo_enabled']) echo "checked"; ?> > 
             <span class='bs-auth-btn-preview bs-auth-btn-logo-cst<?php echo $result['id'] ?>'></span>
-            <input type='radio' name='logo' value='custom'>
+            <input type='radio' name='customlogo_enabled' value='1'  <?php if ($result['customlogo_enabled']) echo "checked";?>  >
             <?php } else {?>
               <span class='bs-auth-btn-preview bs-auth-btn-logo-cst<?php echo $result['id'] ?>'></span>
             <?php } ?>
@@ -552,6 +571,8 @@ function blaat_oauth_list_services(){
   </form>
   <hr>
   <?php
+  global $SROLLPOS;
+  echo $SROLLPOS;
   }
 }
 //------------------------------------------------------------------------------

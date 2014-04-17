@@ -1,21 +1,28 @@
 .bs-auth-btn {
   border: 1px black solid;
   background-image: linear-gradient(#ccc,#eee);
-  height: 36px;
+  min-height: 36px;
   min-width: 128px;
   margin-right:8px;
   margin-bottom:8px;
   text-align: left;
   padding: 1px;
+  border-radius: 9px;
 }
 
 .bs-auth-btn-text {
   padding-left:6px; 
   padding-right:6px;
   font-family: sans-serif;
-  height: 32px;
+  height: 16px;
+  /*
   vertical-align:middle;
   display:table-cell;  
+  */
+  padding-top:6px;
+  max-width: 70px;
+  overflow: hidden;
+  display: inline-block;
 }
 
 .bs-auth-btn:hover {
