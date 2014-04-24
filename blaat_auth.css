@@ -11,3 +11,16 @@
   display: inline-block;
 }
 
+.blaat_plugins_table td {
+  min-width: 150px;
+}
+
+.blaat_plugins_table th {
+  text-align: left;
+}
+
+
+.blaat_addpage_logooption {
+  padding-right:32px;
+}
+

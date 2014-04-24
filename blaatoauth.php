@@ -25,6 +25,7 @@ function blaat_register_pageoptions(){
   register_setting( 'blaat_auth_pages', 'register_page' );
   register_setting( 'blaat_auth_pages', 'link_page' );
   register_setting( 'blaat_auth_pages', 'logout_frontpage' );
+  register_setting( 'blaat_auth_pages', 'blaat_auth_custom_button' );
 }
 //------------------------------------------------------------------------------
 if (!function_exists("blaat_page_select")) {
@@ -62,9 +63,16 @@ if (!function_exists("blaat_plugins_page")) {
       return strpos($name, "BlaatSchaap") === 0;
     }
     echo "<p>";
-    _e("Installed plugins:","blaatschaap");
+    _e("Installed BlaatSchaap plugins:","blaatschaap");
     echo "</p>";
-    echo "<p><table>";
+    echo "<p><table class='blaat_plugins_table'>";
+    echo "<tr><th>";
+    _e("Plugin name:","blaatschaap");
+    echo "</th><th>";
+    _e("Plugin version:","blaatschaap");
+    echo "</th><th>";
+    _e("Status:","blaatschaap");
+    echo "</th></tr>";
     foreach ($plugins as $file => $plugin) {
      if (isBS($plugin['Name'])) {
         echo "<tr><td>".$plugin['Name']."</td><td>".$plugin['Version']."</td><td>";
@@ -92,25 +100,30 @@ if (!function_exists("blaat_plugins_auth_page")) {
 
     echo '<table class="form-table">';
 
-    echo '<tr><td>'. __("Login page","blaat_auth") .'</td><td>';
+    echo '<tr><th>'. __("Login page","blaat_auth") .'</th><td>';
     echo blaat_page_select("login_page");
     echo '</td></tr>';
     
-    echo '<tr><td>'. __("Register page","blaat_auth") .'</td><td>';
+    echo '<tr><th>'. __("Register page","blaat_auth") .'</th><td>';
     echo blaat_page_select("register_page");
     echo '</td></tr>';
 
-    echo '<tr><td>'. __("Link page","blaat_auth") .'</td><td>';
+    echo '<tr><th>'. __("Link page","blaat_auth") .'</th><td>';
     echo blaat_page_select("link_page");
     echo '</td></tr>';
 
-    echo '<tr><td>';
+    echo '<tr><th>';
     _e("Redirect to frontpage after logout", "blaat_auth") ;
-    echo "</td><td>";
+    echo "</th><td>";
     $checked = get_option('logout_frontpage') ? "checked" : "";
     echo "<input type=checkbox name='logout_frontpage' value='1' $checked>";
     echo "</td></tr>";
-     
+
+    echo '<tr><th>'. __("Custom Button CSS","blaat_auth") .'</th><td>';
+    echo "<textarea cols=70 rows=15 id='blaat_auth_custom_button_textarea' name='blaat_auth_custom_button'>";
+    echo htmlspecialchars(get_option("blaat_auth_custom_button"));
+    echo "</textarea>";
+    echo '</td></tr>';
 
     echo '</table><input name="Submit" type="submit" value="';
     echo  esc_attr_e('Save Changes') ;
@@ -182,8 +195,8 @@ function blaat_oauth_menu() {
 
 
 
-  add_submenu_page('blaat_plugins',   __('Auth Pages',"blaat_auth") , 
-                                      __("Auth pages","blaat_auth") , 
+  add_submenu_page('blaat_plugins',   __('General Auth Settings',"blaat_auth") , 
+                                      __("General","blaat_auth") , 
                                       'manage_options', 
                                       'blaat_auth_pages_plugins', 
                                        'blaat_plugins_auth_page');
@@ -373,12 +386,14 @@ function blaat_auth_login_display(){
 
     echo "</form>";
     echo "</div>";
+    echo "<style>" . htmlspecialchars(get_option("blaat_auth_custom_button")) . "</style>";
   }
 }
 //------------------------------------------------------------------------------
 function blaat_auth_link_display(){
   session_start();
   global $wpdb;
+  echo "<style>" . htmlspecialchars(get_option("blaat_auth_custom_button")) . "</style>";
   if (is_user_logged_in()) {
     if (isset($_POST['oauth_link'])){
         $_SESSION['oauth_link']=$_POST['oauth_link'];
@@ -600,8 +615,8 @@ function blaat_auth_display($content) {
 //wp_register_style('necolas-css3-social-signin-buttons', plugin_dir_url(__FILE__) . 'css/auth-buttons.css');
 //wp_enqueue_style( 'necolas-css3-social-signin-buttons');
 
-wp_register_style("blaat_auth_btn" , plugin_dir_url(__FILE__) . "css/bs-auth-btn.css");
-wp_enqueue_style( "blaat_auth_btn");
+  wp_register_style("blaat_auth_btn" , plugin_dir_url(__FILE__) . "css/bs-auth-btn.css");
+  wp_enqueue_style( "blaat_auth_btn");
 
 wp_register_style("blaat_auth" , plugin_dir_url(__FILE__) . "blaat_auth.css");
 wp_enqueue_style( "blaat_auth");
