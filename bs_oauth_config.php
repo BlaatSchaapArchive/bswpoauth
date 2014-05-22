@@ -1,9 +1,9 @@
 <?php
 
 //------------------------------------------------------------------------------
-function blaat_oauth_add_page(){
+function bsoauth_add_page(){
   global $_SERVER;
-  $ACTION="admin.php?page=blaat_oauth_services";
+  $ACTION="admin.php?page=bsoauth_services";
   ?>
   <div class="wrap">
   <?php screen_icon(); ?>
@@ -133,8 +133,8 @@ function blaat_oauth_add_page(){
   <?php
 }
 //------------------------------------------------------------------------------
-function blaat_oauth_add_custom_page(){
-  $ACTION="admin.php?page=blaat_oauth_services";
+function bsoauth_add_custom_page(){
+  $ACTION="admin.php?page=bsoauth_services";
   ?>
   <div class="wrap">
   <?php screen_icon(); ?>
@@ -246,7 +246,7 @@ function blaat_oauth_add_custom_page(){
   <?php
 }
 //------------------------------------------------------------------------------
-function blaat_oauth_add_process(){
+function bsoauth_add_process(){
   global $wpdb;
   global $bs_oauth_plugin;
 
@@ -312,7 +312,7 @@ function blaat_oauth_add_process(){
   $SROLLPOS="<script>location.hash = '#serv-". $service_id ."';</script>";
 }
 //------------------------------------------------------------------------------
-function blaat_oauth_add_custom_process(){
+function bsoauth_add_custom_process(){
   global $wpdb;
   global $bs_oauth_plugin;
 
@@ -354,7 +354,7 @@ function blaat_oauth_add_custom_process(){
 
 }
 //------------------------------------------------------------------------------
-function blaat_oauth_delete_service(){
+function bsoauth_delete_service(){
   global $wpdb;
   global $bs_oauth_plugin;
 
@@ -385,7 +385,7 @@ if (!function_exists("blaat_not_implemented")) {
   }
 }
 //------------------------------------------------------------------------------
-function blaat_oauth_update_service(){
+function bsoauth_update_service(){
   global $wpdb;
   $table_name = $wpdb->prefix . "bs_oauth_services";
 
@@ -473,7 +473,7 @@ function bs_upload_filename(){
   return $bs_set_filename;
 }
 //------------------------------------------------------------------------------
-function blaat_oauth_list_services(){
+function bsoauth_list_services(){
   global $wpdb;
   global $bs_oauth_plugin;
   global $_SERVER;
