@@ -32,9 +32,16 @@ and upload the files and directories to
 /path/to/your/webroot/wp-content/plugins/
 
 == Changelog ==
+0.4 :
+
+Field for configuring OAuth services are wider.
+Separation of Auth and OAuth specific code to enable future support for other
+authorisation methods.
+
 0.3 :
 
-Rewritten button code. It no longer uses "CSS3 Social Sign-in Buttons by Nicolas Gallagher". 
+Rewritten button code. It no longer uses "CSS3 Social Sign-in Buttons by 
+Nicolas Gallagher". 
 You can now upload your own logos. Adding custom CSS is also possible.
 
 0.2 :

@@ -17,12 +17,12 @@ function bsoauth_add_page(){
     function updPreview(){
     document.getElementById("logoPreview").innerHTML="<span class='bs-auth-btn-preview bs-auth-btn-logo-" +
     document.getElementById("service").value.toLowerCase() +"'></span>";
-    document.getElementById('display_name').value=document.getElementById("service").value;
+    document.getElementById('display_name_2').value=document.getElementById("service").value;
     
     }
   </script>
   <form method='post'  enctype="multipart/form-data" action='<?php echo $ACTION; ?>'>
-    <table class='form-table'>
+    <table class='form-table bs-auth-settings-table'>
       <tr>
         <th><label><?php _e("Service","blaat_auth");?></td>
         <td>
@@ -99,7 +99,13 @@ function bsoauth_add_page(){
       <tr>
         <th><label><?php _e("Display name","blaat_auth");?></label></th>
         <td>
-          <input type='text' id='display_name' name='display_name'></input>
+          <input type='text' id='display_name_2' name='display_name'></input>
+        </td>
+      </tr>
+      <tr>
+        <th><label><?php _e("Display order","blaat_auth");?></label></th>
+        <td>
+          <input type='text' name='display_order'></input>
         </td>
       </tr>
       <tr>
@@ -130,6 +136,7 @@ function bsoauth_add_page(){
       </tr>
     </table>
   </form>
+  <script>updPreview();</script>
   <?php
 }
 //------------------------------------------------------------------------------
@@ -147,11 +154,17 @@ function bsoauth_add_custom_page(){
     </a>
   </p>
   <form method='post' action='<?php echo $ACTION ; ?>'>
-    <table class='form-table'>
+    <table class='form-table bs-auth-settings-table' >
       <tr>
         <th><label><?php _e("Display name","blaat_auth");?></label></th>
         <td>
-          <input type='text' id='display_name' name='display_name'></input>
+          <input type='text' id='display_name_2' name='display_name'></input>
+        </td>
+      </tr>
+      <tr>
+        <th><label><?php _e("Display order","blaat_auth");?></label></th>
+        <td>
+          <input type='text' name='display_order'></input>
         </td>
       </tr>
       <tr>
@@ -391,6 +404,7 @@ function bsoauth_update_service(){
 
   $new_data = array();
   $new_data["display_name"] = $_POST["display_name"];
+  $new_data["display_order"] = $_POST["display_order"];
   $new_data["client_id"] = $_POST["client_id"];
   $new_data["client_secret"] = $_POST["client_secret"];
   $new_data["default_scope"] = $_POST["default_scope"];
@@ -494,7 +508,7 @@ function bsoauth_list_services(){
                     enabled, display_name, custom_id, client_id, client_secret,
                     default_scope, oauth_version, request_token_url, 
                     dialog_url, access_token_url, url_parameters, 
-                    authorization_header, offline_dialog_url, 
+                    authorization_header, offline_dialog_url, display_order, 
                     append_state_to_redirect_uri, customlogo_url, customlogo_enabled
           from $table_name
           LEFT OUTER JOIN $table_name2 on ${table_name}.custom_id = ${table_name2}.id",ARRAY_A);
@@ -506,7 +520,7 @@ function bsoauth_list_services(){
   <!--</pre>--> <a name="serv-<?php echo $result['id']; ?>"></a>
   <form method='post'  enctype="multipart/form-data" action='<?php echo $ACTION ?>'>
     <input type='hidden' name='id' value='<?php echo $result['id']; ?>'>
-    <table class='form-table'>
+    <table class='form-table bs-auth-settings-table'>
       <tr>
         <th><label><?php _e("Service","blaat_auth"); ?></label></th>
         <?php
@@ -591,6 +605,12 @@ function bsoauth_list_services(){
         <th><label><?php _e("Display name","blaat_auth"); ?></label></th>
         <td>
           <input type='text' name='display_name' value='<?php echo $result['display_name']; ?>'></input>
+        </td>
+      </tr>
+      <tr>
+        <th><label><?php _e("Display order","blaat_auth");?></label></th>
+        <td>
+          <input type='text' name='display_order' value='<?php echo $result['display_order']; ?>'></input>
         </td>
       </tr>
       <tr>

@@ -11,10 +11,13 @@ function bsauth_register_options(){
   register_setting( 'bs_auth_pages', 'bsauth_custom_button' );
 }
 //------------------------------------------------------------------------------
+    function bsauth_buttons_sort($a, $b) {
+            return $a["display_order"] < $b["display_order"];
+    }
+//------------------------------------------------------------------------------
 function bsauth_login_display(){
   global $BSAUTH_SERVICES;
   
-  //if (!is_user_logged_in()) bsoauth_do_login();
   foreach ($BSAUTH_SERVICES as $service) {
     if (call_user_func($service['trigger_login'])) 
                                         call_user_func($service['do_login']);
@@ -37,8 +40,19 @@ function bsauth_login_display(){
     $ACTION=site_url("/".get_option("login_page"));
     echo "<form>";
 
+    $buttons = array();
     foreach ($BSAUTH_SERVICES as $service) {
-      call_user_func($service['buttons']);
+      $buttons_new = array_merge ( $buttons , 
+        call_user_func($service['buttons']) );
+      $buttons=$buttons_new;
+      echo "</pre>";
+    }
+
+    usort($buttons, "bsauth_buttons_sort"); 
+
+    foreach ($buttons as $button) {
+      echo $button['button'];
+      if (isset($button['css'])) echo $button['css'];
     }
 
     echo "</form>";
@@ -127,9 +141,24 @@ function bsauth_register_display() {
         $action=htmlspecialchars(get_option("login_page"));
         echo "<form action='$action'>";        
         global $BSAUTH_SERVICES;
+
+        $buttons = array();
         foreach ($BSAUTH_SERVICES as $service) {
-          call_user_func($service['buttons']);
+          $buttons_new = array_merge ( $buttons , 
+            call_user_func($service['buttons']) );
+          $buttons=$buttons_new;
+          echo "</pre>";
         }
+
+        usort($buttons, "bsauth_buttons_sort"); 
+
+        foreach ($buttons as $button) {
+          echo $button['button'];
+          if (isset($button['css'])) echo $button['css'];
+        }
+
+
+
         echo "</form>";
         echo "</div>";
         echo "<style>" . htmlspecialchars(get_option("bsauth_custom_button")) . "</style>";
@@ -138,8 +167,6 @@ function bsauth_register_display() {
   }
 }
 //------------------------------------------------------------------------------
-
-
 function bsauth_link_display(){
   session_start();
   global $wpdb;

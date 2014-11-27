@@ -24,3 +24,7 @@
   padding-right:32px;
 }
 
+
+.bs-auth-settings-table input[type=text] {
+    width: 400px;
+}

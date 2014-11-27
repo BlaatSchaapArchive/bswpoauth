@@ -1,66 +1,29 @@
-Todo :: ADD PAGES 
-            ADD LOGO UPLOAD
---------------------------------------------------------------------
+TODO::: 20141127
+
+
+*  Rewrite button generation code, such that an Auth service returns an
+array with buttons. Buttons should contain an order parameter to determine
+the displayed order.
+
+      Login/register sorted, however LINK is a problem. Separation code not
+      implemented yet. OAUTH specific code in bsauth.php !!!
+      Needs to be extracted to blaatoauth.php such that the code becomes 
+      service independant.
 
 
 
+*  What else is required to support multiple auth providers? Is it possible to
+generate separation code?
 
+* Sync Library / check for hard coded services
 
+* Add some more icons per default
 
----------------------------------------------------------------------
-TODO:
+* Hide "Default logo" if none present
 
-20131202
---------
+* Can we integrate the BS logo in there?
 
+* Update documentation on website
 
-
-
-Remove hard coded strings, --> translations
-Delete custom
-
-Page: OAuth Configuration
-         Saving Changes
-           Built-in service
-           Manual Configured service
-      FIXME:: Basic configuarion not saving (custom is)
-
-Page: OAuth Add
-       Check if library has new built-in services
-       
-Page: Link
-        Implement service linking support
-        FIXME:: Only show enabled services
-
-
-Page: Register
-        Implement register page
-        Implement signing up with service
-
-
-
-
-
-More service button icons
-Add service button override
-
-
-Possibly default scopes ?
-
-20131219
----------
-
-Linking support complete!
-
-TODO:: Registration support
-
-Unsetting setting variables!
-
-
-20131228
--------------
-
-TODO:: Gegevens onthouden weg bij linken
-TODO:: Adding a (custom) service: enabled not saved
-Note: VK.com not working. Should file a bug upstream
-
+* Bigger rewrite required? More Object Oriented?
+--------------------------------------------------------------------------------

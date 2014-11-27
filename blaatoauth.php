@@ -40,16 +40,29 @@ function bsoauth_buttons(){
     global $wpdb;
     $table_name = $wpdb->prefix . "bs_oauth_services";
     $results = $wpdb->get_results("select * from $table_name where enabled=1 ",ARRAY_A);
+    $buttons = array();    
     foreach ($results as $result){
+      $button = array();
       //$class = "btn-auth btn-".strtolower($result['client_name']);
       if(!$result['customlogo_enabled']) 
         $service=strtolower($result['client_name']); 
       else {
         $service="custom-".$result['id'];
-        echo "<style>.bs-auth-btn-logo-".$service." {background-image:url('" .$result['customlogo_url']."');}</style>";
+        $button['css']="<style>.bs-auth-btn-logo-".$service." {background-image:url('" .$result['customlogo_url']."');}</style>"; 
       }
-      echo "<button class='bs-auth-btn' name=bsoauth_id type=submit value='".$result['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $result['display_name']."</span></button>";
+      $button['button']="<button class='bs-auth-btn' name=bsoauth_id type=submit value='".$result['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $result['display_name']."</span></button>";
+      $button['order']=$result['display_order'];
+
+      
+
+      $buttons[]=$button;
+
+
     }
+  // ok, we add a column display_order in the database scheme, this should 
+  // become the order. create array with ¿html code? and order number
+    
+  return $buttons;
 }
 
 //------------------------------------------------------------------------------
@@ -99,7 +112,7 @@ if (!function_exists("blaat_plugins_auth_page")) {
 function  bsoauth_install() {
   global $wpdb;
   global $bs_oauth_plugin;
-  $dbver = 2;
+  $dbver = 3;
   $live_dbver = get_option( "bs_oauth_dbversion" );
   $table_name = $wpdb->prefix . "bs_oauth_sessions";
 
@@ -124,6 +137,7 @@ function  bsoauth_install() {
               `id` INT NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
               `enabled` BOOLEAN NOT NULL DEFAULT FALSE ,
               `display_name` TEXT NOT NULL ,
+              `display_order` INT NOT NULL DEFAULT 1,
               `client_name` TEXT NULL DEFAULT NULL ,
               `custom_id` INT NULL DEFAULT NULL ,
               `client_id` TEXT NOT NULL ,
