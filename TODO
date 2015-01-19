@@ -10,8 +10,6 @@ the displayed order.
       Needs to be extracted to blaatoauth.php such that the code becomes 
       service independant.
 
-
-
 *  What else is required to support multiple auth providers? Is it possible to
 generate separation code?
 
