@@ -3,7 +3,7 @@
 Plugin Name: BlaatSchaap OAuth 
 Plugin URI: http://code.blaatschaap.be
 Description: Log in with an OAuth Provider
-Version: 0.4
+Version: 0.3.5
 Author: André van Schoubroeck
 Author URI: http://andre.blaatschaap.be
 License: BSD

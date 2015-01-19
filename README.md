@@ -4,7 +4,7 @@ Donate link: http://code.blaatschaap.be/donations/
 Tags: oauth, authentication
 Stable tag: trunk
 Requires at least: 3.7
-Tested up to: 3.9
+Tested up to: 4.1
 License: BSD
 License URI: http://opensource.org/licenses/BSD-3-Clause
 
@@ -32,11 +32,15 @@ and upload the files and directories to
 /path/to/your/webroot/wp-content/plugins/
 
 == Changelog ==
-0.4 :
+0.3.5 :
+
+Bugfix: Previous versions allowed a logged in user to link to an already
+		linked service.
 
 Field for configuring OAuth services are wider.
-Separation of Auth and OAuth specific code to enable future support for other
-authorisation methods.
+Started rewrite to abstract generic Authorisation code, to allow future support
+for other Authorisation methods
+
 
 0.3 :
 
