@@ -16,6 +16,17 @@ require_once("bs_oauth_config.php");
 require_once("blaat.php");
 require_once("bsauth.php");
 //------------------------------------------------------------------------------
+/*
+function blaat_autoloader($class) {
+    include $class . '.class.php';
+}
+
+spl_autoload_register('blaat_autoloader');
+*/
+require_once("AuthService.class.php");
+require_once("OAuth.class.php");
+//------------------------------------------------------------------------------
+
 session_start();
 ob_start();
 //------------------------------------------------------------------------------
@@ -32,83 +43,13 @@ function bsoauth_init(){
 }
 //------------------------------------------------------------------------------
 function bsoauth_trigger_login(){
-  return ($_SESSION['bsoauth_id'] || $_REQUEST['bsoauth_id'] ||
-          $_SESSION['bsoauth_link'] || $_REQUEST['bsoauth_link']);
+	return OAuth::canLogin();
 }
 //------------------------------------------------------------------------------
 function bsoauth_buttons(){
-    global $wpdb;
-    $table_name = $wpdb->prefix . "bs_oauth_services";
-    $results = $wpdb->get_results("select * from $table_name where enabled=1 ",ARRAY_A);
-    $buttons = array();    
-    foreach ($results as $result){
-      $button = array();
-      //$class = "btn-auth btn-".strtolower($result['client_name']);
-      if(!$result['customlogo_enabled']) 
-        $service=strtolower($result['client_name']); 
-      else {
-        $service="custom-".$result['id'];
-        $button['css']="<style>.bs-auth-btn-logo-".$service." {background-image:url('" .$result['customlogo_url']."');}</style>"; 
-      }
-      $button['button']="<button class='bs-auth-btn' name=bsoauth_id type=submit value='".$result['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $result['display_name']."</span></button>";
-      $button['order']=$result['display_order'];
-
-      
-
-      $buttons[]=$button;
-
-
-    }
-  // ok, we add a column display_order in the database scheme, this should 
-  // become the order. create array with ¿html code? and order number
-    
-  return $buttons;
+	return OAuth::getButtons();
 }
 
-//------------------------------------------------------------------------------
-if (!function_exists("blaat_plugins_auth_page")) {
-  function blaat_plugins_auth_page(){
-    echo '<div class="wrap">';
-    echo '<h2>';
-    _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
-    echo '</h2>';
-    echo '<form method="post" action="options.php">';
-    settings_fields( 'bsauth_pages' ); 
-
-    echo '<table class="form-table">';
-
-    echo '<tr><th>'. __("Login page","blaat_auth") .'</th><td>';
-    echo blaat_page_select("login_page");
-    echo '</td></tr>';
-    
-    echo '<tr><th>'. __("Register page","blaat_auth") .'</th><td>';
-    echo blaat_page_select("register_page");
-    echo '</td></tr>';
-
-    echo '<tr><th>'. __("Link page","blaat_auth") .'</th><td>';
-    echo blaat_page_select("link_page");
-    echo '</td></tr>';
-
-    echo '<tr><th>';
-    _e("Redirect to frontpage after logout", "blaat_auth") ;
-    echo "</th><td>";
-    $checked = get_option('logout_frontpage') ? "checked" : "";
-    echo "<input type=checkbox name='logout_frontpage' value='1' $checked>";
-    echo "</td></tr>";
-
-    echo '<tr><th>'. __("Custom Button CSS","blaat_auth") .'</th><td>';
-    echo "<textarea cols=70 rows=15 id='bsauth_custom_button_textarea' name='bsauth_custom_button'>";
-    echo htmlspecialchars(get_option("bsauth_custom_button"));
-    echo "</textarea>";
-    echo '</td></tr>';
-
-    echo '</table><input name="Submit" type="submit" value="';
-    echo  esc_attr_e('Save Changes') ;
-    echo '" ></form></div>';
-
-  }
-}
-//------------------------------------------------------------------------------
 function  bsoauth_install() {
   global $wpdb;
   global $bs_oauth_plugin;
@@ -228,116 +169,12 @@ function bsoauth_config_page() {
 }
 //------------------------------------------------------------------------------
 function bsoauth_do_login(){
-  bsoauth_process("bsoauth_process_login");
-}
-//------------------------------------------------------------------------------
-function bsoauth_process_login($client, $displayname){
-  global $wpdb;
-  $_SESSION['oauth_display'] = $displayname;
-
-  if ( is_user_logged_in() ) { 
-      // Linking not working. Session variables not being set.
-      // Looks like this is not executed for some reason???
-      $_SESSION['oauth_token']   = $client->access_token;
-      $_SESSION['oauth_expiry']  = $client->access_token_expiry;
-      $_SESSION['oauth_scope']   = $client->scope;
-      //die("link");
-      header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);     
-  } else {
-    
-    $service_id = $_SESSION['bsoauth_id'];
-    $token = $client->access_token;
-    $table_name = $wpdb->prefix . "bs_oauth_sessions";
-
-    $query = $wpdb->prepare("SELECT `user_id` FROM $table_name WHERE `service_id` = %d AND `token` = %d",$service_id,$token);  
-    $results = $wpdb->get_results($query,ARRAY_A);
-    $result = $results[0];
-
-    if ($result) {
-      unset ($_SESSION['bsoauth_id']);  
-      wp_set_current_user ($result['user_id']);
-      wp_set_auth_cookie($result['user_id']);
-      header("Location: ".site_url("/".get_option("login_page")));     
-      
-    } else {
-      $_SESSION['bsauth_registering'] = 1;
-      $_SESSION['oauth_signup']  = 1;
-      $_SESSION['oauth_token']   = $client->access_token;
-      $_SESSION['oauth_expiry']  = $client->access_token_expiry;
-      $_SESSION['oauth_scope']   = $client->scope;
-      header("Location: ".site_url("/".get_option("register_page")));
-    }
-  }
-}
-//------------------------------------------------------------------------------
-function bsoauth_process($process){
-   
-   session_start();
-  if ($_POST['bsoauth_link']) {
-    $_REQUEST['bsoauth_id'] = $_POST['bsoauth_link'];
-    $_SESSION['bsoauth_link'] = $_POST['bsoauth_link'];
-  }
-
-  if ( $_REQUEST['bsoauth_id'] ||  $_REQUEST['code'] || $_REQUEST['oauth_token'] ) {
-    if ($_REQUEST['bsoauth_id']) $_SESSION['bsoauth_id']=$_REQUEST['bsoauth_id'];
-
-    global $wpdb;
-    $table_name = $wpdb->prefix . "bs_oauth_services";
-    $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE id = %d", $_SESSION['bsoauth_id']);
-
-    $results = $wpdb->get_results($query,ARRAY_A);
-    $result = $results[0];
- 
-    $client = new oauth_client_class;
-    $client->configuration_file = plugin_dir_path(__FILE__) . '/oauth/oauth_configuration.json';
-    $client->redirect_uri  = site_url("/".get_option("login_page"));
-    $client->client_id     = $result['client_id'];
-    $client->client_secret = $result['client_secret'];
-    $client->scope         = $result['default_scope'];
-
-    if ($result['custom_id']) {
-      $table_name = $wpdb->prefix . "bs_oauth_custom";
-      $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE id = %d", $result['custom_id']);
-      $customs = $wpdb->get_results($query,ARRAY_A);
-      $custom = $customs[0];
-
-      $client->oauth_version                 = $custom['oauth_version'];
-      $client->request_token_url             = $custom['request_token_url'];
-      $client->dialog_url                    = $custom['dialog_url'];
-      $client->access_token_url              = $custom['access_token_url'];
-      $client->url_parameters                = $custom['url_parameters'];
-      $client->authorization_header          = $custom['authorization_header'];
-      $client->offline_dialog_url            = $custom['offline_dialog_url'];
-      $client->append_state_to_redirect_uri  = $custom['append_state_to_redirect_uri'];
-    } else {
-      $client->server        = $result['client_name'];
-    }
- 
-    if(($success = $client->Initialize())){
-      if(($success = $client->Process())){
-        if(strlen($client->access_token)){
-          call_user_func($process,$client,$result['display_name']);
-          $success = $client->Finalize($success);
-	      } else {
-          _e("OAuth error: the token is missing","blaat_auth");
-          echo $client->error;
-        }
-      } else {
-          _e("OAuth error: processing error","blaat_auth");
-          echo $client->error;
-      }
-    } else {
-      _e("OAuth error: initialisation error","blaat_auth");
-      echo $client->error;
-    } 
-  } else {
-    return $user;
-  }
+  //bsoauth_process("bsoauth_process_login");
+  OAuth::Login();
 }
 
 
-//wp_register_style('necolas-css3-social-signin-buttons', plugin_dir_url(__FILE__) . 'css/auth-buttons.css');
-//wp_enqueue_style( 'necolas-css3-social-signin-buttons');
+
 
   wp_register_style("bsauth_btn" , plugin_dir_url(__FILE__) . "css/bs-auth-btn.css");
   wp_enqueue_style( "bsauth_btn");
@@ -355,11 +192,7 @@ function go_frontpage(){
 }
 //------------------------------------------------------------------------------
 
-// just in case we want to add those again, but for now we use our own forms
-//add_filter("login_form",   bsoauth_loginform );
-//add_filter('authenticate', bsoauth_do_login,90  );
-//add_action('personal_options_update', bsoauth_link_update);
-//add_action("personal_options", bsoauth_linkform);
+
 
 
 add_action("admin_menu", bsoauth_menu);

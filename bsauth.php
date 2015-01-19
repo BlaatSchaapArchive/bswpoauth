@@ -198,6 +198,8 @@ function bsauth_link_display(){
     $user = wp_get_current_user();
     if (isset($_SESSION['bsoauth_id'])     && isset($_SESSION['oauth_token']) &&
         isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
+
+
       $user_id    = $user->ID;
       $service_id = $_SESSION['bsoauth_id'];
       $token      = $_SESSION['oauth_token'];
@@ -205,17 +207,31 @@ function bsauth_link_display(){
       $scope      = $_SESSION['oauth_scope'];
       $service    = $_SESSION['oauth_display'];
       $table_name = $wpdb->prefix . "bs_oauth_sessions";
-      $query = $wpdb->prepare("INSERT INTO $table_name (`user_id`, `service_id`, `token`, `expiry`, `scope` )
-                                       VALUES      ( %d      ,  %d         ,  %s    , %s      , %s      )",
-                                                    $user_id , $service_id , $token , $expiry , $scope  );
-      $wpdb->query($query);
+      // We need to verify the external account is not already linked
+      // before we insert!!!
+
+      $testQuery = $wpdb->prepare("SELECT * FROM $table_name 
+                                   WHERE service_id = %d 
+                                   AND   token = %s" , $service_id, $token);
+      $testResult = $wpdb->get_results($testQuery,ARRAY_A);
+
+
+      if (count($testResult)) {
+        printf( __("Your %s account has is already linked to another local account", "blaat_auth"), $service );
+      } else {
+        $query = $wpdb->prepare("INSERT INTO $table_name (`user_id`, `service_id`, `token`, `expiry`, `scope` )
+                                         VALUES      ( %d      ,  %d         ,  %s    , %s      , %s      )",
+                                                      $user_id , $service_id , $token , $expiry , $scope  );
+        $wpdb->query($query);
+        printf( __("Your %s account has been linked", "blaat_auth"), $service );
+      }
       unset($_SESSION['bsoauth_id']);
       unset($_SESSION['bsoauth_link']);
       unset($_SESSION['oauth_token']);
       unset($_SESSION['oauth_expiry']);
       unset($_SESSION['oauth_scope']);
       unset($_SESSION['oauth_display']);
-      printf( __("Your %s account has been linked", "blaat_auth"), $service );
+
     } 
 //-- end link
 
@@ -299,7 +315,50 @@ function bsauth_display($content) {
       return $content;
   }
 }
+//------------------------------------------------------------------------------
+if (!function_exists("blaat_plugins_auth_page")) {
+  function blaat_plugins_auth_page(){
+    echo '<div class="wrap">';
+    echo '<h2>';
+    _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
+    echo '</h2>';
+    echo '<form method="post" action="options.php">';
+    settings_fields( 'bsauth_pages' ); 
 
+    echo '<table class="form-table">';
+
+    echo '<tr><th>'. __("Login page","blaat_auth") .'</th><td>';
+    echo blaat_page_select("login_page");
+    echo '</td></tr>';
+    
+    echo '<tr><th>'. __("Register page","blaat_auth") .'</th><td>';
+    echo blaat_page_select("register_page");
+    echo '</td></tr>';
+
+    echo '<tr><th>'. __("Link page","blaat_auth") .'</th><td>';
+    echo blaat_page_select("link_page");
+    echo '</td></tr>';
+
+    echo '<tr><th>';
+    _e("Redirect to frontpage after logout", "blaat_auth") ;
+    echo "</th><td>";
+    $checked = get_option('logout_frontpage') ? "checked" : "";
+    echo "<input type=checkbox name='logout_frontpage' value='1' $checked>";
+    echo "</td></tr>";
+
+    echo '<tr><th>'. __("Custom Button CSS","blaat_auth") .'</th><td>';
+    echo "<textarea cols=70 rows=15 id='bsauth_custom_button_textarea' name='bsauth_custom_button'>";
+    echo htmlspecialchars(get_option("bsauth_custom_button"));
+    echo "</textarea>";
+    echo '</td></tr>';
+
+    echo '</table><input name="Submit" type="submit" value="';
+    echo  esc_attr_e('Save Changes') ;
+    echo '" ></form></div>';
+
+  }
+}
+//------------------------------------------------------------------------------
 
 
 ?>
