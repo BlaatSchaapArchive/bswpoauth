@@ -1,8 +1,8 @@
 <?php
-
-
+//------------------------------------------------------------------------------
 if (!isset($BSAUTH_SERVICES)) $BSAUTH_SERVICES = array();
 //------------------------------------------------------------------------------
+
 function bsauth_register_options(){
   register_setting( 'bs_auth_pages', 'login_page' );
   register_setting( 'bs_auth_pages', 'register_page' );
@@ -11,17 +11,46 @@ function bsauth_register_options(){
   register_setting( 'bs_auth_pages', 'bsauth_custom_button' );
 }
 //------------------------------------------------------------------------------
-    function bsauth_buttons_sort($a, $b) {
-            return $a["display_order"] < $b["display_order"];
-    }
+function bsauth_buttons_sort($a, $b) {
+        return $a["display_order"] < $b["display_order"];
+}
 //------------------------------------------------------------------------------
+
 function bsauth_login_display(){
   global $BSAUTH_SERVICES;
-  
+
+    
+    if (isset($_SESSION['bsauth_link'])) {
+      //header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
+      die("should redirect to link page!!! (login display)");
+    }
+    
+
+
+
+  if (isset($_POST['bsauth_login'])){
+      $link = explode ("-", $_POST['bsauth_login']);
+      $service = $link[0];
+      $link_id = $link[1];
+      $_SESSION['bsauth_plugin']  = $service;
+      $_SESSION['bsauth_link_id'] = $link_id;
+    }
+    if (isset($service) && isset($link_id)) {
+      $service = $BSAUTH_SERVICES[$service];
+      if ($service!=null) {
+        $service->Login($link_id);
+      }
+    }
+
+
+/*
+  // didn't I already replace this?
+
   foreach ($BSAUTH_SERVICES as $service) {
-    if (call_user_func($service['trigger_login'])) 
-                                        call_user_func($service['do_login']);
+    if ($service->canLogin()) $service->Login();
   }
+*/
+
   if ( is_user_logged_in() ) {
     if (isset($_SESSION['bsauth_registered'])) 
       _e("Registered","blaat_auth");  
@@ -38,12 +67,12 @@ function bsauth_login_display(){
     echo "<p>" . __("Log in with","blaat_auth") . "</p>";
 
     $ACTION=site_url("/".get_option("login_page"));
-    echo "<form>";
+    echo "<form method='post'>";
 
     $buttons = array();
     foreach ($BSAUTH_SERVICES as $service) {
       $buttons_new = array_merge ( $buttons , 
-        call_user_func($service['buttons']) );
+        $service->getButtons());
       $buttons=$buttons_new;
       echo "</pre>";
     }
@@ -69,7 +98,7 @@ function bsauth_register_display() {
     session_start();
     if (isset($_SESSION['bsauth_registering'])) {
 
-      $service = $_SESSION['oauth_display'];
+      $service = $_SESSION['bsauth_display'];
       printf( __("You are authenticated to %s","blaat_auth") , $service );
       echo "<br>";
       if (isset($_POST['username']) && isset($_POST['email'])) {
@@ -144,8 +173,7 @@ function bsauth_register_display() {
 
         $buttons = array();
         foreach ($BSAUTH_SERVICES as $service) {
-          $buttons_new = array_merge ( $buttons , 
-            call_user_func($service['buttons']) );
+          $buttons_new = array_merge ( $buttons , $service->getButtons() );
           $buttons=$buttons_new;
           echo "</pre>";
         }
@@ -169,73 +197,50 @@ function bsauth_register_display() {
 //------------------------------------------------------------------------------
 function bsauth_link_display(){
   session_start();
+  global $BSAUTH_SERVICES;
   global $wpdb;
+  $user = wp_get_current_user();
   echo "<style>" . htmlspecialchars(get_option("bsauth_custom_button")) . "</style>";
   if (is_user_logged_in()) {
-    if (isset($_POST['bsoauth_link'])){
-        $_SESSION['bsoauth_link']=$_POST['bsoauth_link'];
-        bsoauth_do_login($user);
-      }
 
 
-//-- unlink begin
-      if (isset($_POST['oauth_unlink'])){
-        $table_name = $wpdb->prefix . "bs_oauth_sessions";
-        // Not an ideal query... however, the form generation code would need
-        // a complete rewrite to support supplying the service id entry.
-        $table_name2 = $wpdb->prefix . "bs_oauth_services";
-        $query2 = $wpdb->prepare("Select display_name from $table_name2 where id = %d", $_POST['oauth_unlink'] );
-        $service_name = $wpdb->get_results($query2,ARRAY_A);
-        $service = $service_name[0]['display_name'];
-        $query = $wpdb->prepare ("Delete from $table_name where user_id = %d AND service_id = %d", get_current_user_id(), $_POST['oauth_unlink'] );
-        $wpdb->query($query);
-        printf( __("You are now unlinked from %s.", "blaat_auth"), $service );
-      }
-//-- unlink end
 
+    if (isset($_POST['bsauth_link'])) 
+        $link = explode ("-", $_POST['bsauth_link']);
+    if (isset($_POST['bsauth_unlink'])) 
+        $link = explode ("-", $_POST['bsauth_unlink']);
+    if (isset($link)){
+      $service = $link[0];
+      $link_id = $link[1];
+      $_SESSION['bsauth_plugin']  = $service;
+      $_SESSION['bsauth_link_id'] = $link_id;
+    }    
 
-//-- begin link
-    $user = wp_get_current_user();
-    if (isset($_SESSION['bsoauth_id'])     && isset($_SESSION['oauth_token']) &&
-        isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
+    $_SESSION['bsauth_link']=$_POST['bsauth_link'];
 
-
-      $user_id    = $user->ID;
-      $service_id = $_SESSION['bsoauth_id'];
-      $token      = $_SESSION['oauth_token'];
-      $expiry     = $_SESSION['oauth_expiry'];
-      $scope      = $_SESSION['oauth_scope'];
-      $service    = $_SESSION['oauth_display'];
-      $table_name = $wpdb->prefix . "bs_oauth_sessions";
-      // We need to verify the external account is not already linked
-      // before we insert!!!
-
-      $testQuery = $wpdb->prepare("SELECT * FROM $table_name 
-                                   WHERE service_id = %d 
-                                   AND   token = %s" , $service_id, $token);
-      $testResult = $wpdb->get_results($testQuery,ARRAY_A);
-
-
-      if (count($testResult)) {
-        printf( __("Your %s account has is already linked to another local account", "blaat_auth"), $service );
+    if (isset($service) && isset($link_id)) {
+      $service = $BSAUTH_SERVICES[$service];
+      if ($service!=null) {
+        // is SESSION required here?
+        if (isset($_SESSION['bsauth_link'])) {
+          //echo "link request<br>";
+          $service->Link($link_id);
+          // not yet...
+          //unset($_SESSION['bsauth_link']);
+        }
+        if (isset($_POST['bsauth_unlink'])) {
+          $service->Unlink($link_id);
+          unset($_POST['bsauth_unlink']);
+        }
       } else {
-        $query = $wpdb->prepare("INSERT INTO $table_name (`user_id`, `service_id`, `token`, `expiry`, `scope` )
-                                         VALUES      ( %d      ,  %d         ,  %s    , %s      , %s      )",
-                                                      $user_id , $service_id , $token , $expiry , $scope  );
-        $wpdb->query($query);
-        printf( __("Your %s account has been linked", "blaat_auth"), $service );
+        // TODO error handling
+        echo "service not registered!";     
       }
-      unset($_SESSION['bsoauth_id']);
-      unset($_SESSION['bsoauth_link']);
-      unset($_SESSION['oauth_token']);
-      unset($_SESSION['oauth_expiry']);
-      unset($_SESSION['oauth_scope']);
-      unset($_SESSION['oauth_display']);
-
-    } 
-//-- end link
+    } else echo "no service/link id<br>"; 
 
 
+
+    // TODO rewrite as OAuth Class Methods
     $table_name = $wpdb->prefix . "bs_oauth_sessions";
     $user_id    = $user->ID;
     $query = $wpdb->prepare("SELECT service_id FROM $table_name WHERE `user_id` = %d",$user_id);
@@ -249,6 +254,8 @@ function bsauth_link_display(){
     foreach ($linked_services as $linked_service) {
       $linked[]=$linked_service['service_id'];
     }  
+
+
     foreach ($available_services as $available_service) {
       $class = "btn-auth btn-".strtolower($available_service['client_name']);
 
@@ -261,14 +268,15 @@ function bsauth_link_display(){
 
 
       if (in_array($available_service['id'],$linked)) {
-        $unlinkHTML .= "<button class='bs-auth-btn' name=oauth_unlink type=submit value='".$available_service['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $available_service['display_name']."</span></button>";
+        $unlinkHTML .= "<button class='bs-auth-btn' name=bsauth_unlink type=submit value='blaat_oauth-".$available_service['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $available_service['display_name']."</span></button>";
       } else {
-        $linkHTML .="<button class='bs-auth-btn' name=bsoauth_link type=submit value='".$available_service['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $available_service['display_name']."</span></button>";
+        $linkHTML .="<button class='bs-auth-btn' name=bsauth_link type=submit value='blaat_oauth-".$available_service['id']."'><span class='bs-auth-btn-logo bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>". $available_service['display_name']."</span></button>";
       }
       unset($_SESSION['bsoauth_id']);
-      unset($_SESSION['bsoauth_link']);
+      unset($_SESSION['bsauth_link']);
     }
-    echo "<form method=post action='". site_url("/".get_option("login_page"))  ."'><div class='link authservices'><div class='blocktitle'>".
+//    echo "<form method=post action='". site_url("/".get_option("login_page"))  ."'><div class='link authservices'><div class='blocktitle'>".
+    echo "<form method=post><div class='link authservices'><div class='blocktitle'>".
             __("Link your account to","blaat_auth") .  "</div>".
             $linkHTML . "
          </div></form><form method=post>
@@ -285,7 +293,7 @@ function bsauth_link_display(){
         $token      = $_SESSION['oauth_token'];
         $expiry     = $_SESSION['oauth_expiry'];
         $scope      = $_SESSION['oauth_scope'];
-        $service    = $_SESSION['oauth_display'];
+        $service    = $_SESSION['bsauth_display'];
         echo "<div id='bsauth_local'>";
         printf(  "<p>" .  __("Please provide a local account to link to %s","blaat_auth") . "</p>" , $service);
         wp_login_form();
@@ -316,46 +324,17 @@ function bsauth_display($content) {
   }
 }
 //------------------------------------------------------------------------------
-if (!function_exists("blaat_plugins_auth_page")) {
-  function blaat_plugins_auth_page(){
-    echo '<div class="wrap">';
-    echo '<h2>';
-    _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
-    echo '</h2>';
-    echo '<form method="post" action="options.php">';
-    settings_fields( 'bsauth_pages' ); 
+// go frontpage
+// -- general auth related support
 
-    echo '<table class="form-table">';
+if (get_option("logout_frontpage")) {
+  add_action('wp_logout','go_frontpage');
+}
 
-    echo '<tr><th>'. __("Login page","blaat_auth") .'</th><td>';
-    echo blaat_page_select("login_page");
-    echo '</td></tr>';
-    
-    echo '<tr><th>'. __("Register page","blaat_auth") .'</th><td>';
-    echo blaat_page_select("register_page");
-    echo '</td></tr>';
-
-    echo '<tr><th>'. __("Link page","blaat_auth") .'</th><td>';
-    echo blaat_page_select("link_page");
-    echo '</td></tr>';
-
-    echo '<tr><th>';
-    _e("Redirect to frontpage after logout", "blaat_auth") ;
-    echo "</th><td>";
-    $checked = get_option('logout_frontpage') ? "checked" : "";
-    echo "<input type=checkbox name='logout_frontpage' value='1' $checked>";
-    echo "</td></tr>";
-
-    echo '<tr><th>'. __("Custom Button CSS","blaat_auth") .'</th><td>';
-    echo "<textarea cols=70 rows=15 id='bsauth_custom_button_textarea' name='bsauth_custom_button'>";
-    echo htmlspecialchars(get_option("bsauth_custom_button"));
-    echo "</textarea>";
-    echo '</td></tr>';
-
-    echo '</table><input name="Submit" type="submit" value="';
-    echo  esc_attr_e('Save Changes') ;
-    echo '" ></form></div>';
-
+if (!function_exists("go_frontpage")) {
+  function go_frontpage(){
+    wp_redirect( home_url() );
+    exit();
   }
 }
 //------------------------------------------------------------------------------

@@ -3,6 +3,21 @@
 // BlaatSchaap TextDomain
 //------------------------------------------------------------------------------
 load_plugin_textdomain('blaatschaap', false, basename( dirname( __FILE__ ) ) . '/languages' );
+
+//------------------------------------------------------------------------------
+// Class Auto Loader
+//------------------------------------------------------------------------------
+/*
+if (!function_exists("blaat_autoloader")) {
+  function blaat_autoloader($class) {
+      include 'classes/' .$class . '.class.php';
+  }
+  spl_autoload_register('blaat_autoloader');
+}
+*/
+require_once("classes/AuthService.class.php");
+require_once("classes/OAuth.class.php");
+
 //------------------------------------------------------------------------------
 // BlaatSchaap Plugins Page
 //------------------------------------------------------------------------------
@@ -73,5 +88,13 @@ if (!function_exists("blaat_page_select")) {
   }
 }
 //-----------------------------------------------------------------------------
+
+
+
+//------------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------------------
+
 
 ?>
