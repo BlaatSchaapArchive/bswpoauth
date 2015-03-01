@@ -19,37 +19,35 @@ function bsauth_buttons_sort($a, $b) {
 function bsauth_login_display(){
   global $BSAUTH_SERVICES;
 
-    
-    if (isset($_SESSION['bsauth_link'])) {
-      //header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
-      die("should redirect to link page!!! (login display)");
+
+    if (isset($_SESSION['bsauth_link_id'])) {
+      header("X-BlaatSchaap: Redirecting from login to link page (link_id set)");
+      header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
     }
     
 
-
-
-  if (isset($_POST['bsauth_login'])){
-      $link = explode ("-", $_POST['bsauth_login']);
-      $service = $link[0];
-      $link_id = $link[1];
+    if (isset($_POST['bsauth_login'])){
+      $login = explode ("-", $_POST['bsauth_login']);
+      $service = $login[0];
+      $login_id = $login[1];
       $_SESSION['bsauth_plugin']  = $service;
-      $_SESSION['bsauth_link_id'] = $link_id;
+      $_SESSION['bsauth_login_id'] = $login_id;
+    } else {
+      $service  = $_SESSION['bsauth_plugin'];
+      $login_id = $_SESSION['bsauth_login_id'];
     }
-    if (isset($service) && isset($link_id)) {
+
+
+
+    if (isset($service) && isset($login_id)) {
       $service = $BSAUTH_SERVICES[$service];
       if ($service!=null) {
-        $service->Login($link_id);
+        $service->Login($login_id);
       }
     }
 
 
-/*
-  // didn't I already replace this?
 
-  foreach ($BSAUTH_SERVICES as $service) {
-    if ($service->canLogin()) $service->Login();
-  }
-*/
 
   if ( is_user_logged_in() ) {
     if (isset($_SESSION['bsauth_registered'])) 
@@ -236,7 +234,7 @@ function bsauth_link_display(){
         // TODO error handling
         echo "service not registered!";     
       }
-    } else echo "no service/link id<br>"; 
+    }// else echo "no service/link id<br>"; 
 
 
 
@@ -302,6 +300,7 @@ function bsauth_link_display(){
       printf(  "<p>" .  __("You need to be logged in to use this feature","blaat_auth") . "</p>");        
     } 
   }
+
 }
 //------------------------------------------------------------------------------
 function bsauth_display($content) {

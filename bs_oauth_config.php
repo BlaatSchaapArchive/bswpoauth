@@ -736,7 +736,7 @@ if (!function_exists("blaat_plugins_auth_page")) {
     _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
     echo '</h2>';
     echo '<form method="post" action="options.php">';
-    settings_fields( 'bsauth_pages' ); 
+    settings_fields( 'bs_auth_pages' ); 
 
     echo '<table class="form-table">';
 

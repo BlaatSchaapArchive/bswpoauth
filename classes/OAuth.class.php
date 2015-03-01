@@ -21,8 +21,22 @@ class OAuth implements AuthService {
       self::process('self::process_login', $service_id);
     } catch (Exception $e) {
       // TODO error handling
-     echo "error: ";
-     echo $e->getMessage();
+        switch ($e->getMessage()) {
+          case "missing_token" :
+            _e("OAuth error: the token is missing","blaat_auth");
+            echo $client->error;
+            break;
+          case "processing_error":
+            _e("OAuth error: processing error","blaat_auth");
+            echo $client->error;
+            break;
+          case "initialisation_error":
+            _e("OAuth error: initialisation error","blaat_auth");
+            echo $client->error;
+            break;
+          default:
+            _e("Unknown error","blaat_auth");
+        }
     }
   }
   
@@ -31,9 +45,22 @@ class OAuth implements AuthService {
     try {
       self::process('self::process_link',  $service_id);
     } catch (Exception $e) {
-      // TODO error handling
-     echo "error: ";
-     echo $e->getMessage();
+        switch ($e->getMessage()) {
+          case "missing_token" :
+            _e("OAuth error: the token is missing","blaat_auth");
+            echo $client->error;
+            break;
+          case "processing_error":
+            _e("OAuth error: processing error","blaat_auth");
+            echo $client->error;
+            break;
+          case "initialisation_error":
+            _e("OAuth error: initialisation error","blaat_auth");
+            echo $client->error;
+            break;
+          default:
+            _e("Unknown error","blaat_auth");
+      }
     }
   }
   
@@ -74,7 +101,6 @@ class OAuth implements AuthService {
   }
 //------------------------------------------------------------------------------
   public function process($function, $service_id){
-    echo "process($function,$service_id)<br>";
 
     global $wpdb; // Database functions
 
@@ -90,7 +116,7 @@ class OAuth implements AuthService {
   
       if ($_REQUEST['bsoauth_id']) $_SESSION['bsoauth_id']=$_REQUEST['bsoauth_id'];
 
-echo "some old test, does it still work?<br>";
+
 
       $table_name = $wpdb->prefix . "bs_oauth_services";
       $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE id = %d", $service_id);
@@ -99,7 +125,13 @@ echo "some old test, does it still work?<br>";
       $result = $results[0];
      
       $client = new oauth_client_class;
-      $client->configuration_file = plugin_dir_path(__FILE__) . '/oauth/oauth_configuration.json';
+
+
+      // DEBUGGING
+      $client->debug=true;
+
+
+      $client->configuration_file = plugin_dir_path(__FILE__) . '../oauth/oauth_configuration.json';
       $client->redirect_uri  = site_url("/".get_option("login_page"));
       $client->client_id     = $result['client_id'];
       $client->client_secret = $result['client_secret'];
@@ -136,7 +168,7 @@ echo "some old test, does it still work?<br>";
             */
           }
         } else {
-echo "<pre>"; print_r($client); echo "</pre>";  
+
             throw new Exception("processing_error");
             
           /*
@@ -151,7 +183,7 @@ echo "<pre>"; print_r($client); echo "</pre>";
         echo $client->error;
         */
       } 
-//    }   /*     if ($_REQUEST['bsoauth_id'] ||  $_REQUEST['code'] || $_REQUEST['oauth_token'] ) { */
+
   }
 //------------------------------------------------------------------------------
   public function  install() {
@@ -214,8 +246,6 @@ echo "<pre>"; print_r($client); echo "</pre>";
 //------------------------------------------------------------------------------
   public function  process_link($client,$service,$service_id) {
 
-    echo "processing linking request! ( $service_id )";
-
 
 
     global $wpdb;    
@@ -257,6 +287,7 @@ echo "<pre>"; print_r($client); echo "</pre>";
                                                       $user_id , $service_id , $token , $expiry , $scope  );
         $wpdb->query($query);
         printf( __("Your %s account has been linked", "blaat_auth"), $service );
+        
       }
       unset($_SESSION['bsoauth_id']);
       unset($_SESSION['bsauth_link']);
@@ -264,8 +295,10 @@ echo "<pre>"; print_r($client); echo "</pre>";
       unset($_SESSION['oauth_expiry']);
       unset($_SESSION['oauth_scope']);
       unset($_SESSION['bsauth_display']);
+      unset($_SESSION['bsauth_link_id']);
 
-// } // if 
+
+
 
   }
   public function Unlink ($id) {
@@ -284,7 +317,7 @@ echo "<pre>"; print_r($client); echo "</pre>";
 //------------------------------------------------------------------------------
   private function process_login($client,$display_name,$service_id){
 
-    echo "meep meep process_login( client, $display_name,$service_id)";
+
     global $wpdb;
     $_SESSION['bsauth_display'] = $displayname;
 
@@ -293,7 +326,6 @@ echo "<pre>"; print_r($client); echo "</pre>";
       $_SESSION['oauth_expiry']  = $client->access_token_expiry;
       $_SESSION['oauth_scope']   = $client->scope;
       header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
-      //echo "thinking about linking";
       
     } else {
       
@@ -309,18 +341,17 @@ echo "<pre>"; print_r($client); echo "</pre>";
 
       if ($result) {
         unset ($_SESSION['bsauth_login']);  
+        unset($_SESSION['bsauth_login_id']);
         wp_set_current_user ($result['user_id']);
         wp_set_auth_cookie($result['user_id']);
-        echo " user set to " . $result['user_id'] . " (process login, should go to login page)<br>";
-        //header("Location: ".site_url("/".get_option("login_page")));     
+        header("Location: ".site_url("/".get_option("login_page")));     
       } else {
         $_SESSION['bsauth_registering'] = 1;
         $_SESSION['oauth_signup']  = 1;
         $_SESSION['oauth_token']   = $client->access_token;
         $_SESSION['oauth_expiry']  = $client->access_token_expiry;
         $_SESSION['oauth_scope']   = $client->scope;
-        echo " user not found for service id $service_id and token $token "; 
-        //header("Location: ".site_url("/".get_option("register_page")));
+        header("Location: ".site_url("/".get_option("register_page")));
       }
     }
   }
