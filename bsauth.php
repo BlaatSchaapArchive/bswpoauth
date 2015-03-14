@@ -95,7 +95,8 @@ if (!function_exists("bsauth_register_display")) {
       session_start();
       if (isset($_SESSION['bsauth_register'])) {
 
-
+        
+        $register = explode ("-", $_SESSION['bsauth_register']);            
 
         $service = $_SESSION['bsauth_display'];
         printf( __("You are authenticated to %s","blaat_auth") , $service );
@@ -105,10 +106,20 @@ if (!function_exists("bsauth_register_display")) {
           if (is_numeric($user_id)) {
             $reg_ok=true;
             $_SESSION['bsauth_registered']=1;
-            unset($_SESSION['bsauth_register']);
+            echo "<pre>"; print_r($register); 
+  
             wp_set_current_user ($user_id);
             wp_set_auth_cookie($user_id);
-            header("Location: ".site_url("/".get_option("login_page")));         
+            global $BSAUTH_SERVICES;
+            $serviceToLink = $BSAUTH_SERVICES[$register[0]];
+            if ($serviceToLink) {
+              $serviceToLink->Link($register[1]);
+              header("Location: ".site_url("/".get_option("link_page")));  
+              //header("Location: ".site_url("/".get_option("login_page")));  
+            } else {
+              echo "DEBUG:::: Unable to link your account"; // TODO message
+            }
+            unset($_SESSION['bsauth_register']);
           } else {
             $reg_ok=false;
             $error = __($user_id->get_error_message());
@@ -118,6 +129,7 @@ if (!function_exists("bsauth_register_display")) {
           // no username/password given
         } 
         if ($reg_ok){
+       
         } else {
           if (isset($error)) {
             echo "<div class='error'>$error</div>";
@@ -166,8 +178,8 @@ if (!function_exists("bsauth_register_display")) {
           echo "</div>";
           echo "<div id='bsauth_buttons'>";
           echo "<p>" . __("Sign up with","blaat_auth") . "</p>";
-          $action=htmlspecialchars(get_option("login_page"));
-          echo "<form action='$action'>";        
+          $action=htmlspecialchars(site_url("/".get_option("login_page")));
+          echo "<form action='$action' method='post'>";        
           global $BSAUTH_SERVICES;
 
           $buttons = array();
@@ -262,15 +274,18 @@ if (!function_exists("bsauth_link_display")) {
           // TODO error handling
           echo "service not registered!";     
         }
-      } else //echo "no service/link id<br>"; 
+      } // else echo "no service/link id<br>"; 
 
-      echo "done with (un)linking";
+ 
 
-    // ok... now we moved the code to the class, we need to call it.
-      $buttonsLinked=array();
-      $buttonsUnlinked=array();
+      $buttonsLinked   = array();      
+      $buttonsUnlinked = array();
+      
+
+      
       foreach ($BSAUTH_SERVICES as $service) {
         $buttons = $service->getButtonsLinked($user->ID);
+      
         $buttonsLinked_new = array_merge ( $buttonsLinked , $buttons['linked'] );
         $buttonsUnlinked_new = array_merge ( $buttonsUnlinked , $buttons['unlinked'] );
         $buttonsLinked=$buttonsLinked_new;
