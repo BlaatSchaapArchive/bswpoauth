@@ -47,11 +47,12 @@ if (!function_exists("bsauth_login_display")) {
       }
 
     if ( is_user_logged_in() ) {
-      if (isset($_SESSION['bsauth_registered'])) 
+      if (isset($_SESSION['bsauth_registered'])) {
         _e("Registered","blaat_auth");  
         unset ($_SESSION['bsauth_registered']);
-      else
-        _e("Logged in","blaat_auth"); 
+      } else {
+          _e("Logged in","blaat_auth"); 
+        }
     } else {
 
       echo "<div id='bsauth_local'>";
