@@ -22,7 +22,7 @@ if (!function_exists("bsauth_login_display")) {
   function bsauth_login_display(){
     global $BSAUTH_SERVICES;
 
-      if (isset($_SESSION['bsauth_link_id'])) {
+      if (isset($_SESSION['bsauth_link_id']) && is_user_logged_in()) {
         header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
       }
 
@@ -213,6 +213,9 @@ if (!function_exists("bsauth_link_display")) {
 
   function bsauth_link_display(){
     session_start();
+
+
+
     global $BSAUTH_SERVICES;
     global $wpdb;
     $user = wp_get_current_user();

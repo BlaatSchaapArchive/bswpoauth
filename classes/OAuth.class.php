@@ -310,6 +310,14 @@ class OAuth implements AuthService {
   public function  process_link($client,$service,$service_id) {
 
 
+      unset($_SESSION['bsoauth_id']);
+      unset($_SESSION['bsauth_link']);
+      unset($_SESSION['oauth_token']);
+      unset($_SESSION['oauth_expiry']);
+      unset($_SESSION['oauth_scope']);
+      unset($_SESSION['bsauth_display']);
+      unset($_SESSION['bsauth_link_id']);
+
 
     global $wpdb;    
     $user = wp_get_current_user();
@@ -363,13 +371,8 @@ class OAuth implements AuthService {
         printf( __("Your %s account has been linked", "blaat_auth"), $service );
         
       }
-      unset($_SESSION['bsoauth_id']);
-      unset($_SESSION['bsauth_link']);
-      unset($_SESSION['oauth_token']);
-      unset($_SESSION['oauth_expiry']);
-      unset($_SESSION['oauth_scope']);
-      unset($_SESSION['bsauth_display']);
-      unset($_SESSION['bsauth_link_id']);
+
+
 
 
 
