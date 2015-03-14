@@ -43,10 +43,10 @@
 }
 /*****************************************************************************/
 
-.bs-auth-btn-logo-facebook{
+.bs-auth-btn-logo-blaat_oauth-facebook{
   background-image:url('facebook.png');
 }
 
-.bs-auth-btn-logo-github{
+.bs-auth-btn-logo-blaat_oauth-github{
   background-image:url('github.png');
 }

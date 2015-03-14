@@ -482,9 +482,11 @@ function bsoauth_update_service(){
 
 }
 //------------------------------------------------------------------------------
-function bs_upload_filename(){
-  global $bs_set_filename;
-  return $bs_set_filename;
+if (!function_exists("bs_upload_filename")) {
+  function bs_upload_filename(){
+    global $bs_set_filename;
+    return $bs_set_filename;
+  }
 }
 //------------------------------------------------------------------------------
 function bsoauth_list_services(){

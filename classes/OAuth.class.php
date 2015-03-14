@@ -79,23 +79,86 @@ class OAuth implements AuthService {
         $service=strtolower($result['client_name']); 
       else {
         $service="custom-".$result['id'];
+
+        //deprecation css generation in class
         $button['css']="<style>.bs-auth-btn-logo-".$service.
            " {background-image:url('" .$result['customlogo_url']."');}</style>"; 
+
+
+        $button['logo']    = $result['customlogo_url'];
       }
-/*
-      $button['button']="<button class='bs-auth-btn' name=bsoauth_id 
-             type=submit value='".$result['id']."'><span class='bs-auth-btn-logo 
-             bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>".
-             $result['display_name']."</span></button>";
-*/
+
+      // deprecated html generation inside class
       $button['button']="<button class='bs-auth-btn' name=bsauth_login 
              type=submit value='blaat_oauth-".$result['id']."'><span class='bs-auth-btn-logo 
              bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>".
              $result['display_name']."</span></button>";
 
-      $button['order']=$result['display_order'];
-      $button['plugin']="blaat_oauth";
-      $buttons[]=$button;
+      
+      $button['order']        = $result['display_order'];
+      $button['plugin']       = "blaat_oauth";
+      $button['service']      = $service;
+      $button['id']           = $result['id'];
+      $button['display_name'] = $result['display_name'];
+
+      $buttons[]          = $button;
+    }
+    return $buttons;
+  }
+
+
+    public function getButtonsLinked($id){
+      global $wpdb;
+      $buttons = array(); 
+      $buttons['linked']= array();
+      $buttons['unlinked'] = array();
+  
+      $user = wp_get_current_user();
+
+      // TODO rewrite as OAuth Class Methods
+      $table_name = $wpdb->prefix . "bs_oauth_sessions";
+      $user_id    = $user->ID;
+      $query = $wpdb->prepare("SELECT service_id FROM $table_name WHERE `user_id` = %d",$user_id);
+      $linked_services = $wpdb->get_results($query,ARRAY_A);
+       
+      $table_name = $wpdb->prefix . "bs_oauth_services";
+      $query = "SELECT * FROM $table_name where enabled=1";
+      $available_services = $wpdb->get_results($query,ARRAY_A);
+
+      $linked = Array();
+      foreach ($linked_services as $linked_service) {
+        $linked[]=$linked_service['service_id'];
+      }  
+
+
+      foreach ($available_services as $available_service) {
+        $button = array();
+        $button['class'] = $class;
+
+        if(!$available_service['customlogo_enabled'])
+          $service=strtolower($available_service['client_name']);
+        else {
+          $service="custom-".$available_service['id'];
+          $button['logo']= $available_service['customlogo_url'];
+          $button['css'] = "<style>.bs-auth-btn-logo-".$service." {background-image:url('" .$available_service['customlogo_url']."');}</style>";
+        }
+
+
+      $button['order']   = $available_service['display_order'];
+      $button['plugin']  = "blaat_oauth";
+      $button['id']      = $available_service['id'];
+      $button['service'] = $service;
+
+      $button['display_name'] = $available_service['display_name'];
+
+
+      if (in_array($available_service['id'],$linked)) { 
+        $buttons['linked'][]=$button;
+      } else {
+        $buttons['unlinked'][]=$button;
+      }
+
+
     }
     return $buttons;
   }
@@ -189,7 +252,7 @@ class OAuth implements AuthService {
   public function  install() {
     global $wpdb;
     global $bs_oauth_plugin;
-    $dbver = 3;
+    $dbver = 4;
     $live_dbver = get_option( "bs_oauth_dbversion" );
     $table_name = $wpdb->prefix . "bs_oauth_sessions";
 
@@ -198,7 +261,7 @@ class OAuth implements AuthService {
       $query = "CREATE TABLE $table_name (
                 `id` INT NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
                 `user_id` INT NOT NULL DEFAULT 0,
-                `service_id` TEXT NOT NULL ,
+                `service_id` INT NOT NULL ,
                 `token` TEXT NOT NULL ,
                 `authorized` BOOLEAN NOT NULL ,
                 `expiry` DATETIME NULL DEFAULT NULL ,
@@ -255,9 +318,13 @@ class OAuth implements AuthService {
     $expiry     = $client->access_token_expiry;
     $scope      = $client->scope;
     //$service    = $_SESSION['bsauth_display'];
+
+
     $table_name = $wpdb->prefix . "bs_oauth_sessions";
     // We need to verify the external account is not already linked
     // before we insert!!!
+    
+
 
     $testQuery = $wpdb->prepare("SELECT * FROM $table_name 
                                  WHERE service_id = %d 
@@ -265,17 +332,24 @@ class OAuth implements AuthService {
     $testResult = $wpdb->get_results($testQuery,ARRAY_A);
 
 
+
             /*
         What the fuck is happening.... when I run the query manually.... it 
         just answers the existing record.... however, when I run it in wordpress
         it doesn't appear to answer most of the times, but occasionally it answers.
+
+
       echo "<pre>testQuery\n$testQuery\n";
       $wpdb->print_error();
       echo "<pre>Service ID: $service_id \nToken:$token \ntestResult: "; print_r($testResult); 
 
 
-      echo "\n\n" . $wpdb->last_query ."</pre><br>";
-      */
+      echo "\n\nQUERY" . $wpdb->last_query ."</pre><br>";
+      echo "\n\nERROR" . $wpdb->last_error ."</pre><br>";
+
+    */
+
+      
 
       if (count($testResult)) {
         printf( __("Your %s account has is already linked to another local account", "blaat_auth"), $service );
@@ -319,7 +393,7 @@ class OAuth implements AuthService {
 
 
     global $wpdb;
-    $_SESSION['bsauth_display'] = $displayname;
+    $_SESSION['bsauth_display'] = $display_name;
 
     if ( is_user_logged_in() ) { 
       $_SESSION['oauth_token']   = $client->access_token;
@@ -346,7 +420,7 @@ class OAuth implements AuthService {
         wp_set_auth_cookie($result['user_id']);
         header("Location: ".site_url("/".get_option("login_page")));     
       } else {
-        $_SESSION['bsauth_registering'] = 1;
+        $_SESSION['bsauth_register'] = "blaat_oauth-$service_id";
         $_SESSION['oauth_signup']  = 1;
         $_SESSION['oauth_token']   = $client->access_token;
         $_SESSION['oauth_expiry']  = $client->access_token_expiry;
