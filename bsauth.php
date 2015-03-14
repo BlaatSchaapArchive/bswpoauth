@@ -49,6 +49,7 @@ if (!function_exists("bsauth_login_display")) {
     if ( is_user_logged_in() ) {
       if (isset($_SESSION['bsauth_registered'])) 
         _e("Registered","blaat_auth");  
+        unset ($_SESSION['bsauth_registered']);
       else
         _e("Logged in","blaat_auth"); 
     } else {
@@ -114,8 +115,8 @@ if (!function_exists("bsauth_register_display")) {
             $serviceToLink = $BSAUTH_SERVICES[$register[0]];
             if ($serviceToLink) {
               $serviceToLink->Link($register[1]);
-              header("Location: ".site_url("/".get_option("link_page")));  
-              //header("Location: ".site_url("/".get_option("login_page")));  
+              //header("Location: ".site_url("/".get_option("link_page")));  
+              header("Location: ".site_url("/".get_option("login_page")));  
             } else {
               echo "DEBUG:::: Unable to link your account"; // TODO message
             }
