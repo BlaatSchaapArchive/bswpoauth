@@ -319,6 +319,7 @@ class OAuth implements AuthService {
       unset($_SESSION['bsauth_link_id']);
 
 
+
     global $wpdb;    
     $user = wp_get_current_user();
     $user_id    = $user->ID;
@@ -398,7 +399,7 @@ class OAuth implements AuthService {
     global $wpdb;
     $_SESSION['bsauth_display'] = $display_name;
 
-    if ( is_user_logged_in() ) { 
+    if ( is_user_logged_in() && !$_SESSION['bsauth_registered']) { 
       $_SESSION['oauth_token']   = $client->access_token;
       $_SESSION['oauth_expiry']  = $client->access_token_expiry;
       $_SESSION['oauth_scope']   = $client->scope;

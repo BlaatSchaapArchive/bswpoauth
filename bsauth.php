@@ -22,27 +22,33 @@ if (!function_exists("bsauth_login_display")) {
   function bsauth_login_display(){
     global $BSAUTH_SERVICES;
 
-      if (isset($_SESSION['bsauth_link_id']) && is_user_logged_in()) {
+
+
+      //if (isset($_SESSION['bsauth_link_id']) && is_user_logged_in()) {
+      if (isset($_SESSION['bsauth_link']) && is_user_logged_in()) {
         header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
+        //header("Location: ".site_url("/".get_option("link_page")));//. '?' . $_SERVER['QUERY_STRING']);
       }
 
-      if (isset($_POST['bsauth_login'])){
-        $login = explode ("-", $_POST['bsauth_login']);
-        $service = $login[0];
-        $login_id = $login[1];
-        $_SESSION['bsauth_plugin']  = $service;
-        $_SESSION['bsauth_login_id'] = $login_id;
-      } else {
-        $service  = $_SESSION['bsauth_plugin'];
-        $login_id = $_SESSION['bsauth_login_id'];
-      }
-
-      if (isset($service) && isset($login_id)) {
-        $service = $BSAUTH_SERVICES[$service];
-        if ($service!=null) {
-          $service->Login($login_id);
+      if ( !is_user_logged_in() ) {
+        if ( isset($_POST['bsauth_login'])){
+          $login = explode ("-", $_POST['bsauth_login']);
+          $service = $login[0];
+          $login_id = $login[1];
+          $_SESSION['bsauth_plugin']  = $service;
+          $_SESSION['bsauth_login_id'] = $login_id;
         } else {
-          _e("Invalid service type","blaat_auth");
+          $service  = $_SESSION['bsauth_plugin'];
+          $login_id = $_SESSION['bsauth_login_id'];
+        }
+
+        if (isset($service) && isset($login_id)) {
+          $service = $BSAUTH_SERVICES[$service];
+          if ($service!=null) {
+            $service->Login($login_id);
+          } else {
+            _e("Invalid service type","blaat_auth");
+          }
         }
       }
 
@@ -91,6 +97,12 @@ if (!function_exists("bsauth_login_display")) {
 //------------------------------------------------------------------------------
 if (!function_exists("bsauth_register_display")) {
   function bsauth_register_display() {
+
+    if (isset($_POST['cancel'])) {
+      unset($_SESSION['bsauth_register']);
+    }
+
+
     if (is_user_logged_in()) {
       _e("You cannot register a new account since you are already logged in.","blaat_auth");
     } else {
@@ -115,6 +127,7 @@ if (!function_exists("bsauth_register_display")) {
             global $BSAUTH_SERVICES;
             $serviceToLink = $BSAUTH_SERVICES[$register[0]];
             if ($serviceToLink) {
+              //die("should link");
               $serviceToLink->Link($register[1]);
               //header("Location: ".site_url("/".get_option("link_page")));  
               header("Location: ".site_url("/".get_option("login_page")));  
@@ -141,7 +154,7 @@ if (!function_exists("bsauth_register_display")) {
             <table>
               <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
               <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
-              <tr><td rowspan=2><button type=submit><?php _e("Register"); ?></button></td></tr>
+              <tr>><td><button name='cancel' type=submit><?php _e("Cancel"); ?></button></td><td><button name='register' type=submit><?php _e("Register"); ?></button></td></tr>
             </table>
           </form>
           <?php
@@ -173,7 +186,7 @@ if (!function_exists("bsauth_register_display")) {
               <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
               <tr><td><?php _e("Password"); ?></td><td><input type='password' name='password'></td></tr>
               <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
-              <tr><td rowspan=2><button type=submit><?php _e("Register"); ?></button></td></tr>
+              <tr><td></td><td><button type=submit><?php _e("Register"); ?></button></td></tr>
             </table>
           </form>
           <?php         
@@ -210,11 +223,13 @@ if (!function_exists("bsauth_register_display")) {
 //------------------------------------------------------------------------------
 if (!function_exists("bsauth_generate_button")) {
   function bsauth_generate_button($button, $action){
-  
+
+      if (isset($button['logo']))
+        $style="style='background-image:url(\"" .$button['logo']. "\");'";
 
       return "<button class='bs-auth-btn' name=bsauth_$action 
              type=submit value='".$button['plugin']."-".$button['id']."'>
-             <span class='bs-auth-btn-logo 
+             <span $style class='bs-auth-btn-logo 
              bs-auth-btn-logo-".$button['plugin']."-".$button['service']."'>
              </span><span class='bs-auth-btn-text'>".
              $button['display_name']."</span></button>";
@@ -309,7 +324,7 @@ if (!function_exists("bsauth_link_display")) {
       unset($_SESSION['bsauth_link']);
     
 
-      echo "<form method=post><div class='link authservices'><div class='blocktitle'>".
+      echo "<form method='post' action='". site_url("/".get_option("link_page")) ."'><div class='link authservices'><div class='blocktitle'>".
               __("Link your account to","blaat_auth") .  "</div>".
               $linkHTML . "
            </div></form><form method=post>

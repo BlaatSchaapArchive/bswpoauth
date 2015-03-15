@@ -1,13 +1,19 @@
 .bs-auth-btn {
   border: 1px black solid;
   background-image: linear-gradient(#ccc,#eee);
+  /*
   min-height: 36px;
   min-width: 128px;
+  */
+  height: 36px;
+  width: 128px;
   margin-right:8px;
   margin-bottom:8px;
   text-align: left;
   padding: 1px;
   border-radius: 9px;
+  display: inline-block; /* Needed for compatibility with some themes */
+  line-height: 1em;
 }
 
 .bs-auth-btn-text {
