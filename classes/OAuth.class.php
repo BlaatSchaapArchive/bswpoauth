@@ -65,8 +65,14 @@ class OAuth implements AuthService {
   }
   
 //------------------------------------------------------------------------------
+  public function getRegisterData(){
+    return NULL;
+  }
+//------------------------------------------------------------------------------
+  public function Delete($user_id){
+  }
 
-
+//------------------------------------------------------------------------------
   public function getButtons(){
     global $wpdb;
     $table_name = $wpdb->prefix . "bs_oauth_services";
@@ -429,6 +435,8 @@ class OAuth implements AuthService {
         $_SESSION['oauth_token']   = $client->access_token;
         $_SESSION['oauth_expiry']  = $client->access_token_expiry;
         $_SESSION['oauth_scope']   = $client->scope;
+        $_SESSION['bsauth_fetch_data'] = 0;
+        $_SESSION['bsauth_register_auto'] = 0;
         header("Location: ".site_url("/".get_option("register_page")));
       }
     }

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: BlaatSchaap OAuth v0.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2014-05-19 18:44:29+0000\n"
+"PO-Revision-Date: 2015-03-20 19:43:05+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -20,267 +20,270 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Textdomain-Support: yes"
 
-#: blaat.php:15
+#: blaat.php:30
 #@ blaatschaap
 msgid "Thank you for using BlaatSchaap plugins."
 msgstr "Hartelijk bedankt dat je BlaatSchaap plugins gebruikt."
 
-#: blaat.php:39
+#: blaat.php:54
 #@ blaatschaap
 msgid "active"
 msgstr "actief"
 
-#: blaat.php:39
+#: blaat.php:54
 #@ blaatschaap
 msgid "inactive"
 msgstr "inactief"
 
-#: blaat.php:13
+#: blaat.php:28
 #@ blaatschaap
 msgid "BlaatSchaap Plugins"
 msgstr ""
 
-#: blaat.php:26
+#: blaat.php:41
 #@ blaatschaap
 msgid "Installed BlaatSchaap plugins:"
 msgstr ""
 
-#: blaat.php:30
+#: blaat.php:45
 #@ blaatschaap
 msgid "Plugin name:"
 msgstr ""
 
-#: blaat.php:32
+#: blaat.php:47
 #@ blaatschaap
 msgid "Plugin version:"
 msgstr ""
 
-#: blaat.php:34
+#: blaat.php:49
 #@ blaatschaap
 msgid "Status:"
 msgstr ""
 
-#: blaatoauth.php:35
+#: bs_oauth_config.php:771
 #@ blaat_auth
 msgid "BlaatSchaap WordPress Authentication Plugins"
 msgstr ""
 
-#: blaatoauth.php:42
+#: bs_oauth_config.php:778
 #@ blaat_auth
 msgid "Login page"
 msgstr ""
 
-#: blaatoauth.php:46
+#: bs_oauth_config.php:782
 #@ blaat_auth
 msgid "Register page"
 msgstr ""
 
-#: blaatoauth.php:50
+#: bs_oauth_config.php:786
 #@ blaat_auth
 msgid "Link page"
 msgstr ""
 
-#: blaatoauth.php:55
+#: bs_oauth_config.php:791
 #@ blaat_auth
 msgid "Redirect to frontpage after logout"
 msgstr ""
 
-#: blaatoauth.php:61
+#: bs_oauth_config.php:797
 #@ blaat_auth
 msgid "Custom Button CSS"
 msgstr ""
 
-#: blaatoauth.php:68
+#: bs_oauth_config.php:815
 #@ default
 msgid "Save Changes"
 msgstr ""
 
-#: blaatoauth.php:143
+#: bs_oauth_config.php:685
 #@ blaat_auth
 msgid "General Auth Settings"
 msgstr ""
 
-#: blaatoauth.php:144
+#: bs_oauth_config.php:686
 #@ blaat_auth
 msgid "General Auth"
 msgstr ""
 
-#: blaatoauth.php:148
-#: blaatoauth.php:149
+#: bs_oauth_config.php:690
+#: bs_oauth_config.php:691
 #@ blaat_auth
 msgid "OAuth Configuration"
 msgstr ""
 
-#: blaatoauth.php:153
+#: bs_oauth_config.php:695
 #@ blaat_auth
 msgid "OAuth Add Service"
 msgstr ""
 
-#: blaatoauth.php:154
+#: bs_oauth_config.php:696
 #@ blaat_auth
 msgid "OAuth Add"
 msgstr ""
 
-#: blaatoauth.php:158
+#: bs_oauth_config.php:700
 #@ blaat_auth
 msgid "OAuth Add Custom Service"
 msgstr ""
 
-#: blaatoauth.php:159
+#: bs_oauth_config.php:701
 #@ blaat_auth
 msgid "OAuth Add Custom"
 msgstr ""
 
-#: blaatoauth.php:168
+#: bs_oauth_config.php:710
 #@ default
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: blaatoauth.php:173
 #: bs_oauth_config.php:10
-#: bs_oauth_config.php:142
+#: bs_oauth_config.php:149
+#: bs_oauth_config.php:715
 #@ blaat_auth
 msgid "BlaatSchaap OAuth Configuration"
 msgstr ""
 
-#: blaatoauth.php:175
 #: bs_oauth_config.php:11
-#: bs_oauth_config.php:144
+#: bs_oauth_config.php:151
+#: bs_oauth_config.php:717
 #@ blaat_auth
 msgid "Documentation:"
 msgstr ""
 
-#: blaatoauth.php:185
+#: bs_oauth_config.php:727
 #@ blaat_auth
 msgid "Configured Services"
 msgstr ""
 
-#: blaatoauth.php:283
+#: classes/OAuth.class.php:26
+#: classes/OAuth.class.php:50
 #@ blaat_auth
 msgid "OAuth error: the token is missing"
 msgstr ""
 
-#: blaatoauth.php:287
+#: classes/OAuth.class.php:30
+#: classes/OAuth.class.php:54
 #@ blaat_auth
 msgid "OAuth error: processing error"
 msgstr ""
 
-#: blaatoauth.php:291
+#: classes/OAuth.class.php:34
+#: classes/OAuth.class.php:58
 #@ blaat_auth
 msgid "OAuth error: initialisation error"
 msgstr ""
 
-#: blaatoauth.php:306
+#: bsauth.php:77
 #@ blaat_auth
 msgid "Logged in"
 msgstr ""
 
-#: blaatoauth.php:309
+#: bsauth.php:82
 #@ blaat_auth
 msgid "Log in with a local account"
 msgstr ""
 
-#: blaatoauth.php:313
+#: bsauth.php:87
 #@ blaat_auth
 msgid "Log in with"
 msgstr ""
 
-#: blaatoauth.php:358
+#: classes/OAuth.class.php:397
 #, php-format
 #@ blaat_auth
 msgid "You are now unlinked from %s."
 msgstr ""
 
-#: blaatoauth.php:380
+#: classes/OAuth.class.php:378
 #, php-format
 #@ blaat_auth
 msgid "Your %s account has been linked"
 msgstr ""
 
-#: blaatoauth.php:418
+#: bsauth.php:361
 #@ blaat_auth
 msgid "Link your account to"
 msgstr ""
 
-#: blaatoauth.php:422
+#: bsauth.php:365
 #@ blaat_auth
 msgid "Unlink your account from"
 msgstr ""
 
-#: blaatoauth.php:436
+#: bsauth.php:379
 #, php-format
 #@ blaat_auth
 msgid "Please provide a local account to link to %s"
 msgstr ""
 
-#: blaatoauth.php:440
+#: bsauth.php:383
 #@ blaat_auth
 msgid "You need to be logged in to use this feature"
 msgstr ""
 
-#: blaatoauth.php:447
+#: bsauth.php:126
 #@ blaat_auth
 msgid "You cannot register a new account since you are already logged in."
 msgstr ""
 
-#: blaatoauth.php:455
+#: bsauth.php:135
 #, php-format
 #@ blaat_auth
 msgid "You are authenticated to %s"
 msgstr ""
 
-#: blaatoauth.php:478
+#: bsauth.php:185
 #@ blaat_auth
 msgid "Please provide a username and e-mail address to complete your signup"
 msgstr ""
 
-#: blaatoauth.php:481
-#: blaatoauth.php:512
+#: bsauth.php:188
+#: bsauth.php:219
 #@ default
 msgid "Username"
 msgstr ""
 
-#: blaatoauth.php:482
-#: blaatoauth.php:514
+#: bsauth.php:189
+#: bsauth.php:221
 #@ default
 msgid "E-mail Address"
 msgstr ""
 
-#: blaatoauth.php:483
-#: blaatoauth.php:515
+#: bsauth.php:190
+#: bsauth.php:222
 #@ default
 msgid "Register"
 msgstr ""
 
-#: blaatoauth.php:487
+#: bsauth.php:194
 #, php-format
 #@ blaat_auth
 msgid "If you already have an account, please click <a href='%s'>here</a> to link it."
 msgstr ""
 
-#: blaatoauth.php:508
+#: bsauth.php:215
 #@ blaat_auth
 msgid "Enter a username, password and e-mail address to sign up"
 msgstr ""
 
-#: blaatoauth.php:513
+#: bsauth.php:220
 #@ default
 msgid "Password"
 msgstr ""
 
-#: blaatoauth.php:521
+#: bsauth.php:228
 #@ blaat_auth
 msgid "Sign up with"
 msgstr ""
 
 #: bs_oauth_config.php:27
-#: bs_oauth_config.php:511
+#: bs_oauth_config.php:527
 #@ blaat_auth
 msgid "Service"
 msgstr ""
 
 #: bs_oauth_config.php:83
-#: bs_oauth_config.php:158
+#: bs_oauth_config.php:171
 #@ blaat_auth
 msgid "Display logo"
 msgstr ""
@@ -291,135 +294,194 @@ msgid "Default logo"
 msgstr ""
 
 #: bs_oauth_config.php:94
-#: bs_oauth_config.php:161
+#: bs_oauth_config.php:174
 #@ blaat_auth
 msgid "Upload custom logo"
 msgstr ""
 
 #: bs_oauth_config.php:100
-#: bs_oauth_config.php:152
-#: bs_oauth_config.php:591
+#: bs_oauth_config.php:159
+#: bs_oauth_config.php:607
 #@ blaat_auth
 msgid "Display name"
 msgstr ""
 
-#: bs_oauth_config.php:106
-#: bs_oauth_config.php:219
-#: bs_oauth_config.php:597
+#: bs_oauth_config.php:112
+#: bs_oauth_config.php:232
+#: bs_oauth_config.php:619
 #@ blaat_auth
 msgid "Client ID"
 msgstr ""
 
-#: bs_oauth_config.php:112
-#: bs_oauth_config.php:225
-#: bs_oauth_config.php:603
+#: bs_oauth_config.php:118
+#: bs_oauth_config.php:238
+#: bs_oauth_config.php:625
 #@ blaat_auth
 msgid "Client Secret"
 msgstr ""
 
-#: bs_oauth_config.php:118
-#: bs_oauth_config.php:231
-#: bs_oauth_config.php:609
+#: bs_oauth_config.php:124
+#: bs_oauth_config.php:244
+#: bs_oauth_config.php:631
 #@ blaat_auth
 msgid "Default Scope"
 msgstr ""
 
-#: bs_oauth_config.php:124
-#: bs_oauth_config.php:237
-#: bs_oauth_config.php:633
+#: bs_oauth_config.php:130
+#: bs_oauth_config.php:250
+#: bs_oauth_config.php:655
 #@ blaat_auth
 msgid "Enabled"
 msgstr ""
 
-#: bs_oauth_config.php:129
-#: bs_oauth_config.php:242
+#: bs_oauth_config.php:135
+#: bs_oauth_config.php:255
 #@ default
 #@ blaat_auth
 msgid "Add"
 msgstr ""
 
-#: bs_oauth_config.php:167
-#: bs_oauth_config.php:522
+#: bs_oauth_config.php:180
+#: bs_oauth_config.php:538
 #@ blaat_auth
 msgid "OAuth version"
 msgstr ""
 
-#: bs_oauth_config.php:177
-#: bs_oauth_config.php:538
+#: bs_oauth_config.php:190
+#: bs_oauth_config.php:554
 #@ blaat_auth
 msgid "Request Token URL (1.0 and 1.0a only)"
 msgstr ""
 
-#: bs_oauth_config.php:183
-#: bs_oauth_config.php:545
+#: bs_oauth_config.php:196
+#: bs_oauth_config.php:561
 #@ blaat_auth
 msgid "Dialog URL"
 msgstr ""
 
-#: bs_oauth_config.php:189
-#: bs_oauth_config.php:552
+#: bs_oauth_config.php:202
+#: bs_oauth_config.php:568
 #@ blaat_auth
 msgid "Access Token URL"
 msgstr ""
 
-#: bs_oauth_config.php:195
-#: bs_oauth_config.php:559
+#: bs_oauth_config.php:208
+#: bs_oauth_config.php:575
 #@ blaat_auth
 msgid "Offline Dialog URL (optional)"
 msgstr ""
 
-#: bs_oauth_config.php:201
-#: bs_oauth_config.php:566
+#: bs_oauth_config.php:214
+#: bs_oauth_config.php:582
 #@ blaat_auth
 msgid "Append state to redirect (optional)"
 msgstr ""
 
-#: bs_oauth_config.php:207
-#: bs_oauth_config.php:572
+#: bs_oauth_config.php:220
+#: bs_oauth_config.php:588
 #@ blaat_auth
 msgid "URL Parameters"
 msgstr ""
 
-#: bs_oauth_config.php:213
-#: bs_oauth_config.php:580
+#: bs_oauth_config.php:226
+#: bs_oauth_config.php:596
 #@ blaat_auth
 msgid "Authorisation Header"
 msgstr ""
 
-#: bs_oauth_config.php:307
-#: bs_oauth_config.php:438
+#: bs_oauth_config.php:320
+#: bs_oauth_config.php:452
 #@ blaat_auth
 msgid "Image error"
 msgstr ""
 
-#: bs_oauth_config.php:308
-#: bs_oauth_config.php:439
+#: bs_oauth_config.php:321
+#: bs_oauth_config.php:453
 #@ blaat_auth
 msgid "Upload error"
 msgstr ""
 
-#: bs_oauth_config.php:382
+#: bs_oauth_config.php:395
 #@ blaat_auth
 msgid "Not Implemented!"
 msgstr ""
 
-#: bs_oauth_config.php:516
+#: bs_oauth_config.php:532
 #@ blaat_auth
 msgid "Custom"
 msgstr ""
 
-#: bs_oauth_config.php:615
+#: bs_oauth_config.php:637
 #@ blaat_auth
 msgid "Logo:"
 msgstr ""
 
-#: bs_oauth_config.php:637
+#: bs_oauth_config.php:659
 #@ default
 msgid "Delete"
 msgstr ""
 
-#: bs_oauth_config.php:638
+#: bs_oauth_config.php:660
 #@ default
 msgid "Update"
+msgstr ""
+
+#: blaat.php:60
+#@ blaatschaap
+msgid "Thank you for using one of my projects. I develop these projects in my free time. <br>Please donate to support development of the future versions of my projects. <br>Any donation is appreciated. Thanks a lot!<br>André"
+msgstr ""
+
+#: bs_oauth_config.php:106
+#: bs_oauth_config.php:165
+#: bs_oauth_config.php:613
+#@ blaat_auth
+msgid "Display order"
+msgstr ""
+
+#: bs_oauth_config.php:746
+#@ blaat_auth
+msgid "Disabled"
+msgstr ""
+
+#: bs_oauth_config.php:751
+#@ blaat_auth
+msgid "Optional"
+msgstr ""
+
+#: bs_oauth_config.php:756
+#@ blaat_auth
+msgid "Required"
+msgstr ""
+
+#: bsauth.php:63
+#@ blaat_auth
+msgid "Invalid service type"
+msgstr ""
+
+#: bsauth.php:70
+#@ blaat_auth
+msgid "Registered"
+msgstr ""
+
+#: bsauth.php:190
+#@ default
+msgid "Cancel"
+msgstr ""
+
+#: bsauth.php:210
+#@ bsauth
+msgid "Some data is missing. You need to fill out all fields."
+msgstr ""
+
+#: classes/OAuth.class.php:38
+#: classes/OAuth.class.php:62
+#@ blaat_auth
+msgid "Unknown error"
+msgstr ""
+
+#: classes/OAuth.class.php:370
+#, php-format
+#@ blaat_auth
+msgid "Your %s account has is already linked to another local account"
 msgstr ""
 

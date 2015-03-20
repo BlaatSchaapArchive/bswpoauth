@@ -730,6 +730,39 @@ function bsoauth_config_page() {
 
 }
 //------------------------------------------------------------------------------
+if (!function_exists("blaat_plugins_auth_page_signup_option")) {
+  function blaat_plugins_auth_page_signup_option($option_name){
+    $option_field = "bs_auth_signup_${option_name}";    
+    $option_value = get_option($option_field);
+
+    echo '<tr><th>';
+    // This can not be auto translated! 
+    _e("Requirements for $option_name", "blaat_auth") ;
+    echo "</th><td>";
+    echo "<select name='" . htmlspecialchars($option_field) . "'>";
+
+    $selected = ($option_value=="Disabled") ? "selected='selected'" : "";
+    echo "<option value='Disabled' $selected>";
+    _e("Disabled" , "blaat_auth");
+    echo  "</option>";
+
+    $selected = ($option_value=="Optional") ? "selected='selected'" : "";
+    echo "<option value='Optional' $selected>";
+    _e("Optional" , "blaat_auth");
+    echo  "</option>";
+
+    $selected = ($option_value=="Required") ? "selected='selected'" : "";
+    echo "<option value='Required' $selected>";
+    _e("Required" , "blaat_auth");
+    echo  "</option>";
+
+
+    echo "</select>";
+    echo "</td></tr>";
+
+    
+  }
+}
 //------------------------------------------------------------------------------
 if (!function_exists("blaat_plugins_auth_page")) {
   function blaat_plugins_auth_page(){
@@ -766,6 +799,23 @@ if (!function_exists("blaat_plugins_auth_page")) {
     echo htmlspecialchars(get_option("bsauth_custom_button"));
     echo "</textarea>";
     echo '</td></tr>';
+
+    /* 
+        Preparations for future support
+        Note: string generation cannot be automised
+        Meaning, outer code should be moved back here, 
+                          inner code done by function.
+    blaat_plugins_auth_page_signup_option("user_url");
+    blaat_plugins_auth_page_signup_option("user_email");
+    blaat_plugins_auth_page_signup_option("display_name");
+    blaat_plugins_auth_page_signup_option("nickname");
+    blaat_plugins_auth_page_signup_option("first_name");
+    blaat_plugins_auth_page_signup_option("last_name");
+    blaat_plugins_auth_page_signup_option("description");
+    blaat_plugins_auth_page_signup_option("jabber");
+    blaat_plugins_auth_page_signup_option("aim");
+    blaat_plugins_auth_page_signup_option("yim");
+    */
 
     echo '</table><input name="Submit" type="submit" value="';
     echo  esc_attr_e('Save Changes') ;

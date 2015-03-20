@@ -7,6 +7,11 @@ if (!interface_exists("AuthService")) {
 	  public function Login($id);
 	  public function Link($id);
     public function Unlink($id);
+
+    public function getRegisterData();
+    public function Delete($user_id);
+    
+
 	  public function getButtons();
 
     public function getButtonsLinked($id);

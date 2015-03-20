@@ -9,6 +9,19 @@ if (!function_exists("bsauth_register_options")) {
     register_setting( 'bs_auth_pages', 'link_page' );
     register_setting( 'bs_auth_pages', 'logout_frontpage' );
     register_setting( 'bs_auth_pages', 'bsauth_custom_button' );
+
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_user_url' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_user_email' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_display_name' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_nickname' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_first_name' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_last_name' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_description' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_jabber' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_aim' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_yim' );
+
+
   }
 }
 //------------------------------------------------------------------------------
@@ -56,6 +69,10 @@ if (!function_exists("bsauth_login_display")) {
       if (isset($_SESSION['bsauth_registered'])) {
         _e("Registered","blaat_auth");  
         unset ($_SESSION['bsauth_registered']);
+        unset( $_SESSION['bsauth_fetch_data']);
+        unset( $_SESSION['bsauth_register_auto']);
+        unset( $_SESSION['bsauth_plugin']);
+        unset( $_SESSION['bsauth_login_id']);
       } else {
           _e("Logged in","blaat_auth"); 
         }
@@ -98,6 +115,8 @@ if (!function_exists("bsauth_login_display")) {
 if (!function_exists("bsauth_register_display")) {
   function bsauth_register_display() {
 
+    global $BSAUTH_SERVICES;
+
     if (isset($_POST['cancel'])) {
       unset($_SESSION['bsauth_register']);
     }
@@ -115,21 +134,35 @@ if (!function_exists("bsauth_register_display")) {
         $service = $_SESSION['bsauth_display'];
         printf( __("You are authenticated to %s","blaat_auth") , $service );
         echo "<br>";
+        
+
+        if ($_SESSION['bsauth_fetch_data']) {
+          $service = $BSAUTH_SERVICES[$register[0]];
+          if($service) {
+            $new_user = $service->getRegisterData();
+          } 
+        } 
+
         if (isset($_POST['username']) && isset($_POST['email'])) {
-          $user_id = wp_create_user( $_POST['username'], $random_password, $_POST['email'] ) ;
+          if (!isset($new_user)) $new_user = array();
+          $new_user['user_login']= $_POST['username'];
+          $new_user['user_email']= $_POST['email'];
+        }
+
+        //if (isset($_POST['username']) && isset($_POST['email'])) {
+        if (isset($new_user) && (isset($new_user['user_login']) && isset($new_user['user_email']))
+            && ( $_POST['register'] || $_SESSION['bsauth_register_auto'] )) {
+          $new_user['user_pass'] = wp_hash_password(wp_generate_password());
+          $user_id = wp_insert_user($new_user);
           if (is_numeric($user_id)) {
             $reg_ok=true;
             $_SESSION['bsauth_registered']=1;
-            echo "<pre>"; print_r($register); 
-  
             wp_set_current_user ($user_id);
             wp_set_auth_cookie($user_id);
             global $BSAUTH_SERVICES;
             $serviceToLink = $BSAUTH_SERVICES[$register[0]];
             if ($serviceToLink) {
-              //die("should link");
               $serviceToLink->Link($register[1]);
-              //header("Location: ".site_url("/".get_option("link_page")));  
               header("Location: ".site_url("/".get_option("login_page")));  
             } else {
               echo "DEBUG:::: Unable to link your account"; // TODO message
@@ -150,11 +183,11 @@ if (!function_exists("bsauth_register_display")) {
             echo "<div class='error'>$error</div>";
           }
           _e("Please provide a username and e-mail address to complete your signup","blaat_auth");
-           ?><form method=post>
+           ?><form method='post'>
             <table>
-              <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
-              <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
-              <tr>><td><button name='cancel' type=submit><?php _e("Cancel"); ?></button></td><td><button name='register' type=submit><?php _e("Register"); ?></button></td></tr>
+              <tr><td><?php _e("Username"); ?></td><td><input name='username' value='<?php echo htmlspecialchars($new_user['user_login']);?>'</td></tr>
+              <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email' value='<?php echo htmlspecialchars($new_user['user_email']);?>' ></td></tr>
+              <tr><td><button name='cancel' type=submit><?php _e("Cancel"); ?></button></td><td><button name='register' value='1' type=submit><?php _e("Register"); ?></button></td></tr>
             </table>
           </form>
           <?php
@@ -174,7 +207,7 @@ if (!function_exists("bsauth_register_display")) {
             $error = __($user_id->get_error_message());
           }
         } else {
-          $error= __("Some data is missing. You need to fill out all fields.","bsauth");
+          $error= __("Some data is missing. You need to fill out all fields.","blaat_auth");
         } 
         if($reg_ok){
         } else {
@@ -373,6 +406,19 @@ if (!function_exists("bsauth_display")) {
         return $content;
     }
   }
+}
+//------------------------------------------------------------------------------
+// When a WordPress user is deleted, remove any external linked accounts
+if (!function_exists("bsauth_delete_user")) {
+  function bsauth_delete_user($user_id) {
+    global $BSAUTH_SERVICES;
+    // For each service, delete the linked service
+    foreach ($BSAUTH_SERVICES as $service) {
+      $service->Delete($user_id);
+    }
+  }
+  // Call the delete user function when a WordPress user is deleted.
+  add_action( 'deleted_user', 'bsauth_delete_user' );
 }
 //------------------------------------------------------------------------------
 // go frontpage
