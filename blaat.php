@@ -26,7 +26,8 @@ if (!function_exists("blaat_plugins_page")) {
     echo '<div class="wrap">';
     echo '<h2>';
     _e("BlaatSchaap Plugins","blaatschaap");
-    echo '</h2>';
+    echo '</h2><div style="text-align:center;">
+                         <style>.blaat_plugins_table{text-align:left;}</style>';
     _e("Thank you for using BlaatSchaap plugins.","blaatschaap");
 
     // ok, we need to detect installed plugins and so
@@ -40,7 +41,11 @@ if (!function_exists("blaat_plugins_page")) {
     echo "<p>";
     _e("Installed BlaatSchaap plugins:","blaatschaap");
     echo "</p>";
-    echo "<p><table class='blaat_plugins_table'>";
+    // TODO: bundle logo with plugin, also, resize logo
+    // But as all admin pages are going to be rewritten for the 0.5 release
+    // this should do it for now.
+    echo "<img src='http://www.blaatschaap.be/sheep.png' width=125>";
+    echo "<span style='display:inline-block;'><table class='blaat_plugins_table'>";
     echo "<tr><th>";
     _e("Plugin name:","blaatschaap");
     echo "</th><th>";
@@ -56,7 +61,7 @@ if (!function_exists("blaat_plugins_page")) {
       }
     }
     
-    echo "</table></p><hr><div style='text-align:center;'>";
+    echo "</table></span><hr><div style='text-align:center;'>";
     _e("Thank you for using one of my projects. I develop these projects in my free time. <br>Please donate to support development of the future versions of my projects. <br>Any donation is appreciated. Thanks a lot!<br>André","blaatschaap");
     ?>
 <br><br>
@@ -76,6 +81,7 @@ if (!function_exists("blaat_plugins_page")) {
       </table>
     </div>
   </div>
+</div>
 <?php
   }
 }

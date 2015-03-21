@@ -5,7 +5,7 @@
   min-height: 36px;
   min-width: 128px;
   */
-  height: 36px;
+  height: 38px;
   width: 128px;
   margin-right:8px;
   margin-bottom:8px;
@@ -20,12 +20,16 @@
   padding-left:6px; 
   padding-right:6px;
   font-family: sans-serif;
+  /* 
   height: 16px;
+  padding-top:6px;
+  */
   /*
   vertical-align:middle;
   display:table-cell;  
   */
-  padding-top:6px;
+  line-height: 32px;
+  
   max-width: 70px;
   overflow: hidden;
   display: inline-block;
@@ -45,14 +49,89 @@
 .bs-auth-btn-logo {
   width:32px;
   height:32px;
-  float: left;
+  /* float: left; */
+  display: inline-block;
 }
 /*****************************************************************************/
+
+
+.bs-auth-btn-logo-blaat_oauth-twitter,.bs-auth-btn-logo-blaat_oauth-twitter2{
+  background-image:url('twitter.png');
+}
+
+
+.bs-auth-btn-logo-blaat_oauth-bitbucket{
+  background-image:url('bitbucket.png');
+}
+
+.bs-auth-btn-logo-blaat_oauth-bitly{
+  background-image:url('bitly.png');
+}
+
+.bs-auth-btn-logo-blaat_oauth-dropbox,
+.bs-auth-btn-logo-blaat_oauth-dropbox2{
+  background-image:url('dropbox.png');
+}
+
+.bs-auth-btn-logo-blaat_oauth-etsy{
+  background-image:url('etsy.png');
+}
 
 .bs-auth-btn-logo-blaat_oauth-facebook{
   background-image:url('facebook.png');
 }
 
+
+.bs-auth-btn-logo-blaat_oauth-flickr{
+  background-image:url('flickr.png');
+}
+
 .bs-auth-btn-logo-blaat_oauth-github{
   background-image:url('github.png');
+}
+
+.bs-auth-btn-logo-blaat_oauth-google,
+.bs-auth-btn-logo-blaat_oauth-google1{
+  background-image:url('google.png');
+}
+
+.bs-auth-btn-logo-blaat_oauth-linkedin,.bs-auth-btn-logo-blaat_oauth-linkedin2{
+  background-image:url('linkedin.png');
+}
+
+.bs-auth-btn-logo-blaat_oauth-microsoft{
+  background-image:url('microsoft.png');
+}
+.bs-auth-btn-logo-blaat_oauth-paypal{
+  background-image:url('paypal.png');
+}
+.bs-auth-btn-logo-blaat_oauth-tumblr{
+  background-image:url('tumblr.png');
+}
+.bs-auth-btn-logo-blaat_oauth-wordpress{
+  background-image:url('wordpress.png');
+}
+.bs-auth-btn-logo-blaat_oauth-xing{
+  background-image:url('xing.png');
+}
+.bs-auth-btn-logo-blaat_oauth-yahoo{
+  background-image:url('yahoo.png');
+}
+
+.bs-auth-btn-logo-blaat_oauth-yandex{
+  background-image:url('yandex.png');
+}
+
+
+.bs-auth-btn-logo-blaat_oauth-vk{
+  background-image:url('vk.png');
+}
+
+.bs-auth-btn-logo-blaat_oauth-vimeo{
+  background-image:url('vimeo.png');
+}
+
+
+.bs-auth-btn-logo-blaat_oauth-meetup{
+  background-image:url('meetup.png');
 }

@@ -262,10 +262,10 @@ class OAuth implements AuthService {
     $live_dbver = get_option( "bs_oauth_dbversion" );
     $table_name = $wpdb->prefix . "bs_oauth_sessions";
 
-    if ($dbver != live_dbver) {
+    if ($dbver != $live_dbver) {
       require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
       $query = "CREATE TABLE $table_name (
-                `id` INT NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
+                `id` INT NOT NULL AUTO_INCREMENT   ,
                 `user_id` INT NOT NULL DEFAULT 0,
                 `service_id` INT NOT NULL ,
                 `token` TEXT NOT NULL ,
@@ -273,14 +273,15 @@ class OAuth implements AuthService {
                 `expiry` DATETIME NULL DEFAULT NULL ,
                 `type` TEXT NULL DEFAULT NULL ,
                 `refresh` TEXT NULL DEFAULT NULL,
-                `scope` TEXT NOT NULL DEFAULT ''
+                `scope` TEXT NOT NULL DEFAULT '',
+                PRIMARY KEY  (id)
                 );";
       dbDelta($query);
 
    
       $table_name = $wpdb->prefix . "bs_oauth_services";
       $query = "CREATE TABLE $table_name (
-                `id` INT NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
+                `id` INT NOT NULL AUTO_INCREMENT  ,
                 `enabled` BOOLEAN NOT NULL DEFAULT FALSE ,
                 `display_name` TEXT NOT NULL ,
                 `display_order` INT NOT NULL DEFAULT 1,
@@ -291,14 +292,15 @@ class OAuth implements AuthService {
                 `default_scope` TEXT NOT NULL DEFAULT '',
                 `customlogo_url` TEXT NULL DEFAULT NULL,
                 `customlogo_filename` TEXT NULL DEFAULT NULL,
-                `customlogo_enabled` BOOLEAN DEFAULT FALSE
+                `customlogo_enabled` BOOLEAN DEFAULT FALSE,
+                PRIMARY KEY  (id)
                 );";
       dbDelta($query);
 
 
     $table_name = $wpdb->prefix . "bs_oauth_custom";
       $query = "CREATE TABLE $table_name (
-                `id` INT NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
+                `id` INT NOT NULL AUTO_INCREMENT   ,
                 `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
                 `request_token_url` TEXT NULL DEFAULT NULL,
                 `dialog_url` TEXT NOT NULL,
@@ -306,7 +308,8 @@ class OAuth implements AuthService {
                 `url_parameters` BOOLEAN DEFAULT FALSE,
                 `authorization_header` BOOLEAN DEFAULT TRUE,
                 `offline_dialog_url` TEXT NULL DEFAULT NULL,
-                `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL
+                `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL,
+                PRIMARY KEY  (id)
                 );";
       dbDelta($query);
       update_option( "bs_oauth_dbversion" , $dbver);

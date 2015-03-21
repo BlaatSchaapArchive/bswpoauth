@@ -15,7 +15,7 @@ function bsoauth_add_page(){
   </p>
   <script>
     function updPreview(){
-    document.getElementById("logoPreview").innerHTML="<span class='bs-auth-btn-preview bs-auth-btn-logo-" +
+    document.getElementById("logoPreview").innerHTML="<span class='bs-auth-btn-preview bs-auth-btn-logo-blaat_oauth-" +
     document.getElementById("service").value.toLowerCase() +"'></span>";
     document.getElementById('display_name_2').value=document.getElementById("service").value;
     
@@ -295,7 +295,10 @@ function bsoauth_add_process(){
         $image  = file_get_contents($movefile['file']);
         $source = imagecreatefromstring($image);
         $target = imagecreatetruecolor(32,32);
-        imagecopyresized($target,$source,0,0,0,0,32,32,$imginfo[0],$imginfo[1]);
+        imagesavealpha($target, true);
+        $trans_colour = imagecolorallocatealpha($target, 0, 0, 0, 127);
+        imagefill($target, 0, 0, $trans_colour);
+        imagecopyresized($target,$source,1,1,0,0,30,30,$imginfo[0],$imginfo[1]); 
         imagepng($target,$movefile['file']);
         imagedestroy($target);
         imagedestroy($source);
@@ -434,7 +437,10 @@ function bsoauth_update_service(){
         $image  = file_get_contents($movefile['file']);
         $source = imagecreatefromstring($image);
         $target = imagecreatetruecolor(32,32);
-        imagecopyresized($target,$source,0,0,0,0,32,32,$imginfo[0],$imginfo[1]); 
+        imagesavealpha($target, true);
+        $trans_colour = imagecolorallocatealpha($target, 0, 0, 0, 127);
+        imagefill($target, 0, 0, $trans_colour);
+        imagecopyresized($target,$source,1,1,0,0,30,30,$imginfo[0],$imginfo[1]); 
         imagepng($target,$movefile['file']);
         imagedestroy($target);
         imagedestroy($source);
@@ -640,7 +646,7 @@ function bsoauth_list_services(){
           <?php
           if (!$result['custom_id']) {
             ?>
-            <span class='bs-auth-btn-preview bs-auth-btn-logo-<?php echo strtolower($result['client_name']); ?>'></span>
+            <span class='bs-auth-btn-preview bs-auth-btn-logo-blaat_oauth-<?php echo strtolower($result['client_name']); ?>'></span>
             <input type='radio' name='customlogo_enabled' value='0' <?php if(!$result['customlogo_enabled']) echo "checked"; ?> > 
             <span class='bs-auth-btn-preview bs-auth-btn-logo-cst<?php echo $result['id'] ?>'></span>
             <input type='radio' name='customlogo_enabled' value='1'  <?php if ($result['customlogo_enabled']) echo "checked";?>  >
