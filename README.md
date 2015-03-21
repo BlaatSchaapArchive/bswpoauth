@@ -1,10 +1,10 @@
 === BlaatSchaap OAuth ===
 Contributors: GromBeestje
 Donate link: http://code.blaatschaap.be/donations/
-Tags: oauth, authentication
+Tags: oauth, authentication, sso
 Stable tag: trunk
 Requires at least: 3.7
-Tested up to: 4.1
+Tested up to: 4.1.1
 License: BSD
 License URI: http://opensource.org/licenses/BSD-3-Clause
 
@@ -13,7 +13,7 @@ There are many pre-configured sites such as Facebook, Google and Microsoft.
 
 == Description ==
 
-Please note: tested with 3.7 and 3.8. It will probably work with earlier
+First tested with WordPress version 3.7. It will probably work with earlier
 versions but this has not been tested.
 
 The OAuth plugin for WordPress allows you to provide authentication against any
@@ -32,6 +32,27 @@ and upload the files and directories to
 /path/to/your/webroot/wp-content/plugins/
 
 == Changelog ==
+
+0.4: 
+Structural rewrite to support multiple authentication frameworks. This
+is a preparation for planned plugins to support OpenID 2.0 and BrowserID.
+
+Fixes for the registration using an OAuth provider. In previous versions
+signing up using an OAuth provider was not working properly. Also 
+improved linking code.
+
+Added logos for some OAuth services, logos included in this release are
+bitbucket, bitly, dropbox, etsy, facebook, flickr, github, google, 
+linkedin, meetup, microsoft, paypal, tumblr, twitter, vimeo, vk,
+wordpress, xing, yahoo, yandex.
+  
+
+0.3.6 : 
+
+Bugfix release: options page not found message fixed. This error 
+  occured in the General Auth Settings page upon saving. This resulted
+  that the pages for login/link/register could not be set.
+
 0.3.5 :
 
 Bugfix: Previous versions allowed a logged in user to link to an already
