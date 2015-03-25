@@ -769,66 +769,6 @@ if (!function_exists("blaat_plugins_auth_page_signup_option")) {
     
   }
 }
-//------------------------------------------------------------------------------
-if (!function_exists("blaat_plugins_auth_page")) {
-  function blaat_plugins_auth_page(){
-    echo '<div class="wrap">';
-    echo '<h2>';
-    _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
-    echo '</h2>';
-    echo '<form method="post" action="options.php">';
-    settings_fields( 'bs_auth_pages' ); 
 
-    echo '<table class="form-table">';
-
-    echo '<tr><th>'. __("Login page","blaat_auth") .'</th><td>';
-    echo blaat_page_select("login_page");
-    echo '</td></tr>';
-    
-    echo '<tr><th>'. __("Register page","blaat_auth") .'</th><td>';
-    echo blaat_page_select("register_page");
-    echo '</td></tr>';
-
-    echo '<tr><th>'. __("Link page","blaat_auth") .'</th><td>';
-    echo blaat_page_select("link_page");
-    echo '</td></tr>';
-
-    echo '<tr><th>';
-    _e("Redirect to frontpage after logout", "blaat_auth") ;
-    echo "</th><td>";
-    $checked = get_option('logout_frontpage') ? "checked" : "";
-    echo "<input type=checkbox name='logout_frontpage' value='1' $checked>";
-    echo "</td></tr>";
-
-    echo '<tr><th>'. __("Custom Button CSS","blaat_auth") .'</th><td>';
-    echo "<textarea cols=70 rows=15 id='bsauth_custom_button_textarea' name='bsauth_custom_button'>";
-    echo htmlspecialchars(get_option("bsauth_custom_button"));
-    echo "</textarea>";
-    echo '</td></tr>';
-
-    /* 
-        Preparations for future support
-        Note: string generation cannot be automised
-        Meaning, outer code should be moved back here, 
-                          inner code done by function.
-    blaat_plugins_auth_page_signup_option("user_url");
-    blaat_plugins_auth_page_signup_option("user_email");
-    blaat_plugins_auth_page_signup_option("display_name");
-    blaat_plugins_auth_page_signup_option("nickname");
-    blaat_plugins_auth_page_signup_option("first_name");
-    blaat_plugins_auth_page_signup_option("last_name");
-    blaat_plugins_auth_page_signup_option("description");
-    blaat_plugins_auth_page_signup_option("jabber");
-    blaat_plugins_auth_page_signup_option("aim");
-    blaat_plugins_auth_page_signup_option("yim");
-    */
-
-    echo '</table><input name="Submit" type="submit" value="';
-    echo  esc_attr_e('Save Changes') ;
-    echo '" ></form></div>';
-
-  }
-}
-//------------------------------------------------------------------------------
 
 ?>

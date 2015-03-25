@@ -1,4 +1,7 @@
 <?php
+
+
+
 //------------------------------------------------------------------------------
 if (!isset($BSAUTH_SERVICES)) $BSAUTH_SERVICES = array();
 //------------------------------------------------------------------------------
@@ -38,9 +41,7 @@ if (!function_exists("bsauth_login_display")) {
   function bsauth_login_display(){
     global $BSAUTH_SERVICES;
 
-    echo "DEBUG<pre>" ; print_r($_SESSION); echo "</pre>";
-
-
+      //echo "DEBUG<pre>"; print_r($_SESSION); echo "</pre>";
 
       if (isset($_SESSION['bsauth_link']) && is_user_logged_in()) {
         // Forwarding the QUERY_STRING to the link page is required for the OAuth->Link() class to function.
@@ -126,6 +127,8 @@ if (!function_exists("bsauth_login_display")) {
 if (!function_exists("bsauth_register_display")) {
   function bsauth_register_display() {
 
+    //echo "DEBUG<pre>"; print_r($_SESSION); echo "</pre>";
+
     global $BSAUTH_SERVICES;
 
     if (isset($_POST['cancel'])) {
@@ -172,6 +175,7 @@ if (!function_exists("bsauth_register_display")) {
           $new_user['user_pass'] = wp_hash_password(wp_generate_password());
           $user_id = wp_insert_user($new_user);
           if (is_numeric($user_id)) {
+            unset($_SESSION['bsauth_register']);
             $reg_ok=true;
             $_SESSION['bsauth_registered']=1;
             wp_set_current_user ($user_id);
@@ -184,7 +188,7 @@ if (!function_exists("bsauth_register_display")) {
             } else {
               echo "DEBUG:::: Unable to link your account"; // TODO message
             }
-            unset($_SESSION['bsauth_register']);
+            //unset($_SESSION['bsauth_register']); // moved up
           } else {
             $reg_ok=false;
             $error = __($user_id->get_error_message());
@@ -298,8 +302,9 @@ if (!function_exists("bsauth_generate_button")) {
 if (!function_exists("bsauth_link_display")) {
 
   function bsauth_link_display(){
-    blaat_session_start();
+    //blaat_session_start();
 
+    //echo "DEBUG<pre>"; print_r($_SESSION); echo "</pre>";
 
 
     global $BSAUTH_SERVICES;
@@ -545,12 +550,94 @@ if (!function_exists("blaat_plugins_auth_page")) {
 }
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+if (!function_exists("blaat_plugins_auth_page")) {
+  function blaat_plugins_auth_page(){
+    echo '<div class="wrap">';
+    echo '<h2>';
+    _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
+    echo '</h2>';
+    echo '<form method="post" action="options.php">';
+    settings_fields( 'bs_auth_pages' ); 
+
+    echo '<table class="form-table">';
+
+    echo '<tr><th>'. __("Login page","blaat_auth") .'</th><td>';
+    echo blaat_page_select("login_page");
+    echo '</td></tr>';
+    
+    echo '<tr><th>'. __("Register page","blaat_auth") .'</th><td>';
+    echo blaat_page_select("register_page");
+    echo '</td></tr>';
+
+    echo '<tr><th>'. __("Link page","blaat_auth") .'</th><td>';
+    echo blaat_page_select("link_page");
+    echo '</td></tr>';
+
+    echo '<tr><th>';
+    _e("Redirect to frontpage after logout", "blaat_auth") ;
+    echo "</th><td>";
+    $checked = get_option('logout_frontpage') ? "checked" : "";
+    echo "<input type=checkbox name='logout_frontpage' value='1' $checked>";
+    echo "</td></tr>";
+
+
+    /* The next two options are introduced for the custom plugin VATSIM */
+
+    echo '<tr><th>';
+    _e("Hide local accounts", "blaat_auth") ;
+    echo "</th><td>";
+    $checked = get_option('bs_auth_hide_local') ? "checked" : "";
+    echo "<input type=checkbox name='bs_auth_hide_local' value='1' $checked>";
+    echo "</td></tr>";
+
+    echo '<tr><th>';
+    _e("Require e-mail address", "blaat_auth") ;
+    echo "</th><td>";
+    bsauth_generate_select_signup_requirement("bs_auth_signup_user_email");      
+    echo "</td></tr>";
+
+
+    echo '<tr><th>'. __("Custom Button CSS","blaat_auth") .'</th><td>';
+    echo "<textarea cols=70 rows=15 id='bsauth_custom_button_textarea' name='bsauth_custom_button'>";
+    echo htmlspecialchars(get_option("bsauth_custom_button"));
+    echo "</textarea>";
+    echo '</td></tr>';
+
+    /* 
+        Preparations for future support
+        Note: string generation cannot be automised
+        Meaning, outer code should be moved back here, 
+                          inner code done by function.
+    blaat_plugins_auth_page_signup_option("user_url");
+    blaat_plugins_auth_page_signup_option("user_email");
+    blaat_plugins_auth_page_signup_option("display_name");
+    blaat_plugins_auth_page_signup_option("nickname");
+    blaat_plugins_auth_page_signup_option("first_name");
+    blaat_plugins_auth_page_signup_option("last_name");
+    blaat_plugins_auth_page_signup_option("description");
+    blaat_plugins_auth_page_signup_option("jabber");
+    blaat_plugins_auth_page_signup_option("aim");
+    blaat_plugins_auth_page_signup_option("yim");
+    */
+
+    echo '</table><input name="Submit" type="submit" value="';
+    echo  esc_attr_e('Save Changes') ;
+    echo '" ></form></div>';
+
+  }
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // go frontpage
 // -- general auth related support
 
-if (get_option("logout_frontpage")) {
-  add_action('wp_logout','go_frontpage');
+if (!function_exists("bsauth_logout_hook")){
+  function bsauth_logout_hook() {
+    session_destroy();
+    if (get_option("logout_frontpage")) go_frontpage();
+  }
 }
+
 
 if (!function_exists("go_frontpage")) {
   function go_frontpage(){
@@ -558,6 +645,8 @@ if (!function_exists("go_frontpage")) {
     exit();
   }
 }
+
+  add_action('wp_logout','bsauth_logout_hook');
 //------------------------------------------------------------------------------
 
 

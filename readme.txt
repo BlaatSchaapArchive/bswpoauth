@@ -36,6 +36,17 @@ and upload the files and directories to
 
 == Changelog ==
 
+0.4.2: 
+Bugfixes in the Registration and Linking code. 
+
+No more PHP notices when WordPress is running in DEBUG mode. 
+
+When a user is deleted from WordPress, also delete the user's OAuth sessions
+from the database.
+
+0.4.1:
+Bugfix: the sort order of the buttons was ignored.
+
 0.4: 
 Structural rewrite to support multiple authentication frameworks. This
 is a preparation for planned plugins to support OpenID 2.0 and BrowserID.
