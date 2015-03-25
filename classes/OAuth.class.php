@@ -70,6 +70,9 @@ class OAuth implements AuthService {
   }
 //------------------------------------------------------------------------------
   public function Delete($user_id){
+    global $wpdb;
+    $query = $wpdb->prepare ("Delete from $table_name where user_id = %d", $user_id);
+    $wpdb->query($query);
   }
 
 //------------------------------------------------------------------------------

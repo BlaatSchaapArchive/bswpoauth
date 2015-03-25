@@ -38,12 +38,16 @@ if (!function_exists("bsauth_login_display")) {
   function bsauth_login_display(){
     global $BSAUTH_SERVICES;
 
+    echo "DEBUG<pre>" ; print_r($_SESSION); echo "</pre>";
 
 
 
       if (isset($_SESSION['bsauth_link']) && is_user_logged_in()) {
-        //header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
-        header("Location: ".site_url("/".get_option("link_page")));//. '?' . $_SERVER['QUERY_STRING']);
+        // Forwarding the QUERY_STRING to the link page is required for the OAuth->Link() class to function.
+        // For now... this will remain in here, however, should be replaced in the future
+        // as we're moving to a single page solution, this should be ok for now
+        header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
+        
       }
 
       if ( !is_user_logged_in() ) {
@@ -306,6 +310,10 @@ if (!function_exists("bsauth_link_display")) {
 
 
 
+
+      if (isset($_SESSION['bsauth_link'])) {
+        $link = explode ("-", $_SESSION['bsauth_link']);
+      }
       if (isset($_POST['bsauth_link'])) {
         $link = explode ("-", $_POST['bsauth_link']);
         $_SESSION['bsauth_link']=$_POST['bsauth_link'];
@@ -379,9 +387,10 @@ if (!function_exists("bsauth_link_display")) {
         $linkHTML .= bsauth_generate_button($unlinked,"link");
       }
 
+      /*
       unset($_SESSION['bsoauth_id']);
       unset($_SESSION['bsauth_link']);
-    
+      */
 
       echo "<form method='post' action='". site_url("/".get_option("link_page")) ."'><div class='link authservices'><div class='blocktitle'>".
               __("Link your account to","blaat_auth") .  "</div>".
