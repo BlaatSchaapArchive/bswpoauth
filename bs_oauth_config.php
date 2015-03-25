@@ -726,10 +726,10 @@ function bsoauth_config_page() {
           </a>
         </p><?php
 
-        if ($_POST['add_service']) bsoauth_add_process();
-        if ($_POST['add_custom_service']) bsoauth_add_custom_process();
-        if ($_POST['delete_service']) bsoauth_delete_service();
-        if ($_POST['update_service']) bsoauth_update_service();
+        if (isset($_POST['add_service'])) bsoauth_add_process();
+        if (isset($_POST['add_custom_service'])) bsoauth_add_custom_process();
+        if (isset($_POST['delete_service'])) bsoauth_delete_service();
+        if (isset($_POST['update_service'])) bsoauth_update_service();
         echo "<h2>"; _e("Configured Services","blaat_auth"); echo "</h2><hr>";
         bsoauth_list_services();
         echo '<hr>';

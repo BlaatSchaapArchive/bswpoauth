@@ -29,10 +29,11 @@
   display:table-cell;  
   */
   line-height: 32px;
-  
+  height: 32px;
   max-width: 70px;
   overflow: hidden;
   display: inline-block;
+  
 }
 
 .bs-auth-btn:hover {

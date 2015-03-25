@@ -2,7 +2,7 @@
 /*
  * oauth_client.php
  *
- * @(#) $Id: oauth_client.php,v 1.125 2014/12/23 03:51:59 mlemos Exp $
+ * @(#) $Id: oauth_client.php,v 1.133 2015/03/10 01:52:08 mlemos Exp $
  *
  */
 
@@ -12,7 +12,7 @@
 
 	<package>net.manuellemos.oauth</package>
 
-	<version>@(#) $Id: oauth_client.php,v 1.125 2014/12/23 03:51:59 mlemos Exp $</version>
+	<version>@(#) $Id: oauth_client.php,v 1.133 2015/03/10 01:52:08 mlemos Exp $</version>
 	<copyright>Copyright © (C) Manuel Lemos 2012</copyright>
 	<title>OAuth client</title>
 	<author>Manuel Lemos</author>
@@ -228,6 +228,7 @@ class oauth_client_class
 				Currently it supports the following servers:
 				<stringvalue>37Signals</stringvalue>,
 				<stringvalue>Amazon</stringvalue>,
+				<stringvalue>AOL</stringvalue>,
 				<stringvalue>Bitbucket</stringvalue>,
 				<stringvalue>Bitly</stringvalue>,
 				<stringvalue>Box</stringvalue>,
@@ -969,7 +970,32 @@ class oauth_client_class
 */
 	var $grant_type = "authorization_code";
 
-	var $oauth_user_agent = 'PHP-OAuth-API (http://www.phpclasses.org/oauth-api $Revision: 1.125 $)';
+/*
+{metadocument}
+	<variable>
+		<name>http_arguments</name>
+		<type>HASH</type>
+		<value></value>
+		<documentation>
+			<purpose>Define additional arguments to configure the HTTP
+				requests.</purpose>
+			<usage>Set this associative array with argument values that you need
+				to set options of the HTTP requests sent to the OAuth server and
+				API URLs.<paragraphbreak />
+				Check the documentation of the <link>
+					<data>HTTP client class</data>
+					<url>http://www.phpclasses.org/httpclient</url>
+				</link> for more
+				information on the available arguments that can be configured
+				using this option.</usage>
+		</documentation>
+	</variable>
+{/metadocument}
+*/
+	var $http_arguments = array();
+	var $oauth_user_agent = 'PHP-OAuth-API (http://www.phpclasses.org/oauth-api $Revision: 1.133 $)';
+
+	var $response_time = 0;
 
 	Function SetError($error)
 	{
@@ -1274,8 +1300,8 @@ class oauth_client_class
 		if(session_id() === ''
 		&& !session_start())
 			return($this->SetPHPError('it was not possible to start the PHP session', $php_errormsg));
-		if(IsSet($_SESSION['OAUTH_ACCESS_TOKEN'][$access_token_url]))
-			Unset($_SESSION['OAUTH_ACCESS_TOKEN'][$access_token_url]);
+		Unset($_SESSION['OAUTH_ACCESS_TOKEN'][$access_token_url]);
+		UnSet($_SESSION['OAUTH_STATE']);
 		return true;
 	}
 /*
@@ -1471,6 +1497,7 @@ class oauth_client_class
 					case 'application/x-www-form-urlencoded':
 					case 'multipart/form-data':
 					case 'application/json':
+					case 'application/javascript':
 						break;
 					default:
 						$first = (strpos($url, '?') === false);
@@ -1498,6 +1525,7 @@ class oauth_client_class
 			$authorization = 'Bearer '.$this->access_token;
 		if(strlen($error = $http->GetRequestArguments($url, $arguments)))
 			return($this->SetError('it was not possible to open the '.$options['Resource'].' URL: '.$error));
+		$arguments = array_merge($this->http_arguments, $arguments);
 		if(strlen($error = $http->Open($arguments)))
 			return($this->SetError('it was not possible to open the '.$options['Resource'].' URL: '.$error));
 		if(count($post_files))
@@ -1512,6 +1540,7 @@ class oauth_client_class
 				$arguments['PostValues'] = $post_values;
 				break;
 			case 'application/json':
+			case 'application/javascript':
 				$arguments['Headers']['Content-Type'] = $options['RequestContentType'];
 				$arguments['Body'] = (IsSet($options['RequestBody']) ? $options['RequestBody'] : json_encode($parameters));
 				break;
@@ -1555,11 +1584,13 @@ class oauth_client_class
 		}
 		$this->response_status = intval($http->response_status);
 		$content_type = (IsSet($options['ResponseContentType']) ? $options['ResponseContentType'] : (IsSet($headers['content-type']) ? strtolower(trim(strtok($headers['content-type'], ';'))) : 'unspecified'));
-		$content_type = preg_replace('/^(.+\\/).+\\+(.+)$/', '\\1\\2', $content_type); 
+		$content_type = preg_replace('/^(.+\\/).+\\+(.+)$/', '\\1\\2', $content_type);
+		$this->response_time = (IsSet($headers['date']) ? strtotime($headers['date']) : time());
 		switch($content_type)
 		{
 			case 'text/javascript':
 			case 'application/json':
+			case 'application/javascript':
 				if(!function_exists('json_decode'))
 					return($this->SetError('the JSON extension is not available in this PHP setup'));
 				$object = json_decode($data);
@@ -1682,7 +1713,7 @@ class oauth_client_class
 			if(strval($expires) !== strval(intval($expires))
 			|| $expires <= 0)
 				return($this->SetError('OAuth server did not return a supported type of access token expiry time'));
-			$this->access_token_expiry = gmstrftime('%Y-%m-%d %H:%M:%S', time() + $expires);
+			$this->access_token_expiry = gmstrftime('%Y-%m-%d %H:%M:%S', $this->response_time + $expires);
 			if($this->debug)
 				$this->OutputDebug('Access token expiry: '.$this->access_token_expiry.' UTC');
 			$access_token['expiry'] = $this->access_token_expiry;
@@ -1805,11 +1836,11 @@ class oauth_client_class
 		elseif(IsSet($response['expires'])
 		|| IsSet($response['expires_in']))
 		{
-			$expires = (IsSet($response['expires']) ? $response['expires'] : $response['expires_in']);
+			$expires = (IsSet($response['expires_in']) ? $response['expires_in'] : $response['expires'] - ($response['expires'] > $this->response_time ? $this->response_time : 0));
 			if(strval($expires) !== strval(intval($expires))
 			|| $expires <= 0)
 				return($this->SetError('OAuth server did not return a supported type of access token expiry time'));
-			$this->access_token_expiry = gmstrftime('%Y-%m-%d %H:%M:%S', time() + $expires);
+			$this->access_token_expiry = gmstrftime('%Y-%m-%d %H:%M:%S', $this->response_time + $expires);
 			if($this->debug)
 				$this->OutputDebug('Access token expiry: '.$this->access_token_expiry.' UTC');
 			$access_token['expiry'] = $this->access_token_expiry;
@@ -2294,22 +2325,35 @@ class oauth_client_class
 /*
 {metadocument}
 	<function>
-		<name>Process</name>
+		<name>CheckAccessToken</name>
 		<type>BOOLEAN</type>
 		<documentation>
-			<purpose>Process the OAuth protocol interaction with the OAuth
-				server.</purpose>
-			<usage>Call this function when you need to retrieve the OAuth access
-				token. Check the <variablelink>access_token</variablelink> to
-				determine if the access token was obtained successfully.</usage>
+			<purpose>Check if the access token was retrieved and if it is
+				valid.</purpose>
+			<usage>Call this function when you need to check of an access token
+				is valid without forcing to redirect the user to the OAuth server
+				authorization page.<paragraphbreak />
+				If a previously retrieved access token has expired, this function
+				may renew it automatically.</usage>
 			<returnvalue>This function returns <booleanvalue>1</booleanvalue> if
-				the OAuth protocol was processed without errors.</returnvalue>
+				the OAuth protocol was checked without errors.</returnvalue>
 		</documentation>
+		<argument>
+			<name>redirect_url</name>
+			<type>STRING</type>
+			<out />
+			<documentation>
+				<purpose>Return the URL of the OAuth server authorization to
+					redirect the user if the access token was not yet retrieved or
+					is not valid.</purpose>
+			</documentation>
+		</argument>
 		<do>
 {/metadocument}
 */
-	Function Process()
+	Function CheckAccessToken(&$redirect_url)
 	{
+		$redirect_url = null;
 		if(strlen($this->access_token)
 		|| strlen($this->access_token_secret))
 		{
@@ -2494,8 +2538,7 @@ class oauth_client_class
 				}
 				if($this->debug)
 					$this->OutputDebug('Redirecting to OAuth authorize page '.$url);
-				$this->Redirect($url);
-				$this->exit = true;
+				$redirect_url = $url;
 				return true;
 
 			case 2:
@@ -2595,8 +2638,7 @@ class oauth_client_class
 						return($this->SetError('it was not set the OAuth dialog URL'));
 					if($this->debug)
 						$this->OutputDebug('Redirecting to OAuth Dialog '.$url);
-					$this->Redirect($url);
-					$this->exit = true;
+					$redirect_url = $url;
 				}
 				break;
 
@@ -2604,6 +2646,41 @@ class oauth_client_class
 				return($this->SetError($this->oauth_version.' is not a supported version of the OAuth protocol'));
 		}
 		return(true);
+	}
+/*
+{metadocument}
+		</do>
+	</function>
+{/metadocument}
+*/
+	
+/*
+{metadocument}
+	<function>
+		<name>Process</name>
+		<type>BOOLEAN</type>
+		<documentation>
+			<purpose>Process the OAuth protocol interaction with the OAuth
+				server.</purpose>
+			<usage>Call this function when you need to retrieve the OAuth access
+				token. Check the <variablelink>access_token</variablelink> to
+				determine if the access token was obtained successfully.</usage>
+			<returnvalue>This function returns <booleanvalue>1</booleanvalue> if
+				the OAuth protocol was processed without errors.</returnvalue>
+		</documentation>
+		<do>
+{/metadocument}
+*/
+	Function Process()
+	{
+		if(!$this->CheckAccessToken($redirect_url))
+			return false;
+		if(IsSet($redirect_url))
+		{
+			$this->Redirect($redirect_url);
+			$this->exit = true;
+		}
+		return true;
 	}
 /*
 {metadocument}

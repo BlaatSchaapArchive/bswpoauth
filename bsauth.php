@@ -10,6 +10,8 @@ if (!function_exists("bsauth_register_options")) {
     register_setting( 'bs_auth_pages', 'logout_frontpage' );
     register_setting( 'bs_auth_pages', 'bsauth_custom_button' );
 
+    register_setting( 'bs_auth_pages', 'bs_auth_hide_local' );
+
     register_setting( 'bs_auth_pages', 'bs_auth_signup_user_url' );
     register_setting( 'bs_auth_pages', 'bs_auth_signup_user_email' );
     register_setting( 'bs_auth_pages', 'bs_auth_signup_display_name' );
@@ -27,7 +29,8 @@ if (!function_exists("bsauth_register_options")) {
 //------------------------------------------------------------------------------
 if (!function_exists("bsauth_buttons_sort")) {
   function bsauth_buttons_sort($a, $b) {
-          return $a["display_order"] < $b["display_order"];
+    if ($a["order"] == $b["order"]) return 0;
+    return ($a["order"] < $b["order"]) ? -1 : 1;
   }
 }
 //------------------------------------------------------------------------------
@@ -37,10 +40,10 @@ if (!function_exists("bsauth_login_display")) {
 
 
 
-      //if (isset($_SESSION['bsauth_link_id']) && is_user_logged_in()) {
+
       if (isset($_SESSION['bsauth_link']) && is_user_logged_in()) {
-        header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
-        //header("Location: ".site_url("/".get_option("link_page")));//. '?' . $_SERVER['QUERY_STRING']);
+        //header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
+        header("Location: ".site_url("/".get_option("link_page")));//. '?' . $_SERVER['QUERY_STRING']);
       }
 
       if ( !is_user_logged_in() ) {
@@ -51,8 +54,10 @@ if (!function_exists("bsauth_login_display")) {
           $_SESSION['bsauth_plugin']  = $service;
           $_SESSION['bsauth_login_id'] = $login_id;
         } else {
-          $service  = $_SESSION['bsauth_plugin'];
-          $login_id = $_SESSION['bsauth_login_id'];
+          if (isset($_SESSION['bsauth_plugin'])) 
+            $service  = $_SESSION['bsauth_plugin'];
+          if (isset($_SESSION['bsauth_login_id'])) 
+            $login_id = $_SESSION['bsauth_login_id'];
         }
 
         if (isset($service) && isset($login_id)) {
@@ -78,10 +83,12 @@ if (!function_exists("bsauth_login_display")) {
         }
     } else {
 
-      echo "<div id='bsauth_local'>";
-      echo "<p>" .  __("Log in with a local account","blaat_auth") . "</p>" ; 
-      wp_login_form();
-      echo "</div>";
+      if (!(get_option("bs_auth_hide_local"))) {
+        echo "<div id='bsauth_local'>";
+        echo "<p>" .  __("Log in with a local account","blaat_auth") . "</p>" ; 
+        wp_login_form();
+        echo "</div>";
+      }
 
       echo "<div id='bsauth_buttons'>";
       echo "<p>" . __("Log in with","blaat_auth") . "</p>";
@@ -119,13 +126,17 @@ if (!function_exists("bsauth_register_display")) {
 
     if (isset($_POST['cancel'])) {
       unset($_SESSION['bsauth_register']);
+      unset($_SESSION['bsauth_plugin']);
+      unset($_SESSION['bsauth_login_id']);
     }
-
+  
 
     if (is_user_logged_in()) {
       _e("You cannot register a new account since you are already logged in.","blaat_auth");
     } else {
-      session_start();
+      blaat_session_start();
+      $reg_ok=false;
+
       if (isset($_SESSION['bsauth_register'])) {
 
         
@@ -150,7 +161,9 @@ if (!function_exists("bsauth_register_display")) {
         }
 
         //if (isset($_POST['username']) && isset($_POST['email'])) {
-        if (isset($new_user) && (isset($new_user['user_login']) && isset($new_user['user_email']))
+        if (isset($new_user) && (isset($new_user['user_login']) && 
+            ( isset($new_user['user_email']) || (get_option("bs_auth_signup_user_email")!="Required") )
+            )
             && ( $_POST['register'] || $_SESSION['bsauth_register_auto'] )) {
           $new_user['user_pass'] = wp_hash_password(wp_generate_password());
           $user_id = wp_insert_user($new_user);
@@ -185,8 +198,10 @@ if (!function_exists("bsauth_register_display")) {
           _e("Please provide a username and e-mail address to complete your signup","blaat_auth");
            ?><form method='post'>
             <table>
-              <tr><td><?php _e("Username"); ?></td><td><input name='username' value='<?php echo htmlspecialchars($new_user['user_login']);?>'</td></tr>
-              <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email' value='<?php echo htmlspecialchars($new_user['user_email']);?>' ></td></tr>
+              <tr><td><?php _e("Username"); ?></td><td><input name='username' value='<?php if (isset($new_user['user_login'])) echo htmlspecialchars($new_user['user_login']);?>'</td></tr>
+              <?php if (get_option("bs_auth_signup_user_email")!="Disabled") { ?>
+              <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email' value='<?php if (isset($new_user['user_email'])) echo htmlspecialchars($new_user['user_email']);?>' ></td></tr>
+              <?php } ?>
               <tr><td><button name='cancel' type=submit><?php _e("Cancel"); ?></button></td><td><button name='register' value='1' type=submit><?php _e("Register"); ?></button></td></tr>
             </table>
           </form>
@@ -211,19 +226,22 @@ if (!function_exists("bsauth_register_display")) {
         } 
         if($reg_ok){
         } else {
-          echo "<div id='bsauth_local'>";
-          echo "<p>" .  __("Enter a username, password and e-mail address to sign up","blaat_auth") . "</p>" ; 
-          ?>
-          <form method=post>
-            <table>
-              <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
-              <tr><td><?php _e("Password"); ?></td><td><input type='password' name='password'></td></tr>
-              <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
-              <tr><td></td><td><button type=submit><?php _e("Register"); ?></button></td></tr>
-            </table>
-          </form>
-          <?php         
-          echo "</div>";
+          if (!(get_option("bs_auth_hide_local"))) {
+            echo "<div id='bsauth_local'>";
+            echo "<p>" .  __("Enter a username, password and e-mail address to sign up","blaat_auth") . "</p>" ; 
+            ?>
+            <form method=post>
+              <table>
+                <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
+                <tr><td><?php _e("Password"); ?></td><td><input type='password' name='password'></td></tr>
+                <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
+                <tr><td></td><td><button type=submit><?php _e("Register"); ?></button></td></tr>
+              </table>
+            </form>
+            <?php         
+            echo "</div>";
+          }
+
           echo "<div id='bsauth_buttons'>";
           echo "<p>" . __("Sign up with","blaat_auth") . "</p>";
           $action=htmlspecialchars(site_url("/".get_option("login_page")));
@@ -256,9 +274,11 @@ if (!function_exists("bsauth_register_display")) {
 //------------------------------------------------------------------------------
 if (!function_exists("bsauth_generate_button")) {
   function bsauth_generate_button($button, $action){
-
+      
       if (isset($button['logo']))
         $style="style='background-image:url(\"" .$button['logo']. "\");'";
+      else
+        $style="";
 
       return "<button class='bs-auth-btn' name=bsauth_$action 
              type=submit value='".$button['plugin']."-".$button['id']."'>
@@ -274,7 +294,7 @@ if (!function_exists("bsauth_generate_button")) {
 if (!function_exists("bsauth_link_display")) {
 
   function bsauth_link_display(){
-    session_start();
+    blaat_session_start();
 
 
 
@@ -292,6 +312,9 @@ if (!function_exists("bsauth_link_display")) {
       }
       if (isset($_POST['bsauth_unlink'])) 
         $link = explode ("-", $_POST['bsauth_unlink']);
+
+
+
       if (isset($link)){
         $service = $link[0];
         $link_id = $link[1];
@@ -333,8 +356,8 @@ if (!function_exists("bsauth_link_display")) {
       
 
       
-      foreach ($BSAUTH_SERVICES as $service) {
-        $buttons = $service->getButtonsLinked($user->ID);
+      foreach ($BSAUTH_SERVICES as $bs_service) {
+        $buttons = $bs_service->getButtonsLinked($user->ID);
       
         $buttonsLinked_new = array_merge ( $buttonsLinked , $buttons['linked'] );
         $buttonsUnlinked_new = array_merge ( $buttonsUnlinked , $buttons['unlinked'] );
@@ -344,6 +367,9 @@ if (!function_exists("bsauth_link_display")) {
 
       usort($buttonsLinked, "bsauth_buttons_sort"); 
       usort($buttonsUnlinked, "bsauth_buttons_sort");           
+
+      $unlinkHTML="";
+      $linkHTML="";
 
       foreach ($buttonsLinked as $linked) {
         $unlinkHTML .= bsauth_generate_button($linked,"unlink");
@@ -367,21 +393,22 @@ if (!function_exists("bsauth_link_display")) {
            </div></form>";
            
     } else {
-      // oauth user, no wp-user
-      if (isset($_SESSION['bsoauth_id'])     && isset($_SESSION['oauth_token']) &&
-          isset($_SESSION['oauth_expiry']) && isset($_SESSION['oauth_scope']) ){
-          $service_id = $_SESSION['bsoauth_id'];
-          $token      = $_SESSION['oauth_token'];
-          $expiry     = $_SESSION['oauth_expiry'];
-          $scope      = $_SESSION['oauth_scope'];
-          $service    = $_SESSION['bsauth_display'];
-          echo "<div id='bsauth_local'>";
-          printf(  "<p>" .  __("Please provide a local account to link to %s","blaat_auth") . "</p>" , $service);
-          wp_login_form();
-          echo "</div>";
-        } else {
-        printf(  "<p>" .  __("You need to be logged in to use this feature","blaat_auth") . "</p>");        
-      } 
+      if (!(get_option("bs_auth_hide_local"))) {
+        // oauth user, no wp-user
+        if (isset($_SESSION['bsauth_register']) ) {
+
+            $service = $_SESSION['bsauth_display'];
+            $_SESSION['bsauth_link']=$_SESSION['bsauth_register'] ;
+            echo "<div id='bsauth_local'>";
+            printf(  "<p>" .  __("Please provide a local account to link to %s","blaat_auth") . "</p>" , $service);
+            wp_login_form();
+            echo "</div>";
+          } else {
+          printf(  "<p>" .  __("You need to be logged in to use this feature","blaat_auth") . "</p>");        
+        } 
+      } else {
+        printf(  "<p>" .  __("This feature has been disabled","blaat_auth") . "</p>");        
+      }
     }
   }
 }
@@ -420,6 +447,94 @@ if (!function_exists("bsauth_delete_user")) {
   // Call the delete user function when a WordPress user is deleted.
   add_action( 'deleted_user', 'bsauth_delete_user' );
 }
+
+//------------------------------------------------------------------------------
+if (!function_exists("bsauth_generate_select_signup_requirement")) {
+  function bsauth_generate_select_signup_requirement($option_field){
+    $option_value = get_option($option_field);
+    echo "<select name='" . htmlspecialchars($option_field) . "'>";
+
+    $selected = ($option_value=="Disabled") ? "selected='selected'" : "";
+    echo "<option value='Disabled' $selected>";
+    _e("Disabled" , "blaat_auth");
+    echo  "</option>";
+
+    $selected = ($option_value=="Optional") ? "selected='selected'" : "";
+    echo "<option value='Optional' $selected>";
+    _e("Optional" , "blaat_auth");
+    echo  "</option>";
+
+    $selected = ($option_value=="Required") ? "selected='selected'" : "";
+    echo "<option value='Required' $selected>";
+    _e("Required" , "blaat_auth");
+    echo  "</option>";
+
+    echo "</select>";
+  }
+}
+
+//------------------------------------------------------------------------------
+if (!function_exists("blaat_plugins_auth_page")) {
+  function blaat_plugins_auth_page(){
+    echo '<div class="wrap">';
+    echo '<h2>';
+    _e("BlaatSchaap WordPress Authentication Plugins","blaat_auth");
+    echo '</h2>';
+    echo '<form method="post" action="options.php">';
+    settings_fields( 'bs_auth_pages' ); 
+
+    echo '<table class="form-table">';
+
+    echo '<tr><th>'. __("Login page","blaat_auth") .'</th><td>';
+    echo blaat_page_select("login_page");
+    echo '</td></tr>';
+    
+    echo '<tr><th>'. __("Register page","blaat_auth") .'</th><td>';
+    echo blaat_page_select("register_page");
+    echo '</td></tr>';
+
+    echo '<tr><th>'. __("Link page","blaat_auth") .'</th><td>';
+    echo blaat_page_select("link_page");
+    echo '</td></tr>';
+
+    echo '<tr><th>';
+    _e("Redirect to frontpage after logout", "blaat_auth") ;
+    echo "</th><td>";
+    $checked = get_option('logout_frontpage') ? "checked" : "";
+    echo "<input type=checkbox name='logout_frontpage' value='1' $checked>";
+    echo "</td></tr>";
+
+
+    echo '<tr><th>';
+    _e("Hide local accounts", "blaat_auth") ;
+    echo "</th><td>";
+    $checked = get_option('bs_auth_hide_local') ? "checked" : "";
+    echo "<input type=checkbox name='bs_auth_hide_local' value='1' $checked>";
+    echo "</td></tr>";
+
+    echo '<tr><th>';
+    _e("Require e-mail address", "blaat_auth") ;
+    echo "</th><td>";
+    bsauth_generate_select_signup_requirement("bs_auth_signup_user_email");      
+    echo "</td></tr>";
+
+
+    
+
+
+    echo '<tr><th>'. __("Custom Button CSS","blaat_auth") .'</th><td>';
+    echo "<textarea cols=70 rows=15 id='bsauth_custom_button_textarea' name='bsauth_custom_button'>";
+    echo htmlspecialchars(get_option("bsauth_custom_button"));
+    echo "</textarea>";
+    echo '</td></tr>';
+
+    echo '</table><input name="Submit" type="submit" value="';
+    echo  esc_attr_e('Save Changes') ;
+    echo '" ></form></div>';
+
+  }
+}
+//------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 // go frontpage
 // -- general auth related support

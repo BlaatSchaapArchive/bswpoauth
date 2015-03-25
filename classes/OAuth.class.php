@@ -139,7 +139,7 @@ class OAuth implements AuthService {
 
       foreach ($available_services as $available_service) {
         $button = array();
-        $button['class'] = $class;
+        //$button['class'] = $class;
 
         if(!$available_service['customlogo_enabled'])
           $service=strtolower($available_service['client_name']);
@@ -175,15 +175,19 @@ class OAuth implements AuthService {
 
 
 
+    /*
+      Is this code still needed? Looks like a fragment of code that no longer
+      has any meaning
 
     if ($_POST['bsauth_display']) {
       $_REQUEST['bsoauth_id'] = $_POST['bsauth_display'];
       $_SESSION['bsauth_display'] = $_POST['bsauth_display'];
     }
+    */
 
-//    if ($_REQUEST['bsoauth_id'] ||  $_REQUEST['code'] || $_REQUEST['oauth_token'] ) {
+
   
-      if ($_REQUEST['bsoauth_id']) $_SESSION['bsoauth_id']=$_REQUEST['bsoauth_id'];
+      if (isset($_REQUEST['bsoauth_id'])) $_SESSION['bsoauth_id']=$_REQUEST['bsoauth_id'];
 
 
 

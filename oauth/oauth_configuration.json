@@ -1,5 +1,5 @@
 {
-	"version": "$Id: oauth_configuration.json,v 1.23 2014/12/23 03:51:59 mlemos Exp $",
+	"version": "$Id: oauth_configuration.json,v 1.26 2015/03/12 09:22:00 mlemos Exp $",
 	"comments": [
 		"The servers entry should be an object with a list of object",
 		"entries, one for each server type. The server object entry name is",
@@ -23,6 +23,13 @@
 			"oauth_version": "2.0",
 			"dialog_url": "https://www.amazon.com/ap/oa?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={SCOPE}&response_type=code&state={STATE}",
 			"access_token_url": "https://api.amazon.com/auth/o2/token"
+		},
+
+		"AOL":
+		{
+			"oauth_version": "2.0",
+			"dialog_url": "https://api.screenname.aol.com/auth/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={SCOPE}&response_type=code&state={STATE}",
+			"access_token_url": "https://api.screenname.aol.com/auth/access_token"
 		},
 
 		"Bitbucket":
@@ -134,9 +141,9 @@
 		"Fitbit":
 		{
 			"oauth_version": "1.0a",
-			"request_token_url": "http://api.fitbit.com/oauth/request_token",
-			"dialog_url": "http://api.fitbit.com/oauth/authorize",
-			"access_token_url": "http://api.fitbit.com/oauth/access_token"
+			"request_token_url": "https://api.fitbit.com/oauth/request_token",
+			"dialog_url": "https://api.fitbit.com/oauth/authorize",
+			"access_token_url": "https://api.fitbit.com/oauth/access_token"
 		},
 
 		"Flickr":
@@ -230,7 +237,12 @@
 			"dialog_url": "https://secure.meetup.com/oauth2/authorize?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={SCOPE}&state={STATE}",
 			"access_token_url": "https://secure.meetup.com/oauth2/access"
 		},
-
+		"Misfit":
+		{
+			"oauth_version": "2.0",
+			"dialog_url": "https://api.misfitwearables.com/auth/dialog/authorize?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={SCOPE}&state={STATE}",
+			"access_token_url": "https://api.misfitwearables.com/auth/tokens/exchange"
+		},
 		"oDesk":
 		{
 			"oauth_version": "1.0a",
