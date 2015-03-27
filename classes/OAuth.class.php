@@ -156,8 +156,6 @@ class OAuth implements AuthService {
     global $wpdb; // Database functions
 
 
-    if (!(isset($_SESSION['heh']))) $_SESSION['heh'] = array();
-
 
     // library might redirect, is data saved when this happens?
     //blaat_session_flush(); 
@@ -379,7 +377,7 @@ class OAuth implements AuthService {
   private function process_login($client,$display_name,$service_id){
       global $wpdb;
 
-
+      $_SESSION['bsauth_display'] = $display_name;
 
       $token = $client->access_token;
       $table_name = $wpdb->prefix . "bs_oauth_sessions";
@@ -403,52 +401,6 @@ class OAuth implements AuthService {
     }
 
 //------------------------------------------------------------------------------
-  private function process_login_old($client,$display_name,$service_id){
 
-
-    global $wpdb;
-    $_SESSION['bsauth_display'] = $display_name;
-
-
-    
-    if ( is_user_logged_in() && !$_SESSION['bsauth_registered']) { 
-      $_SESSION['oauth_token']   = $client->access_token;
-      $_SESSION['oauth_expiry']  = $client->access_token_expiry;
-      $_SESSION['oauth_scope']   = $client->scope;
-      header("Location: ".site_url("/".get_option("link_page")). '?' . $_SERVER['QUERY_STRING']);
-      
-    } else {
-      
-
-
-      
-      $token = $client->access_token;
-      $table_name = $wpdb->prefix . "bs_oauth_sessions";
-
-      $query = $wpdb->prepare("SELECT `user_id` FROM $table_name WHERE `service_id` = %d AND `token` = %d",$service_id,$token);  
-      $results = $wpdb->get_results($query,ARRAY_A);
-      $result = $results[0];
-
-      if ($result) {
-        unset ($_SESSION['bsauth_login']);  
-        unset($_SESSION['bsauth_login_id']);
-        wp_set_current_user ($result['user_id']);
-        wp_set_auth_cookie($result['user_id']);
-        header("Location: ".site_url("/".get_option("login_page")));     
-      } else {
-        $_SESSION['bsauth_register'] = "blaat_oauth-$service_id";
-        /*
-        $_SESSION['oauth_signup']  = 1;
-        $_SESSION['oauth_token']   = $client->access_token;
-        $_SESSION['oauth_expiry']  = $client->access_token_expiry;
-        $_SESSION['oauth_scope']   = $client->scope;
-        */
-        $_SESSION['bsauth_fetch_data'] = 0;
-        $_SESSION['bsauth_register_auto'] = 0;
-        header("Location: ".site_url("/".get_option("register_page")));
-      }
-    }
-  }
-//------------------------------------------------------------------------------
 }
 ?>

@@ -287,7 +287,15 @@ if (!function_exists("bsauth_view")) {
       $logging   = isset($_SESSION['bsauth_login'])   || isset($_POST['bsauth_login']);
       $linking   = isset($_SESSION['bsauth_link'])    || isset($_POST['bsauth_link']);
       $regging   = isset($_SESSION['bsauth_register'])|| isset($_POST['bsauth_register']);
-      $regging_local = false; // TODO
+
+      if ($regging) {
+        $regging_local = (isset($_POST['bsauth_register']) 
+                          && $_POST['bsauth_register']=="local") ||
+                          (isset($_SESSION['bsauth_register']) 
+                          && $_SESSION['bsauth_register']=="local");
+
+      } else $regging_local = false;
+
       $unlinking = isset($_POST['bsauth_unlink']);
 
 
@@ -298,6 +306,13 @@ if (!function_exists("bsauth_view")) {
           echo "<div id='bsauth_local'>";
           echo "<p>" .  __("Log in with a local account","blaat_auth") . "</p>" ; 
           wp_login_form();
+          ?>
+          <form method='post' action='<?php echo blaat_get_current_url(); ?>'>
+          
+          <button type='submit' value='local' name='bsauth_register'><?php
+            _e("Register"); ?></button> 
+          </form> 
+          <?php
           echo "</div>";
         }
 
@@ -378,7 +393,7 @@ if (!function_exists("bsauth_view")) {
       // end logged in (show linking)
 
 
-      if ($regging) {
+      if ($regging && !$linking && !$regging_local) {
         if (isset($_SESSION['new_user'])) $new_user = $_SESSION['new_user'];
         _e("Please provide a username and e-mail address to complete your signup","blaat_auth");
          ?><form action='<?php echo blaat_get_current_url()?>'method='post'>
@@ -388,11 +403,22 @@ if (!function_exists("bsauth_view")) {
             <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email' value='<?php if (isset($new_user['user_email'])) echo htmlspecialchars($new_user['user_email']);?>' ></td></tr>
             <?php } ?>
             <tr><td><button name='cancel' type=submit><?php _e("Cancel"); ?></button></td><td><button name='register' value='1' type=submit><?php _e("Register"); ?></button></td></tr>
+            <tr><td></td><td><button name='bsauth_link' value='<?php echo htmlspecialchars($_SESSION['bsauth_register']); ?>' type='submit'><?php _e("Link to existing account","blaat_auth"); ?></button></td></td></tr>
           </table>
         </form>
         <?php
-        printf( __("If you already have an account, please click <a href='%s'>here</a> to link it.","blaat_auth") , site_url("/".get_option("link_page")));
+        //printf( __("If you already have an account, please click <a href='%s'>here</a> to link it.","blaat_auth") , site_url("/".get_option("link_page")));
       }
+
+
+      if ($regging && $linking && !$regging_local) {
+        $service = $_SESSION['bsauth_display'];
+        echo "<div id='bsauth_local'>";
+        printf( "<p>" . __("Please provide a local account to link to %s","blaat_auth") . "</p>" , $service);
+        wp_login_form();
+        echo "</div>";
+      }
+
 
       // begin regging 
       if ($regging_local) {
@@ -406,7 +432,7 @@ if (!function_exists("bsauth_view")) {
               <tr><td><?php _e("Username"); ?></td><td><input name='username'></td></tr>
               <tr><td><?php _e("Password"); ?></td><td><input type='password' name='password'></td></tr>
               <tr><td><?php _e("E-mail Address"); ?></td><td><input name='email'></td></tr>
-              <tr><td></td><td><button name='register'  type='submit'><?php _e("Register"); ?></button></td></tr>
+              <tr><td><button name='cancel' type=submit><?php _e("Cancel"); ?></button></td><td><button name='register'  type='submit'><?php _e("Register"); ?></button></td></tr>
             </table>
           </form>
           <?php         
@@ -447,6 +473,9 @@ if (!(function_exists("bsauth_process"))){
         $regging = false;
       }
 
+      if ($regging && $linking) {
+        $_SESSION['bsauth_link']=$_SESSION['bsauth_register'] ;
+      }
 
       // begin linking 
       if ( $logged && $linking) {
@@ -560,10 +589,18 @@ if (!(function_exists("bsauth_process"))){
 
       // begin regging
       if ($regging) {
+        if (!isset($_SESSION['bsauth_register'])) {
+          $_SESSION['bsauth_register'] = $_POST['bsauth_register'];
+        }
         $register = explode ("-", $_SESSION['bsauth_register']);
         
         $plugin_id = $register[0];
-        $login_id = $register[1];
+        if ($plugin_id=="local") {
+          $local=true;
+        } else {
+          $login_id = $register[1];
+          $local=false;
+        }
 
         /*
         if ($_SESSION['bsauth_fetch_data']) {
@@ -589,25 +626,30 @@ if (!(function_exists("bsauth_process"))){
           $user_id = wp_insert_user($new_user);
           if (is_numeric($user_id)) {
             unset($_SESSION['bsauth_register']);
-            //$reg_ok=true;
-            $_SESSION['bsauth_registered']=1;
-            wp_set_current_user ($user_id);
-            wp_set_auth_cookie($user_id);
-            global $BSAUTH_SERVICES;
-            $serviceToLink = $BSAUTH_SERVICES[$plugin_id];
-            if ($serviceToLink) {
-              if ($serviceToLink->Link($login_id)) {
-                $_SESSION['bsauth_display_message'] = sprintf( __("Welcome to %s.", "blaat_auth"), get_bloginfo('name') );
-              } else {
-                // This should never happen. Cannot sign up with already linked account.
-                // but it did?
-                $_SESSION['bsauth_display_message'] = __("An error occurred while registering your account.", "blaat_auth");
-              }
+              $_SESSION['bsauth_registered']=1;
+              wp_set_current_user ($user_id);
+              wp_set_auth_cookie($user_id);
+            if ($local) {
+              $_SESSION['bsauth_display_message'] = sprintf( __("Welcome to %s.", "blaat_auth"), get_bloginfo('name') );
             } else {
-              $_SESSION['bsauth_display_message'] = __("Plugin not registered.", "blaat_auth");
-            }
-          } else {
 
+              global $BSAUTH_SERVICES;
+              $serviceToLink = $BSAUTH_SERVICES[$plugin_id];
+              if ($serviceToLink) {
+                if ($serviceToLink->Link($login_id)) {
+                  $_SESSION['bsauth_display_message'] = sprintf( __("Welcome to %s.", "blaat_auth"), get_bloginfo('name') );
+                } else {
+                  // This should never happen. Cannot sign up with already linked account.
+                  // but it did?
+                  $_SESSION['bsauth_display_message'] = __("An error occurred while registering your account.", "blaat_auth");
+                }
+              } else {
+                $_SESSION['bsauth_display_message'] = __("Plugin not registered.", "blaat_auth");
+              }
+            }
+
+          } else {
+            $_SESSION['debug_blah']=1;
             $_SESSION['bsauth_display_message'] = __($user_id->get_error_message());
           }
         } //else $_SESSION['bsauth_display_message'] = "DEBUG: requirements not met";
