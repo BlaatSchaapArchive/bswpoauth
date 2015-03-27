@@ -1,9 +1,10 @@
 <?php
 
-
+require_once("OAuthException.class.php");
 
 class OAuth implements AuthService {
 //------------------------------------------------------------------------------
+/*
   public function canLogin(){
     // TODO: better ways of detecting
     
@@ -14,53 +15,30 @@ class OAuth implements AuthService {
           $_REQUEST['code']); // detect?
     
   }
+*/
+
+  public $redirect_uri;
 //------------------------------------------------------------------------------
   public function Login($service_id){
 
     try {
-      self::process('self::process_login', $service_id);
+      return self::process('self::process_login', $service_id);
     } catch (Exception $e) {
-      // TODO error handling
-        switch ($e->getMessage()) {
-          case "missing_token" :
-            _e("OAuth error: the token is missing","blaat_auth");
-            echo $client->error;
-            break;
-          case "processing_error":
-            _e("OAuth error: processing error","blaat_auth");
-            echo $client->error;
-            break;
-          case "initialisation_error":
-            _e("OAuth error: initialisation error","blaat_auth");
-            echo $client->error;
-            break;
-          default:
-            _e("Unknown error","blaat_auth");
-        }
+      $_SESSION['bsauth_display_message'] = $e->getMessage();
+      $_SESSION['bsauth_library_error'] = $e->libraryError;
+      return AuthStatus::Error;
     }
   }
   
 //------------------------------------------------------------------------------
   public function Link($service_id){
     try {
-      self::process('self::process_link',  $service_id);
+      $_SESSION['debug']= "Link($service_id)";
+      return self::process('self::process_link',  $service_id);
     } catch (Exception $e) {
-        switch ($e->getMessage()) {
-          case "missing_token" :
-            _e("OAuth error: the token is missing","blaat_auth");
-            echo $client->error;
-            break;
-          case "processing_error":
-            _e("OAuth error: processing error","blaat_auth");
-            echo $client->error;
-            break;
-          case "initialisation_error":
-            _e("OAuth error: initialisation error","blaat_auth");
-            echo $client->error;
-            break;
-          default:
-            _e("Unknown error","blaat_auth");
-      }
+      $_SESSION['bsauth_display_message'] = $e->getMessage();
+      $_SESSION['bsauth_library_error'] = $e->libraryError;
+      return AuthStatus::Error;
     }
   }
   
@@ -178,6 +156,11 @@ class OAuth implements AuthService {
     global $wpdb; // Database functions
 
 
+    if (!(isset($_SESSION['heh']))) $_SESSION['heh'] = array();
+
+
+    // library might redirect, is data saved when this happens?
+    //blaat_session_flush(); 
 
     /*
       Is this code still needed? Looks like a fragment of code that no longer
@@ -205,14 +188,26 @@ class OAuth implements AuthService {
 
 
       // DEBUGGING
-      $client->debug=false;
+      $client->debug=true;
 
 
       $client->configuration_file = plugin_dir_path(__FILE__) . '../oauth/oauth_configuration.json';
-      $client->redirect_uri  = site_url("/".get_option("login_page"));
+
+      
+      if (isset($this->redirect_uri) && strlen($this->redirect_uri)) {
+        // allow redirect-uri overrides
+        $client->redirect_uri  = $this->redirect_uri;
+      } else {
+        // url of requesting page
+        $client->redirect_uri  = blaat_get_current_url();
+      }
+
       $client->client_id     = $result['client_id'];
       $client->client_secret = $result['client_secret'];
       $client->scope         = $result['default_scope'];
+
+      // DEBUG
+      //$_SESSION['DEBUG_OAUTH_SERVICE'] = $result;
 
       if ($result['custom_id']) {
         $table_name = $wpdb->prefix . "bs_oauth_custom";
@@ -228,6 +223,9 @@ class OAuth implements AuthService {
         $client->authorization_header          = $custom['authorization_header'];
         $client->offline_dialog_url            = $custom['offline_dialog_url'];
         $client->append_state_to_redirect_uri  = $custom['append_state_to_redirect_uri'];
+
+        //$_SESSION['DEBUG_OAUTH_SERVICE_CUSTOM'] = $custom;
+
       } else {
         $client->server        = $result['client_name'];
       }
@@ -235,26 +233,23 @@ class OAuth implements AuthService {
       if ($success = $client->Initialize()) {
         if ($success = $client->Process()) {
           if (strlen($client->access_token)) {
-            call_user_func($function, $client, $result['display_name'], $service_id);
+            $result = call_user_func($function, $client, $result['display_name'], $service_id);
             $success = $client->Finalize($success);
+            // do we need to check for success here?
+            return $result;
           } else {
-            throw new Exception("missing_token");
-            /*            
-            _e("OAuth error: the token is missing","blaat_auth");
-            echo $client->error;
-            */
+            return AuthStatus::Busy;
           }
         } else {
-
-            throw new Exception("processing_error");
-            
-          /*
-          _e("OAuth error: processing error","blaat_auth");
-          echo $client->error;
-          */
+            $exception = new OAuthException(__("OAuth error: processing error","blaat_auth"), 1);
+            $exception->libraryError = $client->error;
+            throw $exception;
         }
       } else {
-        throw new Exception("initialisation_error");
+        $exception = new OAuthException(__("OAuth error: initialisation error","blaat_auth"), 2);
+        $exception->libraryError = $client->error;
+        throw $exception;
+
         /*
         _e("OAuth error: initialisation error","blaat_auth");
         echo $client->error;
@@ -328,98 +323,94 @@ class OAuth implements AuthService {
   }
 //------------------------------------------------------------------------------
   public function  process_link($client,$service,$service_id) {
-
-
-      unset($_SESSION['bsoauth_id']);
-      unset($_SESSION['bsauth_link']);
-      unset($_SESSION['oauth_token']);
-      unset($_SESSION['oauth_expiry']);
-      unset($_SESSION['oauth_scope']);
-      unset($_SESSION['bsauth_display']);
-      unset($_SESSION['bsauth_link_id']);
-
-
-
     global $wpdb;    
     $user = wp_get_current_user();
     $user_id    = $user->ID;
     $token      = $client->access_token;
     $expiry     = $client->access_token_expiry;
     $scope      = $client->scope;
-    //$service    = $_SESSION['bsauth_display'];
 
-
+    // Verifying this account has not been linked to another user
     $table_name = $wpdb->prefix . "bs_oauth_sessions";
-    // We need to verify the external account is not already linked
-    // before we insert!!!
-    
-
-
     $testQuery = $wpdb->prepare("SELECT * FROM $table_name 
                                  WHERE service_id = %d 
                                  AND   token = %s" , $service_id, $token);
     $testResult = $wpdb->get_results($testQuery,ARRAY_A);
 
-
-
-            /*
-        What the fuck is happening.... when I run the query manually.... it 
-        just answers the existing record.... however, when I run it in wordpress
-        it doesn't appear to answer most of the times, but occasionally it answers.
-
-
-      echo "<pre>testQuery\n$testQuery\n";
-      $wpdb->print_error();
-      echo "<pre>Service ID: $service_id \nToken:$token \ntestResult: "; print_r($testResult); 
-
-
-      echo "\n\nQUERY" . $wpdb->last_query ."</pre><br>";
-      echo "\n\nERROR" . $wpdb->last_error ."</pre><br>";
-
-    */
-
-      
-
       if (count($testResult)) {
-        printf( __("Your %s account has is already linked to another local account", "blaat_auth"), $service );
+        return AuthStatus::LinkInUse;
       } else {
-        
+        // We can continue linking
 
         $query = $wpdb->prepare("INSERT INTO $table_name (`user_id`, `service_id`, `token`, `expiry`, `scope` )
                                          VALUES      ( %d      ,  %d         ,  %s    , %s      , %s      )",
                                                       $user_id , $service_id , $token , $expiry , $scope  );
         $wpdb->query($query);
-        printf( __("Your %s account has been linked", "blaat_auth"), $service );
-        unset($_SESSION['bsauth_link']);
+        $_SESSION['display_name']=$service;
+        //return true;
+        return AuthStatus::LinkSuccess;
+        // printf( __("Your %s account has been linked", "blaat_auth"), $service );
+        //unset($_SESSION['bsauth_link']);
         
       }
 
-
-
-
-
-
   }
+
+
+
+
   public function Unlink ($id) {
     global $wpdb;    
     $table_name = $wpdb->prefix . "bs_oauth_sessions";
     $table_name2 = $wpdb->prefix . "bs_oauth_services";
     $query2 = $wpdb->prepare("Select display_name from $table_name2 where id = %d", $id );
     $service_name = $wpdb->get_results($query2,ARRAY_A);
-    $service = $service_name[0]['display_name'];
+    //$service = $service_name[0]['display_name'];
+    $_SESSION['display_name'] = $service_name[0]['display_name'];
     $query = $wpdb->prepare ("Delete from $table_name where user_id = %d AND service_id = %d", get_current_user_id(), $id );
     $wpdb->query($query);
-    printf( __("You are now unlinked from %s.", "blaat_auth"), $service );
-    unset($_SESSION['bsauth_unlink']);
+      
+    return true;
 
   }
+
 //------------------------------------------------------------------------------
+
   private function process_login($client,$display_name,$service_id){
+      global $wpdb;
+
+
+
+      $token = $client->access_token;
+      $table_name = $wpdb->prefix . "bs_oauth_sessions";
+
+      $query = $wpdb->prepare("SELECT `user_id` FROM $table_name WHERE `service_id` = %d AND `token` = %d",$service_id,$token);  
+      $results = $wpdb->get_results($query,ARRAY_A);
+      $result = $results[0];
+
+      if ($result) {
+        unset ($_SESSION['bsauth_login']);  
+        unset($_SESSION['bsauth_login_id']);
+        wp_set_current_user ($result['user_id']);
+        wp_set_auth_cookie($result['user_id']);
+        //return true;
+        return AuthStatus::LoginSuccess;
+      }
+
+      //return false;
+      return AuthStatus::LoginMustRegister;  // does this fix the problem?
+                                  // if so rewrite to ENUM?
+    }
+
+//------------------------------------------------------------------------------
+  private function process_login_old($client,$display_name,$service_id){
 
 
     global $wpdb;
     $_SESSION['bsauth_display'] = $display_name;
 
+
+    
     if ( is_user_logged_in() && !$_SESSION['bsauth_registered']) { 
       $_SESSION['oauth_token']   = $client->access_token;
       $_SESSION['oauth_expiry']  = $client->access_token_expiry;

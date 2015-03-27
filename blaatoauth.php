@@ -3,7 +3,7 @@
 Plugin Name: BlaatSchaap SSO: OAuth Consumer 
 Plugin URI: http://code.blaatschaap.be
 Description: Log in with an OAuth Provider
-Version: 0.4.2
+Version: 0.4.3-dev1
 Author: André van Schoubroeck
 Author URI: http://andre.blaatschaap.be
 License: BSD

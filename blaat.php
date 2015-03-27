@@ -133,7 +133,29 @@ if (!function_exists("blaat_session_start")){
   }
 }
 //------------------------------------------------------------------------------
+if (!function_exists("blaat_session_flush")){
+  function blaat_session_flush(){
+    if(!(blaat_has_session_started())) {
+      session_write_close();
+      session_start();
+    }
+  }
+}
+//------------------------------------------------------------------------------
+if (!function_exists("blaat_get_current_url")){
+  function blaat_get_current_url(){
+    $is_ssl =  (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off');
+    $current_url  = $is_ssl ? "https://" : "http://";
+    $default_port = $is_ssl ? 443 : 80  ;
+    $current_url .= $_SERVER["SERVER_NAME"];
 
+    if ($_SERVER["SERVER_PORT"] != $default_port) {
+      $current_url .= ":" . $_SERVER["SERVER_PORT"];
+    }  
+    $current_url .= strtok( $_SERVER["REQUEST_URI"], "?");
+    return $current_url;
+  }
+}
 //------------------------------------------------------------------------------
 
 
