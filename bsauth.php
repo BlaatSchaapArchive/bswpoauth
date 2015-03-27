@@ -279,9 +279,11 @@ if (!function_exists("bsauth_view")) {
     }
     $user = wp_get_current_user();
 
-      echo "DEBUG SESSION<pre>"; print_r($_SESSION); echo "</pre>";
-      echo "DEBUG POST<pre>"; print_r($_POST); echo "</pre>";
-      echo "DEBUG URL:<pre>" . blaat_get_current_url() . "</pre>";
+      if (get_option("bs_debug")) {
+        echo "DEBUG SESSION<pre>"; print_r($_SESSION); echo "</pre>";
+        echo "DEBUG POST<pre>"; print_r($_POST); echo "</pre>";
+        echo "DEBUG URL:<pre>" . blaat_get_current_url() . "</pre>";
+      }
 
       $logged    = is_user_logged_in();
       $logging   = isset($_SESSION['bsauth_login'])   || isset($_POST['bsauth_login']);
@@ -393,7 +395,7 @@ if (!function_exists("bsauth_view")) {
       // end logged in (show linking)
 
 
-      if ($regging && !$linking && !$regging_local) {
+      if ($regging && !$linking && !$regging_local ) {
         if (isset($_SESSION['new_user'])) $new_user = $_SESSION['new_user'];
         _e("Please provide a username and e-mail address to complete your signup","blaat_auth");
          ?><form action='<?php echo blaat_get_current_url()?>'method='post'>
@@ -496,6 +498,7 @@ if (!(function_exists("bsauth_process"))){
         switch ($status) {
           case AuthStatus::LinkSuccess :
             $_SESSION['bsauth_display_message'] = sprintf( __("Your %s account has been linked", "blaat_auth"), $_SESSION['display_name'] );
+            if ($regging) unset($_SESSION['bsauth_register']);
             break;
           case AuthStatus::LinkInUse :
             $_SESSION['bsauth_display_message'] = sprintf( __("Your %s account has is already linked to another local account", "blaat_auth"), $_SESSION['display_name'] );
@@ -649,10 +652,9 @@ if (!(function_exists("bsauth_process"))){
             }
 
           } else {
-            $_SESSION['debug_blah']=1;
             $_SESSION['bsauth_display_message'] = __($user_id->get_error_message());
           }
-        } //else $_SESSION['bsauth_display_message'] = "DEBUG: requirements not met";
+        } 
       }
       // end regging
 
