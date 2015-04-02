@@ -455,6 +455,8 @@ if (!function_exists("bsauth_view")) {
 
 if (!(function_exists("bsauth_process"))){
   function bsauth_process(){
+
+      // TODO rename $login_id to $service_id
       if (!isset($_SESSION['count'])) $_SESSION['count']=0;
       $_SESSION['count']++;
 
@@ -477,6 +479,10 @@ if (!(function_exists("bsauth_process"))){
 
       if ($regging && $linking) {
         $_SESSION['bsauth_link']=$_SESSION['bsauth_register'] ;
+      }
+      
+      if ($regging && $logged)  {
+          unset($_SESSION['bsauth_register']);
       }
 
       // begin linking 
@@ -532,7 +538,7 @@ if (!(function_exists("bsauth_process"))){
 
 
       // begin loggin in
-      if ($logging) {
+      if ($logging  && !$logged) {
         if ( isset($_POST['bsauth_login'])){
           $login = explode ("-", $_POST['bsauth_login']);
           $_SESSION['bsauth_login']=$_POST['bsauth_login'];
@@ -548,7 +554,6 @@ if (!(function_exists("bsauth_process"))){
           if ($service!=null) {
             $_SESSION['bsauth_display_message'] =$service->Login($login_id);
             $result = $service->Login($login_id);
-            echo "DEBUG status<pre>"; var_dump($result); echo "</pre>";
             switch ($result) {
               case AuthStatus::Busy :
                 break;
@@ -557,6 +562,7 @@ if (!(function_exists("bsauth_process"))){
                 unset($_SESSION['bsauth_login']);
                 unset($_SESSION['bsauth_plugin']);
                 unset($_SESSION['bsauth_login_id']);
+                unset($_SESSION['bsauth_register_userinfo']);
                 $userinfo = wp_get_current_user();
                 if (strlen($userinfo->display_name)) {
                   $display_name = $userinfo->display_name;
@@ -591,8 +597,8 @@ if (!(function_exists("bsauth_process"))){
 
 
       // begin regging
-      if ($regging) {
-        if (!isset($_SESSION['bsauth_register'])) {
+      if ($regging && !$logged) {
+        if (!isset($_SESSION['bsauth_register']) ) {
           $_SESSION['bsauth_register'] = $_POST['bsauth_register'];
         }
         $register = explode ("-", $_SESSION['bsauth_register']);
@@ -605,27 +611,26 @@ if (!(function_exists("bsauth_process"))){
           $local=false;
         }
 
-        /*
+        
         if ($_SESSION['bsauth_fetch_data']) {
-          $plugin_id = $BSAUTH_SERVICES[$plugin_id];
+          $service = $BSAUTH_SERVICES[$plugin_id];
           if($service) {
-            $new_user = $service->getRegisterData();
+            $new_user = $service->getRegisterData($login_id);
           } 
         } 
-        */
+        
+        if (!isset($new_user)) $new_user = array()  ;
 
-        if (isset($_POST['username']) && isset($_POST['email'])) {
-          if (!isset($new_user)) $new_user = array();
-          $new_user['user_login']= $_POST['username'];
-          $new_user['user_email']= $_POST['email'];
-        }
+        if (isset($_POST['username'])) $new_user['user_login']= $_POST['username'];
+        if (isset($_POST['email']))    $new_user['user_email']= $_POST['email'];
+        if (isset($_POST['password'])) $new_user['user_pass']= wp_hash_password($_POST['password']);
 
         if (isset($new_user)) $_SESSION['bsauth_register_userinfo'] = $new_user;
 
         if (isset($new_user) && (isset($new_user['user_login']) && 
             ( isset($new_user['user_email']) || (get_option("bs_auth_signup_user_email")!="Required") )
             ) && ( isset($_POST['register']) || $_SESSION['bsauth_register_auto'] )) {
-          $new_user['user_pass'] = wp_hash_password(wp_generate_password());
+          if (!isset($new_user['user_pass'])) $new_user['user_pass'] = wp_hash_password(wp_generate_password());
           $user_id = wp_insert_user($new_user);
           if (is_numeric($user_id)) {
             unset($_SESSION['bsauth_register']);

@@ -127,6 +127,17 @@ function bsoauth_add_page(){
         </td>
       </tr>
       <tr>
+        <th><label><?php _e("Fixed Redirect URL","blaat_auth"); ?></label></th>
+        <td><input type='checkbox' name='fixed_redirect_url' value=1></input>
+      </tr>
+
+      <tr>
+        <th><label><?php _e("Override Reditect URL","blaat_auth"); ?></label></th>
+        <td><input type='text' name='override_redirect_url'></input></input>
+      </tr>
+      <tr>
+
+      <tr>
         <th><label><?php _e("Enabled","blaat_auth");?></td>
         <td><input type='checkbox' name='client_enabled' value=1></input>
       </tr>
@@ -247,6 +258,11 @@ function bsoauth_add_custom_page(){
         </td>
       </tr>
       <tr>
+        <th><label><?php _e("Fixed Redirect URL","blaat_auth"); ?></label></th>
+        <td><input type='checkbox' name='fixed_redirect_url' value=1></input>
+      </tr>
+
+      <tr>
         <th><label><?php _e("Enabled","blaat_auth"); ?></label></th>
         <td><input type='checkbox' name='client_enabled' value=1></input>
       </tr>
@@ -269,14 +285,17 @@ function bsoauth_add_process(){
   $client_secret=$_POST['client_secret'];
   $default_scope=$_POST['default_scope'];
   $enabled = (int) $_POST['client_enabled'];
+  $fixed_redirect_url = (int) $_POST['fixed_redirect_url'];
+  $override_redirect_url = $_POST['override_redirect_url'];
+
   $table_name = $wpdb->prefix . "bs_oauth_services";
    
  
   $query = $wpdb->prepare( 
 	"INSERT INTO $table_name
-	(        `enabled` , `display_name` , `client_name` , `client_id` , `client_secret` , `default_scope` )
-	VALUES ( %d        ,  %s            ,  %s           , %s          , %s              , %s )", 
-                 $enabled  , $display_name   , $service      , $client_id  ,$client_secret   , $default_scope );
+	(        `enabled` , `display_name` , `client_name` , `client_id` , `client_secret` , `default_scope` , `fixed_redirect_url`, `override_redirect_url`)
+	VALUES ( %d        ,  %s            ,  %s           , %s          , %s              , %s , %d, %s)", 
+                 $enabled  , $display_name   , $service      , $client_id  ,$client_secret   , $default_scope, $fixed_redirect_url, $override_redirect_url  );
 
   $result = $wpdb->query($query);
 
@@ -411,7 +430,9 @@ function bsoauth_update_service(){
   $new_data["client_id"] = $_POST["client_id"];
   $new_data["client_secret"] = $_POST["client_secret"];
   $new_data["default_scope"] = $_POST["default_scope"];
-  $new_data["enabled"] = $_POST["client_enabled"];
+  $new_data["enabled"] = (int) $_POST["client_enabled"];
+  $new_data["fixed_redirect_url"] = (int) $_POST["fixed_redirect_url"];
+  $new_data["override_redirect_url"] = $_POST["override_redirect_url"];
   $new_data["customlogo_enabled"] = $_POST["customlogo_enabled"];
 
   //How to detect if a file was uploaded??
@@ -474,12 +495,12 @@ function bsoauth_update_service(){
     $new_data['dialog_url']=$_POST['dialog_url'];
     $new_data['access_token_url']=$_POST['access_token_url'];
     $new_data['offline_dialog_url']=$_POST['offline_dialog_url'];
-    $new_data['append_state_to_redirect_uri']=$_POST['append_state_to_redirect_uri'];
-    $new_data['authorization_header']=$_POST['authorization_header'];
-    $new_data['url_parameters']=$_POST['url_parameters'];
+    $new_data['append_state_to_redirect_uri']= $_POST['append_state_to_redirect_uri'];
+    $new_data['authorization_header']= (int) $_POST['authorization_header'];
+    $new_data['url_parameters']= (int)$_POST['url_parameters'];
 
     $data_id = array();
-    $data_id['id']  = $_POST['custom_id'];
+    $data_id['id']  = (int) $_POST['custom_id'];
     $wpdb->update($table_name, $new_data, $data_id);
   }
   global $SROLLPOS;
@@ -517,13 +538,15 @@ function bsoauth_list_services(){
                     default_scope, oauth_version, request_token_url, 
                     dialog_url, access_token_url, url_parameters, 
                     authorization_header, offline_dialog_url, display_order, 
-                    append_state_to_redirect_uri, customlogo_url, customlogo_enabled
+                    append_state_to_redirect_uri, customlogo_url, 
+                    customlogo_enabled, fixed_redirect_url, override_redirect_url
           from $table_name
           LEFT OUTER JOIN $table_name2 on ${table_name}.custom_id = ${table_name2}.id",ARRAY_A);
 
 
   foreach ($results as $result){
     $enabled= $result['enabled'] ? "checked" : "";
+    $fixed_redirect_url= $result['fixed_redirect_url'] ? "checked" : "";
     ?>
   <!--</pre>--> <a name="serv-<?php echo $result['id']; ?>"></a>
   <form method='post'  enctype="multipart/form-data" action='<?php echo $ACTION ?>'>
@@ -582,6 +605,13 @@ function bsoauth_list_services(){
           <td>
             <input type='text' name='offline_dialog_url'
               value='<?php echo $result['offline_dialog_url']; ?>'></input>
+          </td>
+        </tr>
+        <tr>
+          <th><label><?php _e("PIN Dialog URL (optional)","blaat_auth"); ?></label></th>
+          <td>
+            <input type='text' name='pin_dialog_url'
+              value='<?php echo $result['pin_dialog_url']; ?>'></input>
           </td>
         </tr>
         <tr>
@@ -656,6 +686,19 @@ function bsoauth_list_services(){
             <input type="file" name="newlogo">
         </td>
       </tr>
+
+      <tr>
+        <th><label><?php _e("Fixed Redirect URL (Login page)","blaat_auth"); ?></label></th>
+        <td><input type='checkbox' name='fixed_redirect_url' value=1 <?php echo $fixed_redirect_url; ?>></input>
+      </tr>
+      <tr>
+
+      <tr>
+        <th><label><?php _e("Override Reditect URL","blaat_auth"); ?></label></th>
+        <td><input type='text' name='override_redirect_url' value='<?php echo $result['override_redirect_url']; ?>'></input></input>
+      </tr>
+      <tr>
+
 
       <tr>
         <th><label><?php _e("Enabled","blaat_auth"); ?></label></th>

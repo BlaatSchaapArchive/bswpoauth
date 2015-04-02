@@ -65,7 +65,7 @@ if (!function_exists("blaat_plugins_page")) {
     }
     
     echo "</table></span><hr><div style='text-align:center;'>";
-    _e("Thank you for using one of my projects. I develop these projects in my free time. <br>Please donate to support development of the future versions of my projects. <br>Any donation is appreciated. Thanks a lot!<br>André","blaatschaap");
+    _e("Donations play an important role in supporting open-source projects. We greatly appreciate any donation you can make to help us support further development of free products!","blaatschaap");
     ?>
 <br><br>
 
@@ -143,7 +143,7 @@ if (!function_exists("blaat_session_flush")){
 }
 //------------------------------------------------------------------------------
 if (!function_exists("blaat_get_current_url")){
-  function blaat_get_current_url(){
+  function blaat_get_current_url($include_query=false, $strip_trailing_slash=false){
     $is_ssl =  (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off');
     $current_url  = $is_ssl ? "https://" : "http://";
     $default_port = $is_ssl ? 443 : 80  ;
@@ -153,6 +153,10 @@ if (!function_exists("blaat_get_current_url")){
       $current_url .= ":" . $_SERVER["SERVER_PORT"];
     }  
     $current_url .= strtok( $_SERVER["REQUEST_URI"], "?");
+    if ($strip_trailing_slash) {
+      //!! TODO
+    }
+    if ($include_query) $current_url .= "?" . $_SERVER["QUERY_STRING"];
     return $current_url;
   }
 }

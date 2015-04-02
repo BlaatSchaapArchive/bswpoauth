@@ -11,7 +11,7 @@ if (!interface_exists("AuthService")) {
 	  public function Link($id);
     public function Unlink($id);
 
-    public function getRegisterData();
+    public function getRegisterData($id);
     public function Delete($user_id);
     
 

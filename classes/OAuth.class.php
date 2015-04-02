@@ -4,20 +4,9 @@ require_once("OAuthException.class.php");
 
 class OAuth implements AuthService {
 //------------------------------------------------------------------------------
-/*
-  public function canLogin(){
-    // TODO: better ways of detecting
-    
-    return ($_SESSION['bsoauth_id'] || $_REQUEST['bsoauth_id'] ||
-          $_SESSION['bsauth_link'] || $_REQUEST['bsauth_link'] ||   // TODO change this!!!!
-          $_SESSION['bsauth_login'] || $_REQUEST['bsauth_login'] || // TODO change this!!!!
-          $_SESSION['bsauth_display'] || $_REQUEST['bsauth_display']||
-          $_REQUEST['code']); // detect?
-    
-  }
-*/
 
-  public $redirect_uri;
+  public $redirect_uri; // override the redirect url
+
 //------------------------------------------------------------------------------
   public function Login($service_id){
 
@@ -43,9 +32,48 @@ class OAuth implements AuthService {
   }
   
 //------------------------------------------------------------------------------
-  public function getRegisterData(){
-    return NULL;
+  public function getRegisterData($service_id){
+    global $wpdb;
+    $table_name = $wpdb->prefix . "bs_oauth_services";
+    $query = $wpdb->prepare("SELECT fetch_userdata_function 
+                                 FROM $table_name  WHERE id = %d", $service_id);
+
+/*
+    $result = $wpdb->get_row($query,ARRAY_A);
+
+    // DEBUG
+    $_SESSION['blaat_debug_userdate_function_array'] = $result;
+    if ($result){
+      $fetch_userdata_function = $result[0];
+    } else {
+      $_SESSION['bsauth_display_message'] = "Cannot fetch user data";
+      return AuthStatus::Error;
+    }
+*/
+    $fetch_userdata_function = $wpdb->get_var($query);
+
+    if ($fetch_userdata_function==NULL) {
+      $_SESSION['blaat_debug_userdate_function_value'] = "got NULL";
+      return AuthStatus::Error;
+    }
+
+    if (strlen($fetch_userdata_function)==0) {
+      $_SESSION['blaat_debug_userdata_function_value'] = "got empty string";
+      return AuthStatus::Error;
+    }
+
+      $_SESSION['blaat_debug_userdata_function_value'] = $fetch_userdata_function;
+
+    $_SESSION['blaat_debug_userdate_function_value'] = $result;
+    try {
+      return self::process($fetch_userdata_function, $service_id);
+    } catch (Exception $e) {
+      $_SESSION['bsauth_display_message'] = $e->getMessage();
+      $_SESSION['bsauth_library_error'] = $e->libraryError;
+      return AuthStatus::Error;
+    }
   }
+  
 //------------------------------------------------------------------------------
   public function Delete($user_id){
     global $wpdb;
@@ -151,61 +179,53 @@ class OAuth implements AuthService {
     return $buttons;
   }
 //------------------------------------------------------------------------------
-  public function process($function, $service_id){
+  public function process($function, $service_id, $params=NULL){
 
     global $wpdb; // Database functions
-
-
-
-    // library might redirect, is data saved when this happens?
-    //blaat_session_flush(); 
-
-    /*
-      Is this code still needed? Looks like a fragment of code that no longer
-      has any meaning
-
-    if ($_POST['bsauth_display']) {
-      $_REQUEST['bsoauth_id'] = $_POST['bsauth_display'];
-      $_SESSION['bsauth_display'] = $_POST['bsauth_display'];
-    }
-    */
-
-
   
       if (isset($_REQUEST['bsoauth_id'])) $_SESSION['bsoauth_id']=$_REQUEST['bsoauth_id'];
 
 
-
       $table_name = $wpdb->prefix . "bs_oauth_services";
       $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE id = %d", $service_id);
-
-      $results = $wpdb->get_results($query,ARRAY_A);
-      $result = $results[0];
-     
+      //$results = $wpdb->get_results($query,ARRAY_A);
+      //$result = $results[0];
+      $result = $wpdb->get_row($query,ARRAY_A);
       $client = new oauth_client_class;
 
 
       // DEBUGGING
-      $client->debug=true;
-
+      $client->debug=get_option("bsauth_oauth_debug");
+      $client->debug_http=get_option("bsauth_oauth_debug_http");
 
       $client->configuration_file = plugin_dir_path(__FILE__) . '../oauth/oauth_configuration.json';
 
       
       if (isset($this->redirect_uri) && strlen($this->redirect_uri)) {
-        // allow redirect-uri overrides
+        // allow redirect-uri overrides from code
         $client->redirect_uri  = $this->redirect_uri;
+      } else if ($result['fixed_redirect_url']) {
+        // old default, loggin in page
+        $client->redirect_uri  = site_url("/".get_option("login_page"));
+        //!! TODO When the page options change, this must be updated as well
+      } else if (strlen($result['override_redirect_url'])) {  
+      // allow redirect-uri overrides from database
+        $client->redirect_uri  = $result['override_redirect_url'];
       } else {
-        // url of requesting page
+        // new defaulturl of requesting page
         $client->redirect_uri  = blaat_get_current_url();
       }
+      
 
       $client->client_id     = $result['client_id'];
       $client->client_secret = $result['client_secret'];
       $client->scope         = $result['default_scope'];
 
-      // DEBUG
-      //$_SESSION['DEBUG_OAUTH_SERVICE'] = $result;
+
+      // TODO :: better way of settings these session variables
+	    $_SESSION['bsauth_fetch_data'] = $result['fetch_data'];
+	    $_SESSION['bsauth_register_auto'] = $result['auto_register'];  // names?
+
 
       if ($result['custom_id']) {
         $table_name = $wpdb->prefix . "bs_oauth_custom";
@@ -224,6 +244,8 @@ class OAuth implements AuthService {
 
         //$_SESSION['DEBUG_OAUTH_SERVICE_CUSTOM'] = $custom;
 
+
+
       } else {
         $client->server        = $result['client_name'];
       }
@@ -231,7 +253,7 @@ class OAuth implements AuthService {
       if ($success = $client->Initialize()) {
         if ($success = $client->Process()) {
           if (strlen($client->access_token)) {
-            $result = call_user_func($function, $client, $result['display_name'], $service_id);
+            $result = call_user_func($function, $client, $result['display_name'], $service_id, $params);
             $success = $client->Finalize($success);
             // do we need to check for success here?
             return $result;
@@ -262,12 +284,19 @@ class OAuth implements AuthService {
 
     global $wpdb;
     global $bs_oauth_plugin;
-    $dbver = 4;
+    $dbver = 7;
     $live_dbver = get_option( "bs_oauth_dbversion" );
-    $table_name = $wpdb->prefix . "bs_oauth_sessions";
+    
 
-    if ($dbver != $live_dbver) {
+    //if ($dbver != $live_dbver) {
+    if (1==1) {
       require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+      
+      // !! DEBUG
+      $wpdb->show_errors = TRUE;
+      $wpdb->suppress_errors = FALSE;
+
+      $table_name = $wpdb->prefix . "bs_oauth_sessions";
       $query = "CREATE TABLE $table_name (
                 `id` INT NOT NULL AUTO_INCREMENT   ,
                 `user_id` INT NOT NULL DEFAULT 0,
@@ -297,10 +326,17 @@ class OAuth implements AuthService {
                 `customlogo_url` TEXT NULL DEFAULT NULL,
                 `customlogo_filename` TEXT NULL DEFAULT NULL,
                 `customlogo_enabled` BOOLEAN DEFAULT FALSE,
+                `fixed_redirect_url` BOOLEAN NOT NULL DEFAULT FALSE ,
+                `override_redirect_url` TEXT NULL DEFAULT NULL,
+                `fetch_userdata_function` TEXT NULL DEFAULT NULL,
+                `fetch_data` BOOL NOT NULL DEFAULT FALSE,
+                `auto_register` BOOL NOT NULL DEFAULT FALSE,
                 PRIMARY KEY  (id)
                 );";
       dbDelta($query);
-
+      // note: get_userdata_function is experimental
+      //        for now, needed for a customised version
+      //        might change in public release
 
     $table_name = $wpdb->prefix . "bs_oauth_custom";
       $query = "CREATE TABLE $table_name (
@@ -311,6 +347,7 @@ class OAuth implements AuthService {
                 `access_token_url` TEXT NOT NULL,
                 `url_parameters` BOOLEAN DEFAULT FALSE,
                 `authorization_header` BOOLEAN DEFAULT TRUE,
+                `pin_dialog_url` TEXT NULL DEFAULT NULL,
                 `offline_dialog_url` TEXT NULL DEFAULT NULL,
                 `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL,
                 PRIMARY KEY  (id)
@@ -320,7 +357,7 @@ class OAuth implements AuthService {
     }
   }
 //------------------------------------------------------------------------------
-  public function  process_link($client,$service,$service_id) {
+  public function  process_link($client,$service,$service_id,$params=NULL) {
     global $wpdb;    
     $user = wp_get_current_user();
     $user_id    = $user->ID;
@@ -374,7 +411,7 @@ class OAuth implements AuthService {
 
 //------------------------------------------------------------------------------
 
-  private function process_login($client,$display_name,$service_id){
+  private function process_login($client,$display_name,$service_id, $params=NULL){
       global $wpdb;
 
       $_SESSION['bsauth_display'] = $display_name;
@@ -384,9 +421,11 @@ class OAuth implements AuthService {
 
       $query = $wpdb->prepare("SELECT `user_id` FROM $table_name WHERE `service_id` = %d AND `token` = %d",$service_id,$token);  
       $results = $wpdb->get_results($query,ARRAY_A);
-      $result = $results[0];
+      if (isset($results[0])) {
+        $result = $results[0];
+      }
 
-      if ($result) {
+      if (isset($result)) {
         unset ($_SESSION['bsauth_login']);  
         unset($_SESSION['bsauth_login_id']);
         wp_set_current_user ($result['user_id']);
