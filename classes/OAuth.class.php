@@ -284,12 +284,12 @@ class OAuth implements AuthService {
 
     global $wpdb;
     global $bs_oauth_plugin;
-    $dbver = 7;
+    // dbver in sync with plugin ver
+    $dbver = 43;
     $live_dbver = get_option( "bs_oauth_dbversion" );
     
 
-    //if ($dbver != $live_dbver) {
-    if (1==1) {
+    if (($dbver != $live_dbver) || get_option("bs_debug_updatedb") ) {
       require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
       
       // !! DEBUG
@@ -307,10 +307,14 @@ class OAuth implements AuthService {
                 `type` TEXT NULL DEFAULT NULL ,
                 `refresh` TEXT NULL DEFAULT NULL,
                 `scope` TEXT NOT NULL DEFAULT '',
+                `external_id` INT NOT NULL DEFAULT 0,
+                KEY token_key (token(32)),
+                KEY external_id_key (external_id),
+                KEY token_external_id_key (token(32),external_id),
                 PRIMARY KEY  (id)
                 );";
       dbDelta($query);
-
+// Note: we should use KEY in stead of the usual INDEX when using DbDelta
    
       $table_name = $wpdb->prefix . "bs_oauth_services";
       $query = "CREATE TABLE $table_name (
