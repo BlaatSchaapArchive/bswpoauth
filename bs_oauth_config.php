@@ -1,6 +1,31 @@
 <?php
 
 //------------------------------------------------------------------------------
+if (!function_exists("bsauth_register_options")) {
+  function bsauth_register_options(){
+    register_setting( 'bs_auth_pages', 'login_page' );
+    register_setting( 'bs_auth_pages', 'register_page' );
+    register_setting( 'bs_auth_pages', 'link_page' );
+    register_setting( 'bs_auth_pages', 'logout_frontpage' );
+    register_setting( 'bs_auth_pages', 'bsauth_custom_button' );
+
+    register_setting( 'bs_auth_pages', 'bs_auth_hide_local' );
+
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_user_url' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_user_email' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_display_name' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_nickname' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_first_name' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_last_name' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_description' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_jabber' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_aim' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_yim' );
+
+
+  }
+}
+//------------------------------------------------------------------------------
 function bsoauth_add_page(){
   global $_SERVER;
   $ACTION="admin.php?page=bsoauth_services";
@@ -812,6 +837,7 @@ if (!function_exists("blaat_plugins_auth_page_signup_option")) {
     
   }
 }
+
 
 
 ?>
