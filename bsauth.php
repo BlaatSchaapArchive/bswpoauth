@@ -14,7 +14,30 @@ if (!function_exists("bsauth_buttons_sort")) {
 }
 
 //------------------------------------------------------------------------------
+if (!function_exists("bsauth_register_options")) {
+  function bsauth_register_options(){
+    register_setting( 'bs_auth_pages', 'login_page' );
+    register_setting( 'bs_auth_pages', 'register_page' );
+    register_setting( 'bs_auth_pages', 'link_page' );
+    register_setting( 'bs_auth_pages', 'logout_frontpage' );
+    register_setting( 'bs_auth_pages', 'bsauth_custom_button' );
 
+    register_setting( 'bs_auth_pages', 'bs_auth_hide_local' );
+
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_user_url' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_user_email' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_display_name' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_nickname' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_first_name' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_last_name' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_description' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_jabber' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_aim' );
+    register_setting( 'bs_auth_pages', 'bs_auth_signup_yim' );
+
+
+  }
+}
 //------------------------------------------------------------------------------
 if (!function_exists("bsauth_generate_button")) {
   function bsauth_generate_button($button, $action){
@@ -81,6 +104,7 @@ if (!function_exists("bsauth_delete_user")) {
 
 //------------------------------------------------------------------------------
 if (!function_exists("bsauth_generate_select_signup_requirement")) {
+  // use blaat_option_req3_generate() instead?
   function bsauth_generate_select_signup_requirement($option_field){
     $option_value = get_option($option_field);
     echo "<select name='" . htmlspecialchars($option_field) . "'>";

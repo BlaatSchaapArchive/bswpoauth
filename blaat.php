@@ -1,25 +1,4 @@
 <?php
-/*
-
-
-
-//------------------------------------------------------------------------------
-// BlaatSchaap TextDomain
-//------------------------------------------------------------------------------
-load_plugin_textdomain('blaatschaap', false, basename( dirname( __FILE__ ) ) . '/languages' );
-
-//------------------------------------------------------------------------------
-// Class Auto Loader
-//------------------------------------------------------------------------------
-/*
-if (!function_exists("blaat_autoloader")) {
-  function blaat_autoloader($class) {
-      include 'classes/' .$class . '.class.php';
-  }
-  spl_autoload_register('blaat_autoloader');
-}
-*/
-
 
 //------------------------------------------------------------------------------
 // BlaatSchaap Plugins Page
@@ -160,7 +139,78 @@ if (!function_exists("blaat_get_current_url")){
     return $current_url;
   }
 }
+
 //------------------------------------------------------------------------------
+// Generate configuration option for the requirements of fields
+// (Disabled/Optional/Required)
+//------------------------------------------------------------------------------
+if (!function_exists("blaat_option_req3_generate")){
+  function blaat_option_req3_generate($option_name,$option_title, $echo=true){
+
+    $option_value=get_option($option_name);
+    $result = '<tr><th>';
+    $result .= $option_title;
+    $result .= "</th><td>";
+    $result .= "<select name='$option_name'>";
+
+    $selected = ($option_value=="Disabled") ? "selected='selected'" : "";
+    $result .= "<option value='Disabled' $selected>";
+    $result .= __("Disabled" , "blaatschaap");
+    $result .=  "</option>";
+
+    $selected = ($option_value=="Optional") ? "selected='selected'" : "";
+    $result .= "<option value='Optional' $selected>";
+    $result .= __("Optional" , "blaatschaap");
+    $result .=  "</option>";
+
+    $selected = ($option_value=="Required") ? "selected='selected'" : "";
+    $result .= "<option value='Required' $selected>";
+    $result .=__("Required" , "blaatschaap");
+    $result .=  "</option>";
+
+    $result .= "</select>";
+    $result .= "</td></tr>";
+
+    if ($echo) echo $result;
+    return $result;
+
+  }
+}
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// Generate configuration option for the requirements of fields
+// (Disabled/Optional/Required)
+//------------------------------------------------------------------------------
+if (!function_exists("blaat_option_yesno_generate")){
+  function blaat_option_yesno_generate($option_name,$option_title, $echo=true){
+
+    $option_value=(int) get_option($option_name);
+    $result = '<tr><th>';
+    $result .= $option_title;
+    $result .= "</th><td>";
+    $result .= "<select name='$option_name'>";
+
+    $selected = ($option_value) ? "selected='selected'" : "";
+    $result .= "<option value='Yes' $selected>";
+    $result .= __("Disabled" , "blaatschaap");
+    $result .=  "</option>";
+
+    $selected = ($option_value) ?  "": "selected='selected'";
+    $result .= "<option value='No' $selected>";
+    $result .= __("Optional" , "blaatschaap");
+    $result .=  "</option>";
+
+    $result .= "</select>";
+    $result .= "</td></tr>";
+
+    if ($echo) echo $result;
+    return $result;
+
+  }
+}
+//------------------------------------------------------------------------------
+
 
 
 ?>
