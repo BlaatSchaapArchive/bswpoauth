@@ -85,7 +85,8 @@ class OAuth implements AuthService {
 //------------------------------------------------------------------------------
   public function getButtons(){
     global $wpdb;
-    $table_name = $wpdb->prefix . "bs_oauth_services";
+    //$table_name = $wpdb->prefix . "bs_oauth_services";
+    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
     $results = $wpdb->get_results("select * from $table_name where enabled=1 ",
                    ARRAY_A);
     $buttons = array();    
@@ -114,7 +115,7 @@ class OAuth implements AuthService {
       $button['order']        = $result['display_order'];
       $button['plugin']       = "blaat_oauth";
       $button['service']      = $service;
-      $button['id']           = $result['id'];
+      $button['id']           = $result['service_id'];
       $button['display_name'] = $result['display_name'];
 
       $buttons[]          = $button;
@@ -185,79 +186,104 @@ class OAuth implements AuthService {
   
       if (isset($_REQUEST['bsoauth_id'])) $_SESSION['bsoauth_id']=$_REQUEST['bsoauth_id'];
 
+      // The new database configuration stores all services, 
+      // pre-configured (known) and user-defined (custom) services.
+      // As the current implementation requires additional options, the
+      // pre-configured options provided by Manuel Lemos are no longer suitable
+/*
+  we need more complicated joining
 
-      $table_name = $wpdb->prefix . "bs_oauth_services";
-      $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE id = %d", $service_id);
-      //$results = $wpdb->get_results($query,ARRAY_A);
-      //$result = $results[0];
+      $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
+          " LEFT JOIN " . $wpdb->prefix . "bs_oauth_services_known" . 
+          " LEFT JOIN " . $wpdb->prefix . "bs_oauth_services_custom";
+
+
+      // If the scope is not set, we are probably loggin in or linking, as they
+      // are the default actions. (nothing else is implemented at this moment)
+      // We need to set the scope required for the logging in/getting userinfo
+      // process. Therefore we join the tables with the api information as
+      // they contain the required scopes.
+      if ($scope==NULL) $tables .=
+          " LEFT JOIN " . $wpdb->prefix . "bs_oauth_userinfo_api_known" .
+          " LEFT JOIN " . $wpdb->prefix . "bs_oauth_userinfo_api_custom" ;
+*/
+
+      $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
+          " NATURAL LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
+          " NATURAL LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_userinfo_api_known" ;
+
+      $query = $wpdb->prepare("SELECT * FROM $tables  WHERE service_id = %d", $service_id);
       $result = $wpdb->get_row($query,ARRAY_A);
+
+  
       $client = new oauth_client_class;
 
 
-      // DEBUGGING
-      $client->debug=get_option("bsauth_oauth_debug");
-      $client->debug_http=get_option("bsauth_oauth_debug_http");
+      // Debugging options for the library by Manuel Lemos
+      // The options used here are set by a separate debugging options plugin
+      $client->debug      = get_option("bsauth_oauth_debug");
+      $client->debug_http = get_option("bsauth_oauth_debug_http");
 
-      $client->configuration_file = plugin_dir_path(__FILE__) . '../oauth/oauth_configuration.json';
-
+      
+      // The configuration file is no longer used
+      // $client->configuration_file = plugin_dir_path(__FILE__) . '../oauth/oauth_configuration.json';
+      
       
       if (isset($this->redirect_uri) && strlen($this->redirect_uri)) {
         // allow redirect-uri overrides from code
         $client->redirect_uri  = $this->redirect_uri;
       } else if ($result['fixed_redirect_url']) {
         // old default, loggin in page
+        // TODO page migration
         $client->redirect_uri  = site_url("/".get_option("login_page"));
-        //!! TODO When the page options change, this must be updated as well
       } else if (strlen($result['override_redirect_url'])) {  
       // allow redirect-uri overrides from database
         $client->redirect_uri  = $result['override_redirect_url'];
-      } else {
-        // new defaulturl of requesting page
+      } else { // requesting page, note that this won't work for most services
         $client->redirect_uri  = blaat_get_current_url();
       }
       
-
       $client->client_id     = $result['client_id'];
       $client->client_secret = $result['client_secret'];
+
+
       if ($scope==NULL) {
-        $client->scope         = $result['default_scope'];
+        // As the scope is now part of the userinfo API we have different 
+        // column names in the database.
+        //$client->scope         = $result['default_scope'];        
+        $client->scope         = $result['scope'];        
       } else {
         $client->scope         = $scope;
       }
 
 
-      // TODO :: better way of settings these session variables
+      // We are required to fetch certain data as we need to obtain the user id
+      // we might differentiate between required and optional data in a later
+      // model, (see the scopes above, maybe store a minimum and optional set)
+      // So should this remain in a future version?
 	    $_SESSION['bsauth_fetch_data'] = $result['fetch_data'];
-	    $_SESSION['bsauth_register_auto'] = $result['auto_register'];  // names?
+      $_SESSION['bsauth_register_auto'] = $result['auto_register'];  
 
 
-      if ($result['custom_id']) {
-        $table_name = $wpdb->prefix . "bs_oauth_custom";
-        $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE id = %d", $result['custom_id']);
-        $customs = $wpdb->get_results($query,ARRAY_A);
-        $custom = $customs[0];
+      // No longer an if statement, all settings are read from the database.
+      // Even if we are using a service pre-configures by Manuel Lemos. We
+      // need to store additional information about the services.
+      $client->oauth_version                 = $result['oauth_version'];
+      $client->request_token_url             = $result['request_token_url'];
+      $client->dialog_url                    = $result['dialog_url'];
+      $client->access_token_url              = $result['access_token_url'];
+      $client->url_parameters                = $result['url_parameters'];
+      $client->authorization_header          = $result['authorization_header'];
+      $client->offline_dialog_url            = $result['offline_dialog_url'];
+      $client->append_state_to_redirect_uri  = $result['append_state_to_redirect_uri'];
 
-        $client->oauth_version                 = $custom['oauth_version'];
-        $client->request_token_url             = $custom['request_token_url'];
-        $client->dialog_url                    = $custom['dialog_url'];
-        $client->access_token_url              = $custom['access_token_url'];
-        $client->url_parameters                = $custom['url_parameters'];
-        $client->authorization_header          = $custom['authorization_header'];
-        $client->offline_dialog_url            = $custom['offline_dialog_url'];
-        $client->append_state_to_redirect_uri  = $custom['append_state_to_redirect_uri'];
-
-        //$_SESSION['DEBUG_OAUTH_SERVICE_CUSTOM'] = $custom;
-
-
-
-      } else {
-        $client->server        = $result['client_name'];
-      }
-     
       if ($success = $client->Initialize()) {
         if ($success = $client->Process()) {
-          if (strlen($client->access_token)) {
-            $result = call_user_func($function, $client, $result['display_name'], $service_id, $params);
+			    if(strlen($client->authorization_error)){
+				    $client->error = $client->authorization_error;
+				    $success = false;
+			    } elseif(strlen($client->access_token)){
+            $result = call_user_func($function, $client, $result, $params );
             $success = $client->Finalize($success);
             // do we need to check for success here?
             return $result;
@@ -289,113 +315,207 @@ class OAuth implements AuthService {
     global $wpdb;
     global $bs_oauth_plugin;
     // dbver in sync with plugin ver
-    $dbver = 43;
+    $dbver = 50;
     $live_dbver = get_option( "bs_oauth_dbversion" );
     
-
     if (($dbver != $live_dbver) || get_option("bs_debug_updatedb") ) {
       require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
       
-      // !! DEBUG
-      $wpdb->show_errors = TRUE;
-      $wpdb->suppress_errors = FALSE;
-
-      $table_name = $wpdb->prefix . "bs_oauth_sessions";
+      $table_name = $wpdb->prefix . "bs_oauth_tokens";
       $query = "CREATE TABLE $table_name (
-                `id` INT NOT NULL AUTO_INCREMENT   ,
-                `user_id` INT NOT NULL DEFAULT 0,
+                `token_id` INT NOT NULL AUTO_INCREMENT   ,
+                `wordpress_id` INT NOT NULL DEFAULT 0,
                 `service_id` INT NOT NULL ,
                 `token` TEXT NOT NULL ,
+                `secret` TEXT NOT NULL ,
                 `authorized` BOOLEAN NOT NULL ,
                 `expiry` DATETIME NULL DEFAULT NULL ,
                 `type` TEXT NULL DEFAULT NULL ,
                 `refresh` TEXT NULL DEFAULT NULL,
                 `scope` TEXT NOT NULL DEFAULT '',
-                `external_id` INT NOT NULL DEFAULT 0,
                 KEY token_key (token(32)),
-                KEY external_id_key (external_id),
-                KEY token_external_id_key (token(32),external_id),
-                PRIMARY KEY  (id)
+                PRIMARY KEY  (token_id)
                 );";
       dbDelta($query);
 // Note: we should use KEY in stead of the usual INDEX when using DbDelta
-   
-      $table_name = $wpdb->prefix . "bs_oauth_services";
+
+// how big is bigint, is it enough?
+      $table_name = $wpdb->prefix . "bs_oauth_accounts";
       $query = "CREATE TABLE $table_name (
-                `id` INT NOT NULL AUTO_INCREMENT  ,
+                `account_id` INT NOT NULL AUTO_INCREMENT   ,
+                `wordpress_id` INT NOT NULL DEFAULT 0,
+                `service_id` INT NOT NULL ,
+                `external_id_int` BIGINT NULL DEFAULT NULL,
+                `external_id_text` TEXT NULL DEFAULT NULL,
+                KEY (external_id_int),
+                KEY (external_id_text(256)),
+                PRIMARY KEY  (account_id)
+                );";
+      dbDelta($query);
+
+
+      $table_name = $wpdb->prefix . "bs_oauth_services_configured";
+      $query = "CREATE TABLE $table_name (
+                `service_id` INT NOT NULL AUTO_INCREMENT  ,
                 `enabled` BOOLEAN NOT NULL DEFAULT FALSE ,
                 `display_name` TEXT NOT NULL ,
                 `display_order` INT NOT NULL DEFAULT 1,
-                `client_name` TEXT NULL DEFAULT NULL ,
-                `custom_id` INT NULL DEFAULT NULL ,
+                `service_known_id`  INT NULL DEFAULT NULL ,
+                `service_custom_id` INT NULL DEFAULT NULL ,
                 `client_id` TEXT NOT NULL ,
                 `client_secret` TEXT NOT NULL,
-                `default_scope` TEXT NOT NULL DEFAULT '',
                 `customlogo_url` TEXT NULL DEFAULT NULL,
                 `customlogo_filename` TEXT NULL DEFAULT NULL,
                 `customlogo_enabled` BOOLEAN DEFAULT FALSE,
-                `fixed_redirect_url` BOOLEAN NOT NULL DEFAULT FALSE ,
+                `fixed_redirect_url` BOOLEAN NOT NULL DEFAULT TRUE ,
                 `override_redirect_url` TEXT NULL DEFAULT NULL,
-                `fetch_userdata_function` TEXT NULL DEFAULT NULL,
-                `fetch_data` BOOL NOT NULL DEFAULT FALSE,
                 `auto_register` BOOL NOT NULL DEFAULT FALSE,
-                PRIMARY KEY  (id)
+                PRIMARY KEY  (service_id)
                 );";
       dbDelta($query);
-      // note: get_userdata_function is experimental
-      //        for now, needed for a customised version
-      //        might change in public release
 
-    $table_name = $wpdb->prefix . "bs_oauth_custom";
+
+    $table_name = $wpdb->prefix . "bs_oauth_services_custom";
       $query = "CREATE TABLE $table_name (
-                `id` INT NOT NULL AUTO_INCREMENT   ,
+                `service_custom_id` INT NOT NULL AUTO_INCREMENT   ,
+                `service_name` TEXT NULL DEFAULT NULL ,
                 `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
                 `request_token_url` TEXT NULL DEFAULT NULL,
                 `dialog_url` TEXT NOT NULL,
                 `access_token_url` TEXT NOT NULL,
+                `userinfo_url` TEXT NOT NULL,
+                `userinfo_api_known_id` INT NULL DEFAULT NULL ,
+                `userinfo_api_custom_id` INT NULL DEFAULT NULL ,
                 `url_parameters` BOOLEAN DEFAULT FALSE,
                 `authorization_header` BOOLEAN DEFAULT TRUE,
+                `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL,
                 `pin_dialog_url` TEXT NULL DEFAULT NULL,
                 `offline_dialog_url` TEXT NULL DEFAULT NULL,
+                PRIMARY KEY  (service_custom_id)
+                );";      
+      dbDelta($query);
+
+
+
+      $table_name = $wpdb->prefix . "bs_oauth_services_known";
+      $query = "CREATE TABLE $table_name (
+                `service_known_id` INT NOT NULL AUTO_INCREMENT   ,
+                `service_name` TEXT NULL DEFAULT NULL ,
+                `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
+                `request_token_url` TEXT NULL DEFAULT NULL,
+                `dialog_url` TEXT NOT NULL,
+                `access_token_url` TEXT NOT NULL,
+                `userinfo_url` TEXT NOT NULL,
+                `userinfo_api_known_id` INT NULL DEFAULT NULL ,
+                `userinfo_api_custom_id` INT NULL DEFAULT NULL ,
+                `url_parameters` BOOLEAN DEFAULT FALSE,
+                `authorization_header` BOOLEAN DEFAULT TRUE,
                 `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL,
-                PRIMARY KEY  (id)
+                `pin_dialog_url` TEXT NULL DEFAULT NULL,
+                `offline_dialog_url` TEXT NULL DEFAULT NULL,
+                `default_icon`  TEXT NULL DEFAULT NULL,
+                `variant`  TEXT NULL DEFAULT NULL,
+                KEY (service_name(255)),
+                PRIMARY KEY  (service_known_id)
                 );";
       dbDelta($query);
+
+      $table_name = $wpdb->prefix . "bs_oauth_userinfo_api_known";
+      $query = "CREATE TABLE $table_name (
+                `userinfo_api_known_id` INT NOT NULL AUTO_INCREMENT   ,
+                `request_method` ENUM('GET', 'POST') DEFAULT 'POST',
+                `api_name` TEXT NULL DEFAULT NULL ,
+                `data_format` ENUM('FORM','JSON','XML') DEFAULT 'JSON',
+                `external_id` TEXT NULL DEFAULT NULL ,
+                `first_name`  TEXT NULL DEFAULT NULL ,
+                `last_name`  TEXT NULL DEFAULT NULL ,
+                `user_email`  TEXT NULL DEFAULT NULL ,
+                `user_url`  TEXT NULL DEFAULT NULL ,
+                `user_nicename`  TEXT NULL DEFAULT NULL ,
+                `user_login`  TEXT NULL DEFAULT NULL ,
+                `scope`  TEXT NULL DEFAULT NULL ,
+                `email_verified`  TEXT NULL DEFAULT NULL ,
+                PRIMARY KEY  (userinfo_api_known_id)
+      );";
+      dbDelta($query);
+
+      $table_name = $wpdb->prefix . "bs_oauth_userinfo_api_custom";
+      $query = "CREATE TABLE $table_name (
+                `userinfo_api_custom_id` INT NOT NULL AUTO_INCREMENT   ,
+                `api_name` TEXT NULL DEFAULT NULL ,
+                `data_format` ENUM('FORM','JSON','XML') DEFAULT 'JSON',
+                `external_id` TEXT NULL DEFAULT NULL ,
+                `first_name`  TEXT NULL DEFAULT NULL ,
+                `last_name`  TEXT NULL DEFAULT NULL ,
+                `user_email`  TEXT NULL DEFAULT NULL ,
+                `user_url`  TEXT NULL DEFAULT NULL ,
+                `user_nicename`  TEXT NULL DEFAULT NULL ,
+                `user_login`  TEXT NULL DEFAULT NULL ,
+                `scope`  TEXT NULL DEFAULT NULL ,
+                `email_verified`  TEXT NULL DEFAULT NULL ,
+                PRIMARY KEY  (userinfo_api_custom_id)
+      );";
+      dbDelta($query);
+   
       update_option( "bs_oauth_dbversion" , $dbver);
+      update_option( "bs_oauth_dbmigrate50required" , true);
     }
+
+    $dataver = 50;
+    $live_dataver = get_option( "bs_oauth_dataversion" );
+    if ($dataver != $live_dataver) {
+
+    }
+
+
   }
 //------------------------------------------------------------------------------
-  public function  process_link($client,$service,$service_id,$params=NULL) {
-    global $wpdb;    
+  public function  process_link($client,$result,$params=NULL) {
+    global $wpdb;  
+    $table_name= $wpdb->prefix . "bs_oauth_accounts";  
     $user = wp_get_current_user();
     $user_id    = $user->ID;
-    $token      = $client->access_token;
-    $expiry     = $client->access_token_expiry;
-    $scope      = $client->scope;
 
-    // Verifying this account has not been linked to another user
-    $table_name = $wpdb->prefix . "bs_oauth_sessions";
-    $testQuery = $wpdb->prepare("SELECT * FROM $table_name 
-                                 WHERE service_id = %d 
-                                 AND   token = %s" , $service_id, $token);
-    $testResult = $wpdb->get_results($testQuery,ARRAY_A);
 
-      if (count($testResult)) {
-        return AuthStatus::LinkInUse;
+      $client->CallAPI($result['userinfo_url'], $result['request_method'],
+                                                  $params, $options, $userinfo); 
+
+
+      // ok, determine type of result
+      // in case of json from server it will be object
+      // in case of form from server it will be array
+      // in case of xml  from server it will be simplexml
+
+
+      // for now, assume json as this is what we get from google, other variants
+      // will have to be implemented later.
+
+      // TODO : test if already linked, but first we need to see if this new
+      // implementation even works.
+
+      $external_id = $userinfo->{$result['external_id']};
+  
+
+      if ((int)$external_id)  {
+        // no information lost while casting to int, we use the external id 
+        // stored as an int in the database as this processes faster
+        $query = $wpdb->prepare("INSERT INTO $table_name (`wordpress_id`, `service_id`, `external_id_int`)
+                                        VALUES( %d, %d, %d)", $user_id, $result['service_id'], $external_id);
+
       } else {
-        // We can continue linking
-
-        $query = $wpdb->prepare("INSERT INTO $table_name (`user_id`, `service_id`, `token`, `expiry`, `scope` )
-                                         VALUES      ( %d      ,  %d         ,  %s    , %s      , %s      )",
-                                                      $user_id , $service_id , $token , $expiry , $scope  );
-        $wpdb->query($query);
-        $_SESSION['display_name']=$service;
-        //return true;
-        return AuthStatus::LinkSuccess;
-        // printf( __("Your %s account has been linked", "blaat_auth"), $service );
-        //unset($_SESSION['bsauth_link']);
-        
+        // the external id is not an integer value, thus stored as a string in
+        // the database.
+        $query = $wpdb->prepare("INSERT INTO $table_name (`wordpress_id`, `service_id`, `external_id_text`)
+                                        VALUES( %d, %d, %s)", $user_id, $result['service_id'], $external_id);
       }
+
+      $wpdb->query($query);
+      $_SESSION['display_name']=$service;
+      //return true;
+      return AuthStatus::LinkSuccess;
+      // printf( __("Your %s account has been linked", "blaat_auth"), $service );
+      //unset($_SESSION['bsauth_link']);
+
 
   }
 
@@ -419,11 +539,61 @@ class OAuth implements AuthService {
 
 //------------------------------------------------------------------------------
 
-  private function process_login($client,$display_name,$service_id, $params=NULL){
+  private function process_login($client, $result, $params=NULL){
       global $wpdb;
+      $table_name= $wpdb->prefix . "bs_oauth_accounts";
 
+      $options = array('FailOnAccessError'=>true, 'DecodeXMLResponse'=>'simplexml');
       $_SESSION['bsauth_display'] = $display_name;
+      // url, method, 
+      $client->CallAPI($result['userinfo_url'], $result['request_method'],
+                                                  $params, $options, $userinfo); 
 
+
+      // ok, determine type of result
+      // in case of json from server it will be object
+      // in case of form from server it will be array
+      // in case of xml  from server it will be simplexml
+
+
+      // for now, assume json as this is what we get from google, other variants
+      // will have to be implemented later.
+
+
+
+      $external_id = $userinfo->{$result['external_id']};
+      if ((int)$external_id)  {
+        // no information lost while casting to int, we use the external id 
+        // stored as an int in the database as this processes faster
+        $query = $wpdb->prepare("SELECT `wordpress_id` FROM $table_name WHERE `service_id` = %d AND `external_id_int` = %d",$result['service_id'],$external_id);  
+      } else {
+        // the external id is not an integer value, thus stored as a string in
+        // the database.
+        $query = $wpdb->prepare("SELECT `wordpress_id` FROM $table_name WHERE `service_id` = %d AND `external_id_text` = %s",$result['service_id'],$external_id);  
+      }
+
+      $result = $wpdb->get_row($query,ARRAY_A);
+
+
+      if (NULL!=$result) {
+        unset ($_SESSION['bsauth_login']);  
+        unset($_SESSION['bsauth_login_id']);
+        wp_set_current_user ($result['wordpress_id']);
+        wp_set_auth_cookie($result['wordpress_id']);
+        //return true;
+        return AuthStatus::LoginSuccess;
+      } else { 
+        //die ($query);
+        return AuthStatus::LoginMustRegister;
+      }
+      
+      //bs_oauth_accounts
+
+/*
+      $query = $wpdb->prepare("SELECT `user_id` FROM $table_name WHERE 
+                        `service_id` = %d AND `token` = %s",$service_id,$token);  
+
+ 
       $token = $client->access_token;
       $table_name = $wpdb->prefix . "bs_oauth_sessions";
 
@@ -445,6 +615,7 @@ class OAuth implements AuthService {
       //return false;
       return AuthStatus::LoginMustRegister;  // does this fix the problem?
                                   // if so rewrite to ENUM?
+*/
     }
 
 //------------------------------------------------------------------------------

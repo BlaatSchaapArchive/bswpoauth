@@ -577,8 +577,9 @@ if (!(function_exists("bsauth_process"))){
                 unset($_SESSION['bsauth_login']);
                 $_SESSION['bsauth_display_message'] = "TODO:: EXTERNAL SIGNUP"; 
                 break;
-              false :
+              case AuthStatus::Error : 
                 $_SESSION['bsauth_display_message'] = "Unkown error";
+                break;
               default : 
                 $_SESSION['bsauth_display_message'] = "Unkown status while attempting to log in";
                 //$_SESSION['debug_status'] = $result;
