@@ -209,13 +209,17 @@ class OAuth implements AuthService {
 */
 
       $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
-          " NATURAL LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
-          " NATURAL LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_userinfo_api_known" ;
+          "  JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
+" on " . $wpdb->prefix . "bs_oauth_services_known.service_known_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_known_id" .
+          "  JOIN  " . $wpdb->prefix . "bs_oauth_userinfo_api_known" .
+" on " . $wpdb->prefix . "bs_oauth_services_known.userinfo_api_known_id=" . $wpdb->prefix . "bs_oauth_userinfo_api_known.userinfo_api_known_id";
+
 
       $query = $wpdb->prepare("SELECT * FROM $tables  WHERE service_id = %d", $service_id);
       $result = $wpdb->get_row($query,ARRAY_A);
 
-  
+     // echo "<pre>$query\n\n"; var_dump($result); die();
+
       $client = new oauth_client_class;
 
 
@@ -407,7 +411,6 @@ class OAuth implements AuthService {
                 `access_token_url` TEXT NOT NULL,
                 `userinfo_url` TEXT NOT NULL,
                 `userinfo_api_known_id` INT NULL DEFAULT NULL ,
-                `userinfo_api_custom_id` INT NULL DEFAULT NULL ,
                 `url_parameters` BOOLEAN DEFAULT FALSE,
                 `authorization_header` BOOLEAN DEFAULT TRUE,
                 `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL,
@@ -559,9 +562,11 @@ class OAuth implements AuthService {
       // for now, assume json as this is what we get from google, other variants
       // will have to be implemented later.
 
-
+      //TODO test status from callapi sucess
 
       $external_id = $userinfo->{$result['external_id']};
+
+      //echo "<pre>"; var_dump($userinfo); echo "\n\n"; var_dump($external_id); echo "\n\n"; var_dump($result); die($client->error);
       if ((int)$external_id)  {
         // no information lost while casting to int, we use the external id 
         // stored as an int in the database as this processes faster
