@@ -132,15 +132,19 @@ class OAuth implements AuthService {
   
       $user = wp_get_current_user();
 
-      // TODO rewrite as OAuth Class Methods
-      $table_name = $wpdb->prefix . "bs_oauth_sessions";
+
+//      $table_name = $wpdb->prefix . "bs_oauth_sessions";
+      $table_name = $wpdb->prefix . "bs_oauth_accounts"; 
       $user_id    = $user->ID;
-      $query = $wpdb->prepare("SELECT service_id FROM $table_name WHERE `user_id` = %d",$user_id);
+      $query = $wpdb->prepare("SELECT service_id FROM $table_name WHERE `wordpress_id` = %d",$user_id);
       $linked_services = $wpdb->get_results($query,ARRAY_A);
        
-      $table_name = $wpdb->prefix . "bs_oauth_services";
+      $table_name = $wpdb->prefix . "bs_oauth_services_configured";
       $query = "SELECT * FROM $table_name where enabled=1";
       $available_services = $wpdb->get_results($query,ARRAY_A);
+
+
+
 
       $linked = Array();
       foreach ($linked_services as $linked_service) {
@@ -163,13 +167,13 @@ class OAuth implements AuthService {
 
       $button['order']   = $available_service['display_order'];
       $button['plugin']  = "blaat_oauth";
-      $button['id']      = $available_service['id'];
+      $button['id']      = $available_service['service_id'];
       $button['service'] = $service;
 
       $button['display_name'] = $available_service['display_name'];
 
 
-      if (in_array($available_service['id'],$linked)) { 
+      if (in_array($available_service['service_id'],$linked)) { 
         $buttons['linked'][]=$button;
       } else {
         $buttons['unlinked'][]=$button;
@@ -426,7 +430,7 @@ class OAuth implements AuthService {
       $table_name = $wpdb->prefix . "bs_oauth_userinfo_api_known";
       $query = "CREATE TABLE $table_name (
                 `userinfo_api_known_id` INT NOT NULL AUTO_INCREMENT   ,
-                `request_method` ENUM('GET', 'POST') DEFAULT 'POST',
+                `request_method` ENUM('GET', 'POST') DEFAULT 'GET',
                 `api_name` TEXT NULL DEFAULT NULL ,
                 `data_format` ENUM('FORM','JSON','XML') DEFAULT 'JSON',
                 `external_id` TEXT NULL DEFAULT NULL ,
@@ -445,6 +449,7 @@ class OAuth implements AuthService {
       $table_name = $wpdb->prefix . "bs_oauth_userinfo_api_custom";
       $query = "CREATE TABLE $table_name (
                 `userinfo_api_custom_id` INT NOT NULL AUTO_INCREMENT   ,
+                `request_method` ENUM('GET', 'POST') DEFAULT 'GET',
                 `api_name` TEXT NULL DEFAULT NULL ,
                 `data_format` ENUM('FORM','JSON','XML') DEFAULT 'JSON',
                 `external_id` TEXT NULL DEFAULT NULL ,
@@ -499,6 +504,7 @@ class OAuth implements AuthService {
       $external_id = $userinfo->{$result['external_id']};
   
 
+      /*
       if ((int)$external_id)  {
         // no information lost while casting to int, we use the external id 
         // stored as an int in the database as this processes faster
@@ -511,9 +517,27 @@ class OAuth implements AuthService {
         $query = $wpdb->prepare("INSERT INTO $table_name (`wordpress_id`, `service_id`, `external_id_text`)
                                         VALUES( %d, %d, %s)", $user_id, $result['service_id'], $external_id);
       }
-
       $wpdb->query($query);
-      $_SESSION['display_name']=$service;
+      */
+
+      $data=array();
+      $data['wordpress_id']=$user_id;
+      $data['service_id']=$result['service_id'];
+      if ((int)$external_id)  {
+        $data['external_id_int']=$external_id;
+      } else {
+        $data['external_id_text']=$external_id;
+      }
+      $wpdb->insert($table_name, $data);
+
+
+      if (strlen($result['display_name'])) {
+        $_SESSION['display_name']=$result['display_name'];
+      } else {
+        $_SESSION['display_name']=$result['service_name'];
+      }
+
+      //$_SESSION['display_name']=$service;
       //return true;
       return AuthStatus::LinkSuccess;
       // printf( __("Your %s account has been linked", "blaat_auth"), $service );
@@ -526,15 +550,29 @@ class OAuth implements AuthService {
 
 
   public function Unlink ($id) {
+
     global $wpdb;    
-    $table_name = $wpdb->prefix . "bs_oauth_sessions";
-    $table_name2 = $wpdb->prefix . "bs_oauth_services";
-    $query2 = $wpdb->prepare("Select display_name from $table_name2 where id = %d", $id );
+    $table_name = $wpdb->prefix . "bs_oauth_accounts";
+    $table_name2 = $wpdb->prefix . "bs_oauth_services_configured";
+    $query2 = $wpdb->prepare("Select display_name from $table_name2 where service_id = %d", $id );
     $service_name = $wpdb->get_results($query2,ARRAY_A);
     //$service = $service_name[0]['display_name'];
+
     $_SESSION['display_name'] = $service_name[0]['display_name'];
-    $query = $wpdb->prepare ("Delete from $table_name where user_id = %d AND service_id = %d", get_current_user_id(), $id );
+    $query = $wpdb->prepare ("Delete from $table_name where wordpress_id = %d AND service_id = %d", get_current_user_id(), $id );
     $wpdb->query($query);
+
+    /*
+
+    TODO make display_name like the linking
+         return values  
+      if (strlen($result['display_name']) {
+        $_SESSION['display_name']=$result['display_name'];
+      } else {
+        $_SESSION['display_name']=$result['service_name'];
+      }
+
+    */
       
     return true;
 
@@ -585,42 +623,11 @@ class OAuth implements AuthService {
         unset($_SESSION['bsauth_login_id']);
         wp_set_current_user ($result['wordpress_id']);
         wp_set_auth_cookie($result['wordpress_id']);
-        //return true;
         return AuthStatus::LoginSuccess;
       } else { 
-        //die ($query);
         return AuthStatus::LoginMustRegister;
       }
       
-      //bs_oauth_accounts
-
-/*
-      $query = $wpdb->prepare("SELECT `user_id` FROM $table_name WHERE 
-                        `service_id` = %d AND `token` = %s",$service_id,$token);  
-
- 
-      $token = $client->access_token;
-      $table_name = $wpdb->prefix . "bs_oauth_sessions";
-
-      $query = $wpdb->prepare("SELECT `user_id` FROM $table_name WHERE `service_id` = %d AND `token` = %s",$service_id,$token);  
-      $results = $wpdb->get_results($query,ARRAY_A);
-      if (isset($results[0])) {
-        $result = $results[0];
-      }
-
-      if (isset($result)) {
-        unset ($_SESSION['bsauth_login']);  
-        unset($_SESSION['bsauth_login_id']);
-        wp_set_current_user ($result['user_id']);
-        wp_set_auth_cookie($result['user_id']);
-        //return true;
-        return AuthStatus::LoginSuccess;
-      }
-
-      //return false;
-      return AuthStatus::LoginMustRegister;  // does this fix the problem?
-                                  // if so rewrite to ENUM?
-*/
     }
 
 //------------------------------------------------------------------------------
