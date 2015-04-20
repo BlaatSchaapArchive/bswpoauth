@@ -86,12 +86,29 @@ class OAuth implements AuthService {
   public function getButtons(){
     global $wpdb;
     //$table_name = $wpdb->prefix . "bs_oauth_services";
-    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
-    $results = $wpdb->get_results("select * from $table_name where enabled=1 ",
+    //$table_name = $wpdb->prefix . "bs_oauth_services_configured";
+
+      $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
+          " LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
+" on " . $wpdb->prefix . "bs_oauth_services_known.service_known_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_known_id" ;
+//          " LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_custom" . 
+//" on " . $wpdb->prefix . "bs_oauth_services_custom.service_custom_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_custom_id" ;
+
+
+    // TODO table joining
+    $results = $wpdb->get_results("select * from $tables where enabled=1 ",
                    ARRAY_A);
     $buttons = array();    
     foreach ($results as $result) {
       $button = array();
+
+    if($result['customlogo_enabled']) {
+      $button['icon']= $resylt['customlogo_url'];
+    } else {
+      $button['icon']=  plugin_dir_url(dirname(__FILE__)) . "icons/" . $result['default_icon'];
+    }
+
+/*
       if(!$result['customlogo_enabled']) 
         $service=strtolower($result['client_name']); 
       else {
@@ -104,17 +121,19 @@ class OAuth implements AuthService {
 
         $button['logo']    = $result['customlogo_url'];
       }
+*/
 
+/*
       // deprecated html generation inside class
       $button['button']="<button class='bs-auth-btn' name=bsauth_login 
              type=submit value='blaat_oauth-".$result['id']."'><span class='bs-auth-btn-logo 
              bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>".
              $result['display_name']."</span></button>";
-
+*/
       
       $button['order']        = $result['display_order'];
       $button['plugin']       = "blaat_oauth";
-      $button['service']      = $service;
+      //$button['service']      = $service;
       $button['id']           = $result['service_id'];
       $button['display_name'] = $result['display_name'];
 
@@ -135,8 +154,23 @@ class OAuth implements AuthService {
 
 //      $table_name = $wpdb->prefix . "bs_oauth_sessions";
       $table_name = $wpdb->prefix . "bs_oauth_accounts"; 
+
+
+      $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
+          " LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
+" on " . $wpdb->prefix . "bs_oauth_services_known.service_known_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_known_id" .
+//          " LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_custom" . 
+//" on " . $wpdb->prefix . "bs_oauth_services_custom.service_custom_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_custom_id" .
+          " JOIN  " . $wpdb->prefix . "bs_oauth_accounts" .
+" on " . $wpdb->prefix . "bs_oauth_accounts.service_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_id";
+
+
       $user_id    = $user->ID;
-      $query = $wpdb->prepare("SELECT service_id FROM $table_name WHERE `wordpress_id` = %d",$user_id);
+    // TODO table joining
+      $query = $wpdb->prepare("SELECT ".$wpdb->prefix."bs_oauth_services_configured.service_id as service_id FROM $tables WHERE `wordpress_id` = %d",$user_id);
+
+
+
       $linked_services = $wpdb->get_results($query,ARRAY_A);
        
       $table_name = $wpdb->prefix . "bs_oauth_services_configured";
@@ -156,6 +190,8 @@ class OAuth implements AuthService {
         $button = array();
         //$button['class'] = $class;
 
+
+        /*
         if(!$available_service['customlogo_enabled'])
           $service=strtolower($available_service['client_name']);
         else {
@@ -163,12 +199,19 @@ class OAuth implements AuthService {
           $button['logo']= $available_service['customlogo_url'];
           $button['css'] = "<style>.bs-auth-btn-logo-".$service." {background-image:url('" .$available_service['customlogo_url']."');}</style>";
         }
+        */
+
+      if(!$available_service['customlogo_enabled']) {
+        $button['icon']= $available_service['customlogo_url'];
+      } else {
+        $button['icon']=  plugin_dir_url(__FILE__) . "/logos/" . $available_service['default_icon'];
+      }
 
 
       $button['order']   = $available_service['display_order'];
       $button['plugin']  = "blaat_oauth";
       $button['id']      = $available_service['service_id'];
-      $button['service'] = $service;
+      //$button['service'] = $service;
 
       $button['display_name'] = $available_service['display_name'];
 
@@ -212,14 +255,60 @@ class OAuth implements AuthService {
           " LEFT JOIN " . $wpdb->prefix . "bs_oauth_userinfo_api_custom" ;
 */
 
-      $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
-          "  JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
-" on " . $wpdb->prefix . "bs_oauth_services_known.service_known_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_known_id" .
-          "  JOIN  " . $wpdb->prefix . "bs_oauth_userinfo_api_known" .
-" on " . $wpdb->prefix . "bs_oauth_services_known.userinfo_api_known_id=" . $wpdb->prefix . "bs_oauth_userinfo_api_known.userinfo_api_known_id";
 
+
+      /* 
+        LEFT OUTER JOIN isn't going to work... as it creates double columns
+        with NULL values... 
+        
+        So, we need to UNION, keep in count the differences between KNOWN and
+        CUSTOM tables (or store unused data in the database) and then joining
+        them correctly
+
+        How does JOIN behave on NULL values? Proposed model
+        CONFIGURED_SERVICES(SERVICE_ID, KNOWN_SERVICE_ID, CUSTOM_SERVICE_ID);
+
+        (SELECT KNOWN_SERVICE_ID, NULL AS CUSTOM_SERVICE_ID FROM KNOWN_SERVICES)
+        UNION
+        (SELECT NULL AS KNOWN_SERVICE_ID, CUSTOM_SERVICE_ID FROM CUSTOM_SERVICES) AS ALL_SERVICES
+        
+        HMMM.... And then, without two left outer joins?
+
+        with query? sub query? two joins, and then union the results...
+      
+        with query not supported by MySQL... 
+        http://dba.stackexchange.com/questions/46061/mysql-equivalent-of-with-in-oracle
+  
+        Perhaps http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of-cell-in-another-table
+        CASE WHEN is a solution. This is supported by MySQL
+http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of-cell-in-another-table
+
+    
+        Or use a different database design: do not use the KNOWN (pre-configured)
+        services in the database. Store them and just insert a copy when 
+        activating them.
+
+         
+      */
+
+      $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
+          "  LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
+" on " . $wpdb->prefix . "bs_oauth_services_known.service_known_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_known_id" .
+          "  LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_userinfo_api_known AS userinfo_api_known_1" .
+" on " . $wpdb->prefix . "bs_oauth_services_known.userinfo_api_known_id=userinfo_api_known_1.userinfo_api_known_id";
+//          "  LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_custom" . 
+//" on " . $wpdb->prefix . "bs_oauth_services_custom.service_custom_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_custom_id" .
+//          "  LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_userinfo_api_known AS userinfo_api_known_2" .
+//" on " . $wpdb->prefix . "bs_oauth_services_custom.userinfo_api_known_id=userinfo_api_known_2.userinfo_api_known_id" .
+//          "  LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_userinfo_api_custom" .
+//" on " . $wpdb->prefix . "bs_oauth_services_custom.userinfo_api_custom_id=" . $wpdb->prefix . "bs_oauth_userinfo_api_custom.userinfo_api_custom_id";
 
       $query = $wpdb->prepare("SELECT * FROM $tables  WHERE service_id = %d", $service_id);
+//die($query);
+
+
+
+
       $result = $wpdb->get_row($query,ARRAY_A);
 
      // echo "<pre>$query\n\n"; var_dump($result); die();
@@ -269,8 +358,8 @@ class OAuth implements AuthService {
       // we might differentiate between required and optional data in a later
       // model, (see the scopes above, maybe store a minimum and optional set)
       // So should this remain in a future version?
-	    $_SESSION['bsauth_fetch_data'] = $result['fetch_data'];
-      $_SESSION['bsauth_register_auto'] = $result['auto_register'];  
+	    //$_SESSION['bsauth_fetch_data'] = $result['fetch_data'];
+      //$_SESSION['bsauth_register_auto'] = $result['auto_register'];  
 
 
       // No longer an if statement, all settings are read from the database.
@@ -289,7 +378,11 @@ class OAuth implements AuthService {
         if ($success = $client->Process()) {
 			    if(strlen($client->authorization_error)){
 				    $client->error = $client->authorization_error;
-				    $success = false;
+            $exception = new OAuthException(__("OAuth error: processing error","blaat_auth"), 3); //??
+            $exception->libraryError = $client->error;
+            $client->Finalize($success);
+            throw $exception;
+
 			    } elseif(strlen($client->access_token)){
             $result = call_user_func($function, $client, $result, $params );
             $success = $client->Finalize($success);
@@ -301,17 +394,14 @@ class OAuth implements AuthService {
         } else {
             $exception = new OAuthException(__("OAuth error: processing error","blaat_auth"), 1);
             $exception->libraryError = $client->error;
+            $client->Finalize($success);
             throw $exception;
         }
       } else {
         $exception = new OAuthException(__("OAuth error: initialisation error","blaat_auth"), 2);
         $exception->libraryError = $client->error;
+        $client->Finalize($success);
         throw $exception;
-
-        /*
-        _e("OAuth error: initialisation error","blaat_auth");
-        echo $client->error;
-        */
       } 
 
   }
@@ -341,7 +431,7 @@ class OAuth implements AuthService {
                 `type` TEXT NULL DEFAULT NULL ,
                 `refresh` TEXT NULL DEFAULT NULL,
                 `scope` TEXT NOT NULL DEFAULT '',
-                KEY token_key (token(32)),
+                KEY token_key (token(256)),
                 PRIMARY KEY  (token_id)
                 );";
       dbDelta($query);
@@ -484,8 +574,8 @@ class OAuth implements AuthService {
     $user = wp_get_current_user();
     $user_id    = $user->ID;
 
-
-      $client->CallAPI($result['userinfo_url'], $result['request_method'],
+    $options = array('FailOnAccessError'=>true, 'DecodeXMLResponse'=>'simplexml');
+    $client->CallAPI($result['userinfo_url'], $result['request_method'],
                                                   $params, $options, $userinfo); 
 
 
@@ -519,6 +609,7 @@ class OAuth implements AuthService {
       }
       $wpdb->query($query);
       */
+
 
       $data=array();
       $data['wordpress_id']=$user_id;

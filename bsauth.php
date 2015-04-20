@@ -42,15 +42,14 @@ if (!function_exists("bsauth_register_options")) {
 if (!function_exists("bsauth_generate_button")) {
   function bsauth_generate_button($button, $action){
       
-      if (isset($button['logo']))
-        $style="style='background-image:url(\"" .$button['logo']. "\");'";
+      if (isset($button['icon']))
+        $logoStyle="style='background-image:url(\"" .$button['icon']. "\");'";
       else
-        $style="";
+        $logoStyle="";
 
       return "<button class='bs-auth-btn' name=bsauth_$action 
              type=submit value='".$button['plugin']."-".$button['id']."'>
-             <span $style class='bs-auth-btn-logo 
-             bs-auth-btn-logo-".$button['plugin']."-".$button['service']."'>
+             <span $logoStyle class='bs-auth-btn-logo'>
              </span><span class='bs-auth-btn-text'>".
              $button['display_name']."</span></button>";
   }
