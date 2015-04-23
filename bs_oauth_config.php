@@ -324,9 +324,9 @@ function bsoauth_add_process(){
         imagedestroy($source);
 
         $new_data=array();
-        $new_data["customlogo_url"] = $movefile['url'];
-        $new_data["customlogo_filename"] = $movefile['file'];
-        $new_data["customlogo_enabled"] = 1;
+        $new_data["comtom_icon_url"] = $movefile['url'];
+        $new_data["comtom_icon_filename"] = $movefile['file'];
+        $new_data["comtom_icon_enabled"] = 1;
 
         $data_id = array();
         $service_id=$wpdb->insert_id;
@@ -434,7 +434,7 @@ function bsoauth_update_service(){
   $new_data["enabled"] = (int) $_POST["client_enabled"];
   $new_data["fixed_redirect_url"] = (int) $_POST["fixed_redirect_url"];
   $new_data["override_redirect_url"] = $_POST["override_redirect_url"];
-  $new_data["customlogo_enabled"] = $_POST["customlogo_enabled"];
+  $new_data["comtom_icon_enabled"] = $_POST["comtom_icon_enabled"];
 
   //How to detect if a file was uploaded??
   if ($_FILES['newlogo']['size']){
@@ -467,9 +467,9 @@ function bsoauth_update_service(){
         imagedestroy($target);
         imagedestroy($source);
 
-        $new_data["customlogo_url"] = $movefile['url'];
-        $new_data["customlogo_filename"] = $movefile['file'];
-        $new_data["customlogo_enabled"] = 1;
+        $new_data["comtom_icon_url"] = $movefile['url'];
+        $new_data["comtom_icon_filename"] = $movefile['file'];
+        $new_data["comtom_icon_enabled"] = 1;
 
 	// TODO :: ERROR MESSAGES HANDLING
 	// TODO :: IS IT POSSIBLE TO STORE IT ELSEWHERE? (E.G. WITHOUT DATE IN PATH)
@@ -539,8 +539,8 @@ function bsoauth_list_services(){
                     default_scope, oauth_version, request_token_url, 
                     dialog_url, access_token_url, url_parameters, 
                     authorization_header, offline_dialog_url, display_order, 
-                    append_state_to_redirect_uri, customlogo_url, 
-                    customlogo_enabled, fixed_redirect_url, override_redirect_url
+                    append_state_to_redirect_uri, comtom_icon_url, 
+                    comtom_icon_enabled, fixed_redirect_url, override_redirect_url
           from $table_name
           LEFT OUTER JOIN $table_name2 on ${table_name}.custom_id = ${table_name2}.id",ARRAY_A);
 
@@ -673,14 +673,14 @@ function bsoauth_list_services(){
       <tr>
         <th><label><?php _e("Logo:","blaat_auth"); ?></label></th>
         <td>
-          <style>.bs-auth-btn-logo-cst<?php echo $result['id'] ?> { background-image:url('<?php echo $result['customlogo_url'];?>'); }</style>
+          <style>.bs-auth-btn-logo-cst<?php echo $result['id'] ?> { background-image:url('<?php echo $result['comtom_icon_url'];?>'); }</style>
           <?php
           if (!$result['custom_id']) {
             ?>
             <span class='bs-auth-btn-preview bs-auth-btn-logo-blaat_oauth-<?php echo strtolower($result['client_name']); ?>'></span>
-            <input type='radio' name='customlogo_enabled' value='0' <?php if(!$result['customlogo_enabled']) echo "checked"; ?> > 
+            <input type='radio' name='comtom_icon_enabled' value='0' <?php if(!$result['comtom_icon_enabled']) echo "checked"; ?> > 
             <span class='bs-auth-btn-preview bs-auth-btn-logo-cst<?php echo $result['id'] ?>'></span>
-            <input type='radio' name='customlogo_enabled' value='1'  <?php if ($result['customlogo_enabled']) echo "checked";?>  >
+            <input type='radio' name='comtom_icon_enabled' value='1'  <?php if ($result['comtom_icon_enabled']) echo "checked";?>  >
             <?php } else {?>
               <span class='bs-auth-btn-preview bs-auth-btn-logo-cst<?php echo $result['id'] ?>'></span>
             <?php } ?>
@@ -752,9 +752,48 @@ function bsoauth_menu() {
                                       'manage_options', 
                                       'bsoauth_custom', 
                                       'bsoauth_add_custom_page' );
+
+
+
+
+// testing menu generatio new style
+  add_submenu_page('blaat_plugins' ,  __('test',"blaat_auth"),   
+                                      __('test',"blaat_auth"), 
+                                      'manage_options', 
+                                      'test', 
+                                      'test' );
+
+//;
+
   add_action( 'admin_init', 'bsauth_register_options' );
 }
 //------------------------------------------------------------------------------
+function test(){
+  // testing menu generatio new style
+  // stuk deftiger ;)
+
+  // ok, now we need to create pages to add and edit services
+ 
+  // AuthService interface should get function getConfiguredServices();
+  // for the edit page, sorting also
+  
+  // then adding option, with pre-configured possibilities,
+  // this would imply... hiding the pre-filled fields, show them on advanced
+  // this means... we need to add a field in the database to indicate
+  // it was pre-configured
+
+  // also see how to manage saving the data / etc. also, hidden fields.
+  // distinguise between add and edit ( I suppose presense of "id" field? )
+  // possibily configurable
+
+  global $wpdb;
+  $result = $wpdb->get_row("select * FROM `wp_bs_oauth_services_configured`",ARRAY_A);
+
+  BlaatSchaap::GenerateOptions(OAuth::getConfigOptions(),NULL,$result);
+}
+
+
+
 function bsoauth_config_page() {
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );

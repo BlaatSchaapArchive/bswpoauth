@@ -88,12 +88,14 @@ class OAuth implements AuthService {
     //$table_name = $wpdb->prefix . "bs_oauth_services";
     //$table_name = $wpdb->prefix . "bs_oauth_services_configured";
 
-      $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
+      $tables =      $wpdb->prefix . "bs_oauth_services_configured ";
+/*
+.
           " LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
 " on " . $wpdb->prefix . "bs_oauth_services_known.service_known_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_known_id" ;
 //          " LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_custom" . 
 //" on " . $wpdb->prefix . "bs_oauth_services_custom.service_custom_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_custom_id" ;
-
+*/
 
     // TODO table joining
     $results = $wpdb->get_results("select * from $tables where enabled=1 ",
@@ -102,38 +104,17 @@ class OAuth implements AuthService {
     foreach ($results as $result) {
       $button = array();
 
-    if($result['customlogo_enabled']) {
-      $button['icon']= $resylt['customlogo_url'];
-    } else {
-      $button['icon']=  plugin_dir_url(dirname(__FILE__)) . "icons/" . $result['default_icon'];
-    }
-
-/*
-      if(!$result['customlogo_enabled']) 
-        $service=strtolower($result['client_name']); 
-      else {
-        $service="custom-".$result['id'];
-
-        //deprecation css generation in class
-        $button['css']="<style>.bs-auth-btn-logo-".$service.
-           " {background-image:url('" .$result['customlogo_url']."');}</style>"; 
-
-
-        $button['logo']    = $result['customlogo_url'];
+      if($result['custom_icon_enabled']) {
+        $button['icon']= $result['custom_icon_url'];
+      } elseif($result['default_icon']) {
+        $button['icon']=  plugin_dir_url(__FILE__) . "../icons/" . $result['default_icon'];
       }
-*/
 
-/*
-      // deprecated html generation inside class
-      $button['button']="<button class='bs-auth-btn' name=bsauth_login 
-             type=submit value='blaat_oauth-".$result['id']."'><span class='bs-auth-btn-logo 
-             bs-auth-btn-logo-$service'></span><span class='bs-auth-btn-text'>".
-             $result['display_name']."</span></button>";
-*/
+
+
       
       $button['order']        = $result['display_order'];
       $button['plugin']       = "blaat_oauth";
-      //$button['service']      = $service;
       $button['id']           = $result['service_id'];
       $button['display_name'] = $result['display_name'];
 
@@ -153,9 +134,10 @@ class OAuth implements AuthService {
 
 
 //      $table_name = $wpdb->prefix . "bs_oauth_sessions";
-      $table_name = $wpdb->prefix . "bs_oauth_accounts"; 
+//      $table_name = $wpdb->prefix . "bs_oauth_accounts"; 
 
 
+/*
       $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
           " LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
 " on " . $wpdb->prefix . "bs_oauth_services_known.service_known_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_known_id" .
@@ -163,11 +145,16 @@ class OAuth implements AuthService {
 //" on " . $wpdb->prefix . "bs_oauth_services_custom.service_custom_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_custom_id" .
           " JOIN  " . $wpdb->prefix . "bs_oauth_accounts" .
 " on " . $wpdb->prefix . "bs_oauth_accounts.service_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_id";
+*/
+
+      $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
+          " JOIN  " . $wpdb->prefix . "bs_oauth_accounts" .
+" on " . $wpdb->prefix . "bs_oauth_accounts.service_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_id";
 
 
       $user_id    = $user->ID;
     // TODO table joining
-      $query = $wpdb->prepare("SELECT ".$wpdb->prefix."bs_oauth_services_configured.service_id as service_id FROM $tables WHERE `wordpress_id` = %d",$user_id);
+      $query = $wpdb->prepare("SELECT ".$wpdb->prefix ."bs_oauth_services_configured.service_id AS service_id FROM $tables WHERE `wordpress_id` = %d",$user_id);
 
 
 
@@ -201,10 +188,10 @@ class OAuth implements AuthService {
         }
         */
 
-      if(!$available_service['customlogo_enabled']) {
-        $button['icon']= $available_service['customlogo_url'];
-      } else {
-        $button['icon']=  plugin_dir_url(__FILE__) . "/logos/" . $available_service['default_icon'];
+      if($available_service['custom_icon_enabled']) {
+        $button['icon']= $available_service['custom_icon_url'];
+      } elseif($available_service['default_icon']) {
+        $button['icon']=  plugin_dir_url(__FILE__) . "../icons/" . $available_service['default_icon'];
       }
 
 
@@ -291,6 +278,7 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
          
       */
 
+/*
       $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
           "  LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
 " on " . $wpdb->prefix . "bs_oauth_services_known.service_known_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_known_id" .
@@ -302,8 +290,14 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
 //" on " . $wpdb->prefix . "bs_oauth_services_custom.userinfo_api_known_id=userinfo_api_known_2.userinfo_api_known_id" .
 //          "  LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_userinfo_api_custom" .
 //" on " . $wpdb->prefix . "bs_oauth_services_custom.userinfo_api_custom_id=" . $wpdb->prefix . "bs_oauth_userinfo_api_custom.userinfo_api_custom_id";
+*/
 
-      $query = $wpdb->prepare("SELECT * FROM $tables  WHERE service_id = %d", $service_id);
+
+// for configured services we'll store everything in a single table
+// pre-configured services and api's will be copies once configured
+
+      $table_name =      $wpdb->prefix . "bs_oauth_services_configured ";
+      $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE service_id = %d", $service_id);
 //die($query);
 
 
@@ -431,7 +425,7 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
                 `type` TEXT NULL DEFAULT NULL ,
                 `refresh` TEXT NULL DEFAULT NULL,
                 `scope` TEXT NOT NULL DEFAULT '',
-                KEY token_key (token(256)),
+                KEY (token(256)),
                 PRIMARY KEY  (token_id)
                 );";
       dbDelta($query);
@@ -450,49 +444,6 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
                 PRIMARY KEY  (account_id)
                 );";
       dbDelta($query);
-
-
-      $table_name = $wpdb->prefix . "bs_oauth_services_configured";
-      $query = "CREATE TABLE $table_name (
-                `service_id` INT NOT NULL AUTO_INCREMENT  ,
-                `enabled` BOOLEAN NOT NULL DEFAULT FALSE ,
-                `display_name` TEXT NOT NULL ,
-                `display_order` INT NOT NULL DEFAULT 1,
-                `service_known_id`  INT NULL DEFAULT NULL ,
-                `service_custom_id` INT NULL DEFAULT NULL ,
-                `client_id` TEXT NOT NULL ,
-                `client_secret` TEXT NOT NULL,
-                `customlogo_url` TEXT NULL DEFAULT NULL,
-                `customlogo_filename` TEXT NULL DEFAULT NULL,
-                `customlogo_enabled` BOOLEAN DEFAULT FALSE,
-                `fixed_redirect_url` BOOLEAN NOT NULL DEFAULT TRUE ,
-                `override_redirect_url` TEXT NULL DEFAULT NULL,
-                `auto_register` BOOL NOT NULL DEFAULT FALSE,
-                PRIMARY KEY  (service_id)
-                );";
-      dbDelta($query);
-
-
-    $table_name = $wpdb->prefix . "bs_oauth_services_custom";
-      $query = "CREATE TABLE $table_name (
-                `service_custom_id` INT NOT NULL AUTO_INCREMENT   ,
-                `service_name` TEXT NULL DEFAULT NULL ,
-                `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
-                `request_token_url` TEXT NULL DEFAULT NULL,
-                `dialog_url` TEXT NOT NULL,
-                `access_token_url` TEXT NOT NULL,
-                `userinfo_url` TEXT NOT NULL,
-                `userinfo_api_known_id` INT NULL DEFAULT NULL ,
-                `userinfo_api_custom_id` INT NULL DEFAULT NULL ,
-                `url_parameters` BOOLEAN DEFAULT FALSE,
-                `authorization_header` BOOLEAN DEFAULT TRUE,
-                `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL,
-                `pin_dialog_url` TEXT NULL DEFAULT NULL,
-                `offline_dialog_url` TEXT NULL DEFAULT NULL,
-                PRIMARY KEY  (service_custom_id)
-                );";      
-      dbDelta($query);
-
 
 
       $table_name = $wpdb->prefix . "bs_oauth_services_known";
@@ -536,11 +487,33 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
       );";
       dbDelta($query);
 
-      $table_name = $wpdb->prefix . "bs_oauth_userinfo_api_custom";
+
+      $table_name = $wpdb->prefix . "bs_oauth_services_configured";
       $query = "CREATE TABLE $table_name (
-                `userinfo_api_custom_id` INT NOT NULL AUTO_INCREMENT   ,
+                `service_id` INT NOT NULL AUTO_INCREMENT  ,
+                `enabled` BOOLEAN NOT NULL DEFAULT FALSE ,
+                `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
+                `request_token_url` TEXT NULL DEFAULT NULL,
+                `dialog_url` TEXT NOT NULL,
+                `access_token_url` TEXT NOT NULL,
+                `userinfo_url` TEXT NOT NULL,
+                `url_parameters` BOOLEAN DEFAULT FALSE,
+                `authorization_header` BOOLEAN DEFAULT TRUE,
+                `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL,
+                `pin_dialog_url` TEXT NULL DEFAULT NULL,
+                `offline_dialog_url` TEXT NULL DEFAULT NULL,
+                `display_name` TEXT NOT NULL ,
+                `display_order` INT NOT NULL DEFAULT 1,
+                `client_id` TEXT NOT NULL ,
+                `client_secret` TEXT NOT NULL,
+                `custom_icon_url` TEXT NULL DEFAULT NULL,
+                `custom_icon_filename` TEXT NULL DEFAULT NULL,
+                `custom_icon_enabled` BOOLEAN DEFAULT FALSE,
+                `default_icon`  TEXT NULL DEFAULT NULL,
+                `fixed_redirect_url` BOOLEAN NOT NULL DEFAULT TRUE ,
+                `override_redirect_url` TEXT NULL DEFAULT NULL,
+                `auto_register` BOOL NOT NULL DEFAULT FALSE,
                 `request_method` ENUM('GET', 'POST') DEFAULT 'GET',
-                `api_name` TEXT NULL DEFAULT NULL ,
                 `data_format` ENUM('FORM','JSON','XML') DEFAULT 'JSON',
                 `external_id` TEXT NULL DEFAULT NULL ,
                 `first_name`  TEXT NULL DEFAULT NULL ,
@@ -551,10 +524,10 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
                 `user_login`  TEXT NULL DEFAULT NULL ,
                 `scope`  TEXT NULL DEFAULT NULL ,
                 `email_verified`  TEXT NULL DEFAULT NULL ,
-                PRIMARY KEY  (userinfo_api_custom_id)
-      );";
+                PRIMARY KEY  (service_id)
+                );";
       dbDelta($query);
-   
+ 
       update_option( "bs_oauth_dbversion" , $dbver);
       update_option( "bs_oauth_dbmigrate50required" , true);
     }
@@ -720,6 +693,226 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
       }
       
     }
+
+
+
+//------------------------------------------------------------------------------
+  public function getConfigOptions() {
+    // sort the options in tabs
+    // general / oauth / api / hidden
+
+    $options=array();  
+
+
+    $option=array();  
+    $option['title']=__("Display name","blaat_auth");
+    $option['name']="display_name";
+    $option['type']="text";
+    $option['required']=true;
+    $options[]=$option;
+
+    $option=array();  
+    $option['title']=__("OAuth version","blaat_auth");
+    $option['name']="oauth_version";
+    $option['type']="select";
+    $option['default']="2.0";
+    $option['options']=array();
+    $option['options'][]=array("value"=>"2.0","display"=>"2.0");
+    $option['options'][]=array("value"=>"1.0","display"=>"1.0");
+    $option['options'][]=array("value"=>"1.0a","display"=>"1.0a");
+    $option['required']=true;
+    $options[]=$option;
+
+    $option=array();  
+    $option['title']=__("Request Token URL (1.0 and 1.0a only)","blaat_auth");
+    $option['name']="request_token_url";
+    $option['type']="url";
+    $option['dependency']=array();
+    $option['dependency']['type']="required";
+    $option['dependency']['field']="oauth_version";
+    $option['dependency']['value']=array();
+    $option['dependency']['value'][]="1.0";
+    $option['dependency']['value'][]="1.0a";
+    $option['required']=false; // REQUIRED IF DEPENDENCY MATCH
+    $options[]=$option;
+
+    $option=array();  
+    $option['title']=__("Dialog URL","blaat_auth");
+    $option['name']="dialog_url";
+    $option['type']="url";
+    $option['required']=true;
+    $options[]=$option;
+
+    $option=array();  
+    $option['title']=__("Access Token URL","blaat_auth");
+    $option['name']="access_token_url";
+    $option['type']="url";
+    $option['required']=true;
+    $options[]=$option;
+
+    $option=array();  
+    $option['title']=__("Client ID","blaat_auth");
+    $option['name']="client_id";
+    $option['type']="text";
+    $option['required']=true;
+    $options[]=$option;
+
+    $option=array();  
+    $option['title']=__("Client Secret","blaat_auth");
+    $option['name']="client_secret";
+    $option['type']="text";
+    $option['required']=true;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="url_parameters";
+    $option['type']="checkbox";
+    $option['default']=false;
+    $option['required']=false;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="authorization_header";
+    $option['type']="checkbox";
+    $option['default']=true;
+    $option['required']=false;
+    $options[]=$option;
+
+
+    // OPTIONAL FIELDS
+    $option=array();  
+    $option['name']="pin_dialog_url";
+    $option['type']="url";
+    $option['required']=false;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="offline_dialog_url";
+    $option['type']="url";
+    $option['required']=false;
+    $options[]=$option;
+
+
+    $option=array();  
+    $option['name']="request_method";
+    $option['type']="select";
+    $option['default']="GET";
+    $option['options']=array();
+    $option['options'][]=array("value"=>"GET","display"=>"GET");
+    $option['options'][]=array("value"=>"POST","display"=>"POST");
+    $option['required']=true;
+    $options[]=$option;
+
+
+    $option=array();  
+    $option['name']="data_format";
+    $option['type']="select";
+    $option['default']="JSON";
+    $option['options']=array();
+    $option['options'][]=array("value"=>"JSON","display"=>"JSON");
+    $option['options'][]=array("value"=>"XML","display"=>"XML");
+    $option['options'][]=array("value"=>"FORM","display"=>"Form-encoded");
+    $option['required']=true;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="external_id";
+    $option['type']="text";
+    $option['required']=true;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="scope";
+    $option['type']="text";
+    $option['required']=true;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="user_email";
+    $option['type']="text";
+    $option['required']=false;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="first_name";
+    $option['type']="text";
+    $option['required']=false;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="last_name";
+    $option['type']="text";
+    $option['required']=false;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="user_nicename";
+    $option['type']="text";
+    $option['required']=false;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="user_url";
+    $option['type']="text";
+    $option['required']=false;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="last_login";
+    $option['type']="text";
+    $option['required']=false;
+    $options[]=$option;
+
+    $option=array();  
+    $option['name']="email_verified";
+    $option['type']="text";
+    $option['required']=false;
+    $options[]=$option;
+
+    return $options;
+  }
+  
+
+//------------------------------------------------------------------------------
+  public function addPreconfiguredService($service_id) {
+    global $wpdb;
+    $query = $wpdb->prepare(
+    "INSERT INTO `" . $wpdb->prefix . "bs_oauth_services_configured`
+    (
+    `oauth_version`,        `request_token_url`, 
+    `dialog_url`,           `access_token_url`, 
+    `userinfo_url`,         `url_parameters`, 
+    `authorization_header`, `append_state_to_redirect_uri`, 
+    `pin_dialog_url`,       `offline_dialog_url`, 
+    `display_name`,         `default_icon`, 
+    `request_method`,       `data_format`, 
+    `external_id`,          `first_name`, 
+    `last_name`,            `user_email`, 
+    `user_url`,             `user_nicename`, 
+    `user_login`,           `scope`, 
+    `email_verified`
+    ) ( SELECT                `oauth_version`, 
+    `request_token_url`,    `dialog_url`, 
+    `access_token_url`,     `userinfo_url`, 
+    `url_parameters`,       `authorization_header`, 
+    `append_state_to_redirect_uri`, 
+    `pin_dialog_url`,       `offline_dialog_url`, 
+    `service_name`,         `default_icon`, 
+    `request_method`,       `data_format`, 
+    `external_id`,          `first_name`, 
+    `last_name`,            `user_email`, 
+    `user_url`,             `user_nicename`, 
+    `user_login`,           `scope`, 
+    `email_verified`
+    FROM `" . $wpdb->prefix . "bs_oauth_services_known` 
+    JOIN `" . $wpdb->prefix . "bs_oauth_userinfo_api_known` ON " . 
+    $wpdb->prefix . "bs_oauth_userinfo_api_known.userinfo_api_known_id=" . 
+    $wpdb->prefix . "bs_oauth_services_known.userinfo_api_known_id )
+    WHERE service_known_id = %d", $service_id);
+
+    $wpdb->query($query);
+    return $wpdb->insert_id;
+  }
 
 //------------------------------------------------------------------------------
 

@@ -16,14 +16,14 @@ require_once("oauth/oauth_client.php");
 require_once("oauth/http.php");
 require_once("bs_oauth_config.php");
 
-require_once("blaat.php");   //To be moved to Separate Plugin
-require_once("bsauth.php");  //To be moved to Separate Plugin
+//require_once("blaat.php");   //To be moved to Separate Plugin
+//require_once("bsauth.php");  //To be moved to Separate Plugin
 
 require_once("classes/AuthService.class.php");
 require_once("classes/OAuth.class.php");
 
 
-//require_once("required_plugins.php");
+require_once("required_plugins.php");
 
 
 //------------------------------------------------------------------------------
@@ -51,12 +51,13 @@ function bsoauth_styles(){
 
 
 register_activation_hook(__FILE__,"OAuth::install");
-add_action("wp_enqueue_scripts",  "bsoauth_styles" );
-add_action( 'admin_enqueue_scripts',"bsoauth_styles" );
 
-add_action("admin_menu",          "bsoauth_menu");
-add_filter("the_content",         "bsauth_display" );
-add_action("wp_loaded",           "bsoauth_init" );
+add_action("wp_enqueue_scripts",    "bsoauth_styles" );
+add_action("admin_enqueue_scripts", "bsoauth_styles" );
+
+add_action("admin_menu",            "bsoauth_menu");
+add_filter("the_content",           "bsauth_display" );
+add_action("wp_loaded",             "bsoauth_init" );
 
 
 
