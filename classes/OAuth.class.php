@@ -88,16 +88,10 @@ class OAuth implements AuthService {
     //$table_name = $wpdb->prefix . "bs_oauth_services";
     //$table_name = $wpdb->prefix . "bs_oauth_services_configured";
 
-      $tables =      $wpdb->prefix . "bs_oauth_services_configured ";
-/*
-.
-          " LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_known" . 
-" on " . $wpdb->prefix . "bs_oauth_services_known.service_known_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_known_id" ;
-//          " LEFT OUTER JOIN  " . $wpdb->prefix . "bs_oauth_services_custom" . 
-//" on " . $wpdb->prefix . "bs_oauth_services_custom.service_custom_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_custom_id" ;
-*/
+  $tables =      $wpdb->prefix . "bs_oauth_services_configured ";
 
-    // TODO table joining
+
+ 
     $results = $wpdb->get_results("select * from $tables where enabled=1 ",
                    ARRAY_A);
     $buttons = array();    
@@ -352,7 +346,7 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
       // we might differentiate between required and optional data in a later
       // model, (see the scopes above, maybe store a minimum and optional set)
       // So should this remain in a future version?
-	    //$_SESSION['bsauth_fetch_data'] = $result['fetch_data'];
+      //$_SESSION['bsauth_fetch_data'] = $result['fetch_data'];
       //$_SESSION['bsauth_register_auto'] = $result['auto_register'];  
 
 
@@ -370,14 +364,14 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
 
       if ($success = $client->Initialize()) {
         if ($success = $client->Process()) {
-			    if(strlen($client->authorization_error)){
-				    $client->error = $client->authorization_error;
+          if(strlen($client->authorization_error)){
+            $client->error = $client->authorization_error;
             $exception = new OAuthException(__("OAuth error: processing error","blaat_auth"), 3); //??
             $exception->libraryError = $client->error;
             $client->Finalize($success);
             throw $exception;
 
-			    } elseif(strlen($client->access_token)){
+          } elseif(strlen($client->access_token)){
             $result = call_user_func($function, $client, $result, $params );
             $success = $client->Finalize($success);
             // do we need to check for success here?
@@ -492,7 +486,7 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
       $query = "CREATE TABLE $table_name (
                 `service_id` INT NOT NULL AUTO_INCREMENT  ,
                 `enabled` BOOLEAN NOT NULL DEFAULT TRUE ,
-				`service_known_id` INT DEFAULT 0,
+        `service_known_id` INT DEFAULT 0,
                 `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
                 `request_token_url` TEXT NULL DEFAULT NULL,
                 `dialog_url` TEXT NOT NULL,
@@ -701,125 +695,126 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
   public function getConfigOptions() {
     // sort the options in tabs
     // general / oauth / api / hidden
+    // TODO: possibly hide preconfigured values for preconfigures services
 
     $options=array();  
 
     $tabs=array();  
 
-	// OAUTH FIELDS
+  // OAUTH FIELDS
 
-	$OAuthTab = new BlaatConfigTab("oauth", 
-									__("OAuth configuration","blaat_oauth"));
-	$tabs[]=$OAuthTab;
+  $OAuthTab = new BlaatConfigTab("oauth", 
+                  __("OAuth configuration","blaat_oauth"));
+  $tabs[]=$OAuthTab;
 
 
     $OAuthTab->addOption(new BlaatConfigOption("display_name",
-									__("Display name","blaat_auth"),
-									"text",true));
+                  __("Display name","blaat_auth"),
+                  "text",true));
 
-	$configoption = new BlaatConfigOption("oauth_version",
-									__("OAuth version","blaat_auth"),
-									"select",true, "2.0");
-	$configoption->addOption(new BlaatConfigSelectOption("2.0","2.0"));
-	$configoption->addOption(new BlaatConfigSelectOption("1.0","1.0"));
-	$configoption->addOption(new BlaatConfigSelectOption("1.0a","1.0a"));
+  $configoption = new BlaatConfigOption("oauth_version",
+                  __("OAuth version","blaat_auth"),
+                  "select",true, "2.0");
+  $configoption->addOption(new BlaatConfigSelectOption("2.0","2.0"));
+  $configoption->addOption(new BlaatConfigSelectOption("1.0","1.0"));
+  $configoption->addOption(new BlaatConfigSelectOption("1.0a","1.0a"));
     $OAuthTab->addOption($configoption);
 
     $OAuthTab->addOption(new BlaatConfigOption("request_token_url",
-									__("Request Token URL (1.0 and 1.0a only)","blaat_auth"),
-									"url",false));
-	// TODO: how to define value dependencies? required-if-oauth-version-is-not-2.0
+                  __("Request Token URL (1.0 and 1.0a only)","blaat_auth"),
+                  "url",false));
+  // TODO: how to define value dependencies? required-if-oauth-version-is-not-2.0
 
     $OAuthTab->addOption(new BlaatConfigOption("dialog_url",
-									__("Dialog URL","blaat_auth"),
-									"url",true));
+                  __("Dialog URL","blaat_auth"),
+                  "url",true));
 
     $OAuthTab->addOption(new BlaatConfigOption("access_token_url",
-									__("Access Token URL","blaat_auth"),
-									"url",true));
+                  __("Access Token URL","blaat_auth"),
+                  "url",true));
 
     $OAuthTab->addOption(new BlaatConfigOption("client_id",
-									__("Client ID","blaat_auth"),
-									"text",true));
+                  __("Client ID","blaat_auth"),
+                  "text",true));
 
     $OAuthTab->addOption(new BlaatConfigOption("client_secret",
-									__("Client Secret","blaat_auth"),
-									"text",true));
+                  __("Client Secret","blaat_auth"),
+                  "text",true));
 
     $OAuthTab->addOption(new BlaatConfigOption("url_parameters",
-									"url_parameters" /* !! */,
-									"checkbox"));
+                  "url_parameters" /* !! */,
+                  "checkbox"));
 
     $OAuthTab->addOption(new BlaatConfigOption("authorization_header",
-									"authorization_header" /* !! */,
-									"checkbox",false,true));
+                  "authorization_header" /* !! */,
+                  "checkbox",false,true));
 
 
-	// OPTIONAL FIELDS
+  // OPTIONAL FIELDS
     $OAuthTab->addOption(new BlaatConfigOption("pin_dialog_url",
-									__("Pin Dialog URL","blaat_auth"),
-									"url",false));
+                  __("Pin Dialog URL","blaat_auth"),
+                  "url",false));
 
     $OAuthTab->addOption(new BlaatConfigOption("offline_dialog_url",
-									__("Offline Dialog URL","blaat_auth"),
-									"url",false));
+                  __("Offline Dialog URL","blaat_auth"),
+                  "url",false));
 
 
-	// API FIELDS
+  // API FIELDS
 
-	$APITab = new BlaatConfigTab("api", 
-									__("API configuration","blaat_oauth"));
-	$tabs[]=$APITab;
+  $APITab = new BlaatConfigTab("api", 
+                  __("API configuration","blaat_oauth"));
+  $tabs[]=$APITab;
 
 
-	// API FIELDS
+  // API FIELDS
     
-	$configoption = new BlaatConfigOption("request_method",
-									__("Request Method","blaat_auth"),
-									"select",true, "GET");
-	$configoption->addOption(new BlaatConfigSelectOption("GET","GET"));
-	$configoption->addOption(new BlaatConfigSelectOption("POST","POST"));
+  $configoption = new BlaatConfigOption("request_method",
+                  __("Request Method","blaat_auth"),
+                  "select",true, "GET");
+  $configoption->addOption(new BlaatConfigSelectOption("GET","GET"));
+  $configoption->addOption(new BlaatConfigSelectOption("POST","POST"));
     $APITab->addOption($configoption);
 
 
-	$configoption = new BlaatConfigOption("data_format",
-									__("Data format","blaat_auth"),
-									"select",true, "JSON");
-	$configoption->addOption(new BlaatConfigSelectOption("JSON","JSON"));
-	$configoption->addOption(new BlaatConfigSelectOption("XML","XML"));
-	$configoption->addOption(new BlaatConfigSelectOption("FORM","Form-encoded"));
+  $configoption = new BlaatConfigOption("data_format",
+                  __("Data format","blaat_auth"),
+                  "select",true, "JSON");
+  $configoption->addOption(new BlaatConfigSelectOption("JSON","JSON"));
+  $configoption->addOption(new BlaatConfigSelectOption("XML","XML"));
+  $configoption->addOption(new BlaatConfigSelectOption("FORM","Form-encoded"));
     $APITab->addOption($configoption);
 
 
     $APITab->addOption(new BlaatConfigOption("external_id",
-									__("External Identifier Field","blaat_auth"),
-									"text",true));
+                  __("External Identifier Field","blaat_auth"),
+                  "text",true));
 
 
     $APITab->addOption(new BlaatConfigOption("scope",
-									__("Required OAuth Scope","blaat_auth"),
-									"text",true));
+                  __("Required OAuth Scope","blaat_auth"),
+                  "text",true));
 
 
     $APITab->addOption(new BlaatConfigOption("user_email",
-									__("E-mail Field","blaat_auth")));
+                  __("E-mail Field","blaat_auth")));
 
     $APITab->addOption(new BlaatConfigOption("first_name",
-									__("First Name Field","blaat_auth")));
+                  __("First Name Field","blaat_auth")));
 
     $APITab->addOption(new BlaatConfigOption("last_name",
-									__("Last Name Field","blaat_auth")));
+                  __("Last Name Field","blaat_auth")));
 
 
     $APITab->addOption(new BlaatConfigOption("user_nicename",
-									__("Display Name Field","blaat_auth")));
+                  __("Display Name Field","blaat_auth")));
 
     $APITab->addOption(new BlaatConfigOption("user_url",
-									__("User URL Field","blaat_auth")));
+                  __("User URL Field","blaat_auth")));
 
 
     $APITab->addOption(new BlaatConfigOption("email_verified",
-									__("Email Verified Field","blaat_auth")));
+                  __("Email Verified Field","blaat_auth")));
 
 
 /* ????
@@ -832,7 +827,7 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
 
 
     //return $options;
-	return $tabs;
+  return $tabs;
   }
   
 
@@ -878,6 +873,32 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
   }
 
 //------------------------------------------------------------------------------
+
+
+  public function getServices($enabled=true){
+    global $wpdb;
+    $table_name =      $wpdb->prefix . "bs_oauth_services_configured ";
+
+    $query = "select * from $table_name ";
+    if ($enabled) $query .= " where enabled=1 ";
+    
+    $results = $wpdb->get_results($query);
+    $services = array();    
+    foreach ($results as $result) {
+      if($result->custom_icon_enabled) {
+        $icon= $result->custom_icon_url;
+      } elseif($result->default_icon) {
+        $icon=  plugin_dir_url(__FILE__) . "../icons/" . $result->default_icon;
+      }
+      $services[] = new BlaatLoginService("blaat_oauth",
+                                       $result->service_id, 
+                                       $result->display_name, 
+                                       $result->display_order, 
+                                       $icon);
+    }
+    return $services;
+  }
+
 
 }
 ?>
