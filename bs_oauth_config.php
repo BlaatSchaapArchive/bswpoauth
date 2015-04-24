@@ -731,7 +731,7 @@ function bsoauth_menu() {
 //  add_submenu_page('blaat_plugins', "" , "" , 'manage_options', 'blaat_plugins', 'blaat_plugins_page');
 
 
-
+/*
   add_submenu_page('blaat_plugins',   __('General Auth Settings',"blaat_auth") , 
                                       __("General Auth","blaat_auth") , 
                                       'manage_options', 
@@ -753,7 +753,7 @@ function bsoauth_menu() {
                                       'bsoauth_custom', 
                                       'bsoauth_add_custom_page' );
 
-
+*/
 
 
 // testing menu generatio new style
@@ -763,33 +763,15 @@ function bsoauth_menu() {
                                       'test', 
                                       'test' );
 
-//;
-
-  add_action( 'admin_init', 'bsauth_register_options' );
 }
 //------------------------------------------------------------------------------
 function test(){
-  // testing menu generatio new style
-  // stuk deftiger ;)
 
-  // ok, now we need to create pages to add and edit services
- 
-  // AuthService interface should get function getConfiguredServices();
-  // for the edit page, sorting also
-  
-  // then adding option, with pre-configured possibilities,
-  // this would imply... hiding the pre-filled fields, show them on advanced
-  // this means... we need to add a field in the database to indicate
-  // it was pre-configured
 
-  // also see how to manage saving the data / etc. also, hidden fields.
-  // distinguise between add and edit ( I suppose presense of "id" field? )
-  // possibily configurable
+  //global $wpdb;
+  //$result = $wpdb->get_row("select * FROM `wp_bs_oauth_services_configured`",ARRAY_A);
 
-  global $wpdb;
-  $result = $wpdb->get_row("select * FROM `wp_bs_oauth_services_configured`",ARRAY_A);
-
-  BlaatSchaap::GenerateOptions(OAuth::getConfigOptions(),NULL,$result);
+  BlaatSchaap::GenerateOptions(OAuth::getConfigOptions());
 }
 
 

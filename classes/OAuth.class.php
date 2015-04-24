@@ -491,7 +491,8 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
       $table_name = $wpdb->prefix . "bs_oauth_services_configured";
       $query = "CREATE TABLE $table_name (
                 `service_id` INT NOT NULL AUTO_INCREMENT  ,
-                `enabled` BOOLEAN NOT NULL DEFAULT FALSE ,
+                `enabled` BOOLEAN NOT NULL DEFAULT TRUE ,
+				`service_known_id` INT DEFAULT 0,
                 `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
                 `request_token_url` TEXT NULL DEFAULT NULL,
                 `dialog_url` TEXT NOT NULL,
@@ -703,173 +704,135 @@ http://stackoverflow.com/questions/16307047/joining-tables-depending-on-value-of
 
     $options=array();  
 
+    $tabs=array();  
 
-    $option=array();  
-    $option['title']=__("Display name","blaat_auth");
-    $option['name']="display_name";
-    $option['type']="text";
-    $option['required']=true;
-    $options[]=$option;
+	// OAUTH FIELDS
 
-    $option=array();  
-    $option['title']=__("OAuth version","blaat_auth");
-    $option['name']="oauth_version";
-    $option['type']="select";
-    $option['default']="2.0";
-    $option['options']=array();
-    $option['options'][]=array("value"=>"2.0","display"=>"2.0");
-    $option['options'][]=array("value"=>"1.0","display"=>"1.0");
-    $option['options'][]=array("value"=>"1.0a","display"=>"1.0a");
-    $option['required']=true;
-    $options[]=$option;
-
-    $option=array();  
-    $option['title']=__("Request Token URL (1.0 and 1.0a only)","blaat_auth");
-    $option['name']="request_token_url";
-    $option['type']="url";
-    $option['dependency']=array();
-    $option['dependency']['type']="required";
-    $option['dependency']['field']="oauth_version";
-    $option['dependency']['value']=array();
-    $option['dependency']['value'][]="1.0";
-    $option['dependency']['value'][]="1.0a";
-    $option['required']=false; // REQUIRED IF DEPENDENCY MATCH
-    $options[]=$option;
-
-    $option=array();  
-    $option['title']=__("Dialog URL","blaat_auth");
-    $option['name']="dialog_url";
-    $option['type']="url";
-    $option['required']=true;
-    $options[]=$option;
-
-    $option=array();  
-    $option['title']=__("Access Token URL","blaat_auth");
-    $option['name']="access_token_url";
-    $option['type']="url";
-    $option['required']=true;
-    $options[]=$option;
-
-    $option=array();  
-    $option['title']=__("Client ID","blaat_auth");
-    $option['name']="client_id";
-    $option['type']="text";
-    $option['required']=true;
-    $options[]=$option;
-
-    $option=array();  
-    $option['title']=__("Client Secret","blaat_auth");
-    $option['name']="client_secret";
-    $option['type']="text";
-    $option['required']=true;
-    $options[]=$option;
-
-    $option=array();  
-    $option['name']="url_parameters";
-    $option['type']="checkbox";
-    $option['default']=false;
-    $option['required']=false;
-    $options[]=$option;
-
-    $option=array();  
-    $option['name']="authorization_header";
-    $option['type']="checkbox";
-    $option['default']=true;
-    $option['required']=false;
-    $options[]=$option;
+	$OAuthTab = new BlaatConfigTab("oauth", 
+									__("OAuth configuration","blaat_oauth"));
+	$tabs[]=$OAuthTab;
 
 
-    // OPTIONAL FIELDS
-    $option=array();  
-    $option['name']="pin_dialog_url";
-    $option['type']="url";
-    $option['required']=false;
-    $options[]=$option;
+    $OAuthTab->addOption(new BlaatConfigOption("display_name",
+									__("Display name","blaat_auth"),
+									"text",true));
 
-    $option=array();  
-    $option['name']="offline_dialog_url";
-    $option['type']="url";
-    $option['required']=false;
-    $options[]=$option;
+	$configoption = new BlaatConfigOption("oauth_version",
+									__("OAuth version","blaat_auth"),
+									"select",true, "2.0");
+	$configoption->addOption(new BlaatConfigSelectOption("2.0","2.0"));
+	$configoption->addOption(new BlaatConfigSelectOption("1.0","1.0"));
+	$configoption->addOption(new BlaatConfigSelectOption("1.0a","1.0a"));
+    $OAuthTab->addOption($configoption);
+
+    $OAuthTab->addOption(new BlaatConfigOption("request_token_url",
+									__("Request Token URL (1.0 and 1.0a only)","blaat_auth"),
+									"url",false));
+	// TODO: how to define value dependencies? required-if-oauth-version-is-not-2.0
+
+    $OAuthTab->addOption(new BlaatConfigOption("dialog_url",
+									__("Dialog URL","blaat_auth"),
+									"url",true));
+
+    $OAuthTab->addOption(new BlaatConfigOption("access_token_url",
+									__("Access Token URL","blaat_auth"),
+									"url",true));
+
+    $OAuthTab->addOption(new BlaatConfigOption("client_id",
+									__("Client ID","blaat_auth"),
+									"text",true));
+
+    $OAuthTab->addOption(new BlaatConfigOption("client_secret",
+									__("Client Secret","blaat_auth"),
+									"text",true));
+
+    $OAuthTab->addOption(new BlaatConfigOption("url_parameters",
+									"url_parameters" /* !! */,
+									"checkbox"));
+
+    $OAuthTab->addOption(new BlaatConfigOption("authorization_header",
+									"authorization_header" /* !! */,
+									"checkbox",false,true));
 
 
-    $option=array();  
-    $option['name']="request_method";
-    $option['type']="select";
-    $option['default']="GET";
-    $option['options']=array();
-    $option['options'][]=array("value"=>"GET","display"=>"GET");
-    $option['options'][]=array("value"=>"POST","display"=>"POST");
-    $option['required']=true;
-    $options[]=$option;
+	// OPTIONAL FIELDS
+    $OAuthTab->addOption(new BlaatConfigOption("pin_dialog_url",
+									__("Pin Dialog URL","blaat_auth"),
+									"url",false));
+
+    $OAuthTab->addOption(new BlaatConfigOption("offline_dialog_url",
+									__("Offline Dialog URL","blaat_auth"),
+									"url",false));
 
 
-    $option=array();  
-    $option['name']="data_format";
-    $option['type']="select";
-    $option['default']="JSON";
-    $option['options']=array();
-    $option['options'][]=array("value"=>"JSON","display"=>"JSON");
-    $option['options'][]=array("value"=>"XML","display"=>"XML");
-    $option['options'][]=array("value"=>"FORM","display"=>"Form-encoded");
-    $option['required']=true;
-    $options[]=$option;
+	// API FIELDS
 
-    $option=array();  
-    $option['name']="external_id";
-    $option['type']="text";
-    $option['required']=true;
-    $options[]=$option;
+	$APITab = new BlaatConfigTab("api", 
+									__("API configuration","blaat_oauth"));
+	$tabs[]=$APITab;
 
-    $option=array();  
-    $option['name']="scope";
-    $option['type']="text";
-    $option['required']=true;
-    $options[]=$option;
 
-    $option=array();  
-    $option['name']="user_email";
-    $option['type']="text";
-    $option['required']=false;
-    $options[]=$option;
+	// API FIELDS
+    
+	$configoption = new BlaatConfigOption("request_method",
+									__("Request Method","blaat_auth"),
+									"select",true, "GET");
+	$configoption->addOption(new BlaatConfigSelectOption("GET","GET"));
+	$configoption->addOption(new BlaatConfigSelectOption("POST","POST"));
+    $APITab->addOption($configoption);
 
-    $option=array();  
-    $option['name']="first_name";
-    $option['type']="text";
-    $option['required']=false;
-    $options[]=$option;
 
-    $option=array();  
-    $option['name']="last_name";
-    $option['type']="text";
-    $option['required']=false;
-    $options[]=$option;
+	$configoption = new BlaatConfigOption("data_format",
+									__("Data format","blaat_auth"),
+									"select",true, "JSON");
+	$configoption->addOption(new BlaatConfigSelectOption("JSON","JSON"));
+	$configoption->addOption(new BlaatConfigSelectOption("XML","XML"));
+	$configoption->addOption(new BlaatConfigSelectOption("FORM","Form-encoded"));
+    $APITab->addOption($configoption);
 
-    $option=array();  
-    $option['name']="user_nicename";
-    $option['type']="text";
-    $option['required']=false;
-    $options[]=$option;
 
-    $option=array();  
-    $option['name']="user_url";
-    $option['type']="text";
-    $option['required']=false;
-    $options[]=$option;
+    $APITab->addOption(new BlaatConfigOption("external_id",
+									__("External Identifier Field","blaat_auth"),
+									"text",true));
 
+
+    $APITab->addOption(new BlaatConfigOption("scope",
+									__("Required OAuth Scope","blaat_auth"),
+									"text",true));
+
+
+    $APITab->addOption(new BlaatConfigOption("user_email",
+									__("E-mail Field","blaat_auth")));
+
+    $APITab->addOption(new BlaatConfigOption("first_name",
+									__("First Name Field","blaat_auth")));
+
+    $APITab->addOption(new BlaatConfigOption("last_name",
+									__("Last Name Field","blaat_auth")));
+
+
+    $APITab->addOption(new BlaatConfigOption("user_nicename",
+									__("Display Name Field","blaat_auth")));
+
+    $APITab->addOption(new BlaatConfigOption("user_url",
+									__("User URL Field","blaat_auth")));
+
+
+    $APITab->addOption(new BlaatConfigOption("email_verified",
+									__("Email Verified Field","blaat_auth")));
+
+
+/* ????
     $option=array();  
     $option['name']="last_login";
     $option['type']="text";
     $option['required']=false;
     $options[]=$option;
+*/
 
-    $option=array();  
-    $option['name']="email_verified";
-    $option['type']="text";
-    $option['required']=false;
-    $options[]=$option;
 
-    return $options;
+    //return $options;
+	return $tabs;
   }
   
 

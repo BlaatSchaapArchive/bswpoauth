@@ -16,8 +16,8 @@ require_once("oauth/oauth_client.php");
 require_once("oauth/http.php");
 require_once("bs_oauth_config.php");
 
-//require_once("blaat.php");   //To be moved to Separate Plugin
-//require_once("bsauth.php");  //To be moved to Separate Plugin
+//require_once("blaat.php");   //Moved to Separate Plugin
+//require_once("bsauth.php");  //Moved to Separate Plugin
 
 require_once("classes/AuthService.class.php");
 require_once("classes/OAuth.class.php");
