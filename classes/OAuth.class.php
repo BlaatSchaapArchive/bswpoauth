@@ -569,6 +569,18 @@ class OAuth implements AuthService {
 
     $tabs=array();  
 
+
+  $GenericTab = new BlaatConfigTab("generic", 
+                  __("Generic configuration","blaat_oauth"));
+  $tabs[]=$GenericTab;
+
+  $GenericTab->addOption(new BlaatConfigOption("display_name",
+                  __("Display name","blaat_auth"),
+                  "text",true));
+
+
+
+
   // OAUTH FIELDS
 
   $OAuthTab = new BlaatConfigTab("oauth", 
@@ -576,9 +588,6 @@ class OAuth implements AuthService {
   $tabs[]=$OAuthTab;
 
 
-    $OAuthTab->addOption(new BlaatConfigOption("display_name",
-                  __("Display name","blaat_auth"),
-                  "text",true));
 
   $configoption = new BlaatConfigOption("oauth_version",
                   __("OAuth version","blaat_auth"),
