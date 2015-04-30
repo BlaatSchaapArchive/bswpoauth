@@ -145,8 +145,17 @@ class OAuth implements AuthService {
     // Rewrite to object (Remove ARRAY_A ?
     global $wpdb;
     $table_name =      $wpdb->prefix . "bs_oauth_services_configured ";
-    $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE service_id = %d", $service_id);
+    $query = $wpdb->prepare("SELECT *, \"blaat_oauth\" as plugin_id FROM $table_name  WHERE service_id = %d", $service_id);
     return $wpdb->get_row($query,ARRAY_A);
+  }
+//------------------------------------------------------------------------------
+  public function setConfig($service_id){
+    global $wpdb;
+    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
+    // as $wpdb escapes the values, using $_POST directly does not pose
+    // a security breach.
+    $query = $wpdb->update($table_name, $_POST, array("service_id" => $service_id) );
+
   }
 //------------------------------------------------------------------------------
   public function getPreConfiguredServices(){
@@ -163,7 +172,7 @@ class OAuth implements AuthService {
   
       if (isset($_REQUEST['bsoauth_id'])) $_SESSION['bsoauth_id']=$_REQUEST['bsoauth_id'];
 
-      $table_name =      $wpdb->prefix . "bs_oauth_services_configured ";
+      $table_name =      $wpdb->prefix . "bs_oauth_services_configured";
       $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE service_id = %d", $service_id);
       $result = $wpdb->get_row($query,ARRAY_A);
 
@@ -570,6 +579,18 @@ class OAuth implements AuthService {
     $tabs=array();  
 
 
+  // HIDDEN FIELDS
+  $HiddenTab = new BlaatConfigTab("hidden","",true);
+  $HiddenTab->addOption(new BlaatConfigOption("service_id",
+                __("Service ID","blaat_auth")));
+
+  $HiddenTab->addOption(new BlaatConfigOption("plugin_id",
+                __("Plugin ID","blaat_auth")));
+
+  $tabs[]=$HiddenTab;
+
+
+  // GENERIC FIELDS
   $GenericTab = new BlaatConfigTab("generic", 
                   __("Generic configuration","blaat_oauth"));
   $tabs[]=$GenericTab;
@@ -595,16 +616,16 @@ class OAuth implements AuthService {
   $configoption->addOption(new BlaatConfigSelectOption("2.0","2.0"));
   $configoption->addOption(new BlaatConfigSelectOption("1.0","1.0"));
   $configoption->addOption(new BlaatConfigSelectOption("1.0a","1.0a"));
-    $OAuthTab->addOption($configoption);
+  $OAuthTab->addOption($configoption);
 
-    $OAuthTab->addOption(new BlaatConfigOption("request_token_url",
-                  __("Request Token URL (1.0 and 1.0a only)","blaat_auth"),
-                  "url",false));
+  $OAuthTab->addOption(new BlaatConfigOption("request_token_url",
+                __("Request Token URL (1.0 and 1.0a only)","blaat_auth"),
+                "url",false));
   // TODO: how to define value dependencies? required-if-oauth-version-is-not-2.0
 
-    $OAuthTab->addOption(new BlaatConfigOption("dialog_url",
-                  __("Dialog URL","blaat_auth"),
-                  "url",true));
+  $OAuthTab->addOption(new BlaatConfigOption("dialog_url",
+                __("Dialog URL","blaat_auth"),
+                "url",true));
 
     $OAuthTab->addOption(new BlaatConfigOption("access_token_url",
                   __("Access Token URL","blaat_auth"),
