@@ -160,8 +160,8 @@ class OAuth implements AuthService {
 //------------------------------------------------------------------------------
   public function getPreConfiguredServices(){
   global $wpdb;
-  $query = 'SELECT "blaat_oauth", `service_known_id`, 
-                  `service_name`, 0, `default_icon` 
+  $query = 'SELECT "blaat_oauth" as plugin_id , `service_known_id` as service_id, 
+                  `service_name` as display_name, 0, `default_icon` as icon 
             FROM `' . $wpdb->prefix . 'bs_oauth_services_known` ';
   return $wpdb->get_results($query);
   }
@@ -763,15 +763,15 @@ class OAuth implements AuthService {
     FROM `" . $wpdb->prefix . "bs_oauth_services_known` 
     JOIN `" . $wpdb->prefix . "bs_oauth_userinfo_api_known` ON " . 
     $wpdb->prefix . "bs_oauth_userinfo_api_known.userinfo_api_known_id=" . 
-    $wpdb->prefix . "bs_oauth_services_known.userinfo_api_known_id )
-    WHERE service_known_id = %d", $service_id);
+    $wpdb->prefix . "bs_oauth_services_known.userinfo_api_known_id 
+    WHERE service_known_id = %d )", $service_id);
 
     $wpdb->query($query);
     return $wpdb->insert_id;
   }
 
 //------------------------------------------------------------------------------
-
+  //public function getName(){ return "blaat_oauth"; }
 
   public function getServices($enabled=true){
     global $wpdb;
