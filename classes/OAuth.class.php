@@ -832,7 +832,7 @@ class OAuth implements AuthService {
                                        $result->service_id, 
                                        $result->display_name, 
                                        $result->display_order, 
-                                       $icon);
+                                       $icon, $result->enabled);
     }
     return $services;
   }
