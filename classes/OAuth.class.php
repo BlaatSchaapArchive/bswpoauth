@@ -395,7 +395,7 @@ class OAuth implements AuthService {
       $query = "CREATE TABLE $table_name (
                 `service_id` INT NOT NULL AUTO_INCREMENT  ,
                 `enabled` BOOLEAN NOT NULL DEFAULT TRUE ,
-        `service_known_id` INT DEFAULT 0,
+                `service_known_id` INT DEFAULT 0,
                 `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
                 `request_token_url` TEXT NULL DEFAULT NULL,
                 `dialog_url` TEXT NOT NULL,
@@ -634,6 +634,11 @@ class OAuth implements AuthService {
                   __("Display name","blaat_auth"),
                   "text",true));
 
+  $GenericTab->addOption(new BlaatConfigOption("enabled",
+                  __("Enabled","blaat_auth"),
+                  "checkbox",false,true));
+
+
 
 
 
@@ -780,7 +785,7 @@ class OAuth implements AuthService {
     `user_url`,             `user_nicename`, 
     `user_login`,           `scope`, 
     `email_verified`
-    ) ( SELECT                `oauth_version`, 
+    ) ( SELECT               `service_known_id`, `oauth_version`, 
     `request_token_url`,    `dialog_url`, 
     `access_token_url`,     `userinfo_url`, 
     `url_parameters`,       `authorization_header`, 
