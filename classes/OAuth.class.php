@@ -155,8 +155,40 @@ class OAuth implements AuthService {
     // as $wpdb escapes the values, using $_POST directly does not pose
     // a security breach.
     $query = $wpdb->update($table_name, $_POST, array("service_id" => $service_id) );
-
   }
+//------------------------------------------------------------------------------
+  public function addConfig() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
+    // as $wpdb escapes the values, using $_POST directly does not pose
+    // a security breach.
+    $query = $wpdb->insert($table_name, $_POST);
+  }
+//------------------------------------------------------------------------------
+  public function getMaxOrder(){
+    global $wpdb;
+    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
+    return $wpdb->get_var( "SELECT MAX(display_order) FROM $table_name");
+  }
+//------------------------------------------------------------------------------
+  public function moveUp($service_id){
+    global $wpdb;
+    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
+    $query = $wpdb->prepare("SELECT display_order FROM $table_name WHERE service_id = %d",$service_id);
+    $current_order =  $wpdb->get_var($query);
+    $query = $wpdb->update($table_name, array("display_order" => $display_order), array("display_order" => $display_order + 1) );
+    $query = $wpdb->update($table_name, array("display_order" => $display_order + 1), array("service_id" => $service_id) );
+  }
+//------------------------------------------------------------------------------
+  public function moveDown($service_id){
+    global $wpdb;
+    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
+    $query = $wpdb->prepare("SELECT display_order FROM $table_name WHERE service_id = %d",$service_id);
+    $current_order =  $wpdb->get_var($query);
+    $query = $wpdb->update($table_name, array("display_order" => $display_order), array("display_order" => $display_order - 1) );
+    $query = $wpdb->update($table_name, array("display_order" => $display_order - 1), array("service_id" => $service_id) );
+  }
+
 //------------------------------------------------------------------------------
   public function getPreConfiguredServices(){
   global $wpdb;
@@ -585,7 +617,10 @@ class OAuth implements AuthService {
                 __("Service ID","blaat_auth")));
 
   $HiddenTab->addOption(new BlaatConfigOption("plugin_id",
-                __("Plugin ID","blaat_auth")));
+                __("Plugin ID","blaat_auth"),"text", true,"blaat_oauth"));
+
+  $HiddenTab->addOption(new BlaatConfigOption("display_order",
+                __("Display Order","blaat_auth")));
 
   $tabs[]=$HiddenTab;
 
@@ -645,8 +680,8 @@ class OAuth implements AuthService {
 
     $OAuthTab->addOption(new BlaatConfigOption("authorization_header",
                   "authorization_header" /* !! */,
-                  "checkbox",false,true));
-
+                  "checkbox",false,true)); // default is set to true
+                                                // so why does it not show up?
 
   // OPTIONAL FIELDS
     $OAuthTab->addOption(new BlaatConfigOption("pin_dialog_url",
@@ -727,8 +762,6 @@ class OAuth implements AuthService {
     //return $options;
   return $tabs;
   }
-  
-
 //------------------------------------------------------------------------------
   public function addPreconfiguredService($service_id) {
     global $wpdb;
@@ -783,6 +816,8 @@ class OAuth implements AuthService {
     $results = $wpdb->get_results($query);
     $services = array();    
     foreach ($results as $result) {
+      $icon = NULL; // if no icon is set, the icon for previous service
+                   // is used if we don't set the $icon to NULL
       if($result->custom_icon_enabled) {
         $icon= $result->custom_icon_url;
       } elseif($result->default_icon) {
