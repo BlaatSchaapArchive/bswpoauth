@@ -3,9 +3,9 @@
 Plugin Name: BlaatSchaap Login: OAuth
 Plugin URI: http://code.blaatschaap.be
 Description: Log in with an OAuth Provider
-Version: 0.4.5
+Version: 0.4.4
 Author: André van Schoubroeck
-Author URI: http://andre.blaatschaap.be
+Author URI: http://www.andrevanschoubroeck.name
 License: BSD
 */
 
@@ -19,10 +19,8 @@ require_once("bs_oauth_config.php");
 //require_once("blaat.php");   //Moved to Separate Plugin
 //require_once("bsauth.php");  //Moved to Separate Plugin
 
-require_once("classes/AuthService.class.php");
+//require_once("classes/AuthService.class.php"); // Moved to BlaatLogin Base Plugin
 require_once("classes/OAuth.class.php");
-
-
 require_once("required_plugins.php");
 
 
@@ -32,10 +30,14 @@ load_plugin_textdomain('blaat_auth', false, basename( dirname( __FILE__ ) ) . '/
 function bsoauth_init(){
   ob_start();
   blaat_session_start();
-  $oauth = new OAuth();
-  global $BSLOGIN_PLUGINS;
-  if (!isset($BSLOGIN_PLUGINS)) $BSLOGIN_PLUGINS = array();
-  $BSLOGIN_PLUGINS["blaat_oauth"]=$oauth;
+  if (class_exists("OAuth")) {
+    $oauth = new OAuth();
+    global $BSLOGIN_PLUGINS;
+    if (!isset($BSLOGIN_PLUGINS)) $BSLOGIN_PLUGINS = array();
+    $BSLOGIN_PLUGINS["blaat_oauth"]=$oauth;
+  } else {
+    //missing dependencies
+  }
 }
 //------------------------------------------------------------------------------
 
