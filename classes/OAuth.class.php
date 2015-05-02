@@ -166,6 +166,13 @@ class OAuth implements AuthService {
     $query = $wpdb->update($table_name, $_POST, array("service_id" => $service_id) );
   }
 //------------------------------------------------------------------------------
+  public function delConfig(){
+    global $wpdb;
+    $service_id = $_POST['service_id'];
+    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
+    $query = $wpdb->delete($table_name, array("service_id" => $service_id) );
+  }
+//------------------------------------------------------------------------------
   public function addConfig() {
     global $wpdb;
     $table_name = $wpdb->prefix . "bs_oauth_services_configured";
@@ -590,6 +597,7 @@ class OAuth implements AuthService {
     // sort the options in tabs
     // general / oauth / api / hidden
     // TODO: possibly hide preconfigured values for preconfigures services
+    // TODO: possibly add a "restore to defaults"
 
     $options=array();  
 
