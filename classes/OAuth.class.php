@@ -50,8 +50,11 @@ class OAuth implements AuthService {
     global $wpdb;
     //$table_name = $wpdb->prefix . "bs_oauth_services";
     //$table_name = $wpdb->prefix . "bs_oauth_services_configured";
-
-  $tables =      $wpdb->prefix . "bs_oauth_services_configured ";
+    
+    // TODO :: merge with getServices()
+  $tables =      $wpdb->prefix . "bs_oauth_services_configured
+                JOIN ". $wpdb->prefix . "bs_login_generic_options 
+               ON ".$wpdb->prefix . "bs_oauth_services_configured.login_options_id = ". $wpdb->prefix . "bs_login_generic_options.login_options_id"  ;
 
 
  
@@ -98,7 +101,10 @@ class OAuth implements AuthService {
 
       $linked_services = $wpdb->get_results($query,ARRAY_A);
        
-      $table_name = $wpdb->prefix . "bs_oauth_services_configured";
+      $table_name = $wpdb->prefix . "bs_oauth_services_configured
+                JOIN ". $wpdb->prefix . "bs_login_generic_options 
+               ON ".$wpdb->prefix . "bs_oauth_services_configured.login_options_id = ". $wpdb->prefix . "bs_login_generic_options.login_options_id"  ;
+
       $query = "SELECT * FROM $table_name where enabled=1";
       $available_services = $wpdb->get_results($query,ARRAY_A);
 
@@ -183,7 +189,9 @@ class OAuth implements AuthService {
   
       if (isset($_REQUEST['bsoauth_id'])) $_SESSION['bsoauth_id']=$_REQUEST['bsoauth_id'];
 
-      $table_name =      $wpdb->prefix . "bs_oauth_services_configured";
+      $table_name =      $wpdb->prefix . "bs_oauth_services_configured
+                JOIN ". $wpdb->prefix . "bs_login_generic_options 
+               ON ".$wpdb->prefix . "bs_oauth_services_configured.login_options_id = ". $wpdb->prefix . "bs_login_generic_options.login_options_id"  ;
       $query = $wpdb->prepare("SELECT * FROM $table_name  WHERE service_id = %d", $service_id);
       $result = $wpdb->get_row($query,ARRAY_A);
 
@@ -493,12 +501,17 @@ class OAuth implements AuthService {
 
     global $wpdb;    
     $table_name = $wpdb->prefix . "bs_oauth_accounts";
-    $table_name2 = $wpdb->prefix . "bs_oauth_services_configured";
+    $table_name2 = $wpdb->prefix . "bs_oauth_services_configured                JOIN ". $wpdb->prefix . "bs_login_generic_options 
+               ON ".$wpdb->prefix . "bs_oauth_services_configured.login_options_id = ". $wpdb->prefix . "bs_login_generic_options.login_options_id"  ;
+
+//
     $query2 = $wpdb->prepare("Select display_name from $table_name2 where service_id = %d", $id );
+/*
     $service_name = $wpdb->get_results($query2,ARRAY_A);
     //$service = $service_name[0]['display_name'];
-
     $_SESSION['display_name'] = $service_name[0]['display_name'];
+*/
+    $_SESSION['display_name'] = $wpdb->get_var($query2);
     $query = $wpdb->prepare ("Delete from $table_name where wordpress_id = %d AND service_id = %d", get_current_user_id(), $id );
     $wpdb->query($query);
 

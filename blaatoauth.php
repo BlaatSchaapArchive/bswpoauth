@@ -33,9 +33,9 @@ function bsoauth_init(){
   ob_start();
   blaat_session_start();
   $oauth = new OAuth();
-  global $BSAUTH_SERVICES;
-  if (!isset($BSAUTH_SERVICES)) $BSAUTH_SERVICES = array();
-  $BSAUTH_SERVICES["blaat_oauth"]=$oauth;
+  global $BSLOGIN_PLUGINS;
+  if (!isset($BSLOGIN_PLUGINS)) $BSLOGIN_PLUGINS = array();
+  $BSLOGIN_PLUGINS["blaat_oauth"]=$oauth;
 }
 //------------------------------------------------------------------------------
 
