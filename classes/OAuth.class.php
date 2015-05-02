@@ -779,7 +779,9 @@ class OAuth implements AuthService {
 
   public function getServices($enabled=true){
     global $wpdb;
-    $table_name =      $wpdb->prefix . "bs_oauth_services_configured ";
+    $table_name =      $wpdb->prefix . "bs_oauth_services_configured 
+               JOIN ". $wpdb->prefix . "bs_login_generic_options 
+               ON ".$wpdb->prefix . "bs_oauth_services_configured.login_options_id = ". $wpdb->prefix . "bs_login_generic_options.login_options_id"  ;
 
     $query = "select * from $table_name ";
     if ($enabled) $query .= " where enabled=1 ";
@@ -797,8 +799,9 @@ class OAuth implements AuthService {
       $services[] = new BlaatLoginService("blaat_oauth",
                                        $result->service_id, 
                                        $result->display_name, 
-                                       $result->display_order, 
-                                       $icon, $result->enabled);
+                                       $result->sortorder, 
+                                       $icon, $result->enabled,
+                                       $result->login_options_id);
     }
     return $services;
   }
