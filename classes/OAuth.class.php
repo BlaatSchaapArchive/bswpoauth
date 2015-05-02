@@ -467,35 +467,34 @@ if (interface_exists("AuthService")) {
         // TODO : test if already linked, but first we need to see if this new
         // implementation even works.
 
-
-        $external_id = $userinfo->{$result['external_id']};
-    
-
-        /*
-        if ((int)$external_id)  {
-          // no information lost while casting to int, we use the external id 
-          // stored as an int in the database as this processes faster
-          $query = $wpdb->prepare("INSERT INTO $table_name (`wordpress_id`, `service_id`, `external_id_int`)
-                                          VALUES( %d, %d, %d)", $user_id, $result['service_id'], $external_id);
-
-        } else {
-          // the external id is not an integer value, thus stored as a string in
-          // the database.
-          $query = $wpdb->prepare("INSERT INTO $table_name (`wordpress_id`, `service_id`, `external_id_text`)
-                                          VALUES( %d, %d, %s)", $user_id, $result['service_id'], $external_id);
+        $debug = true;
+        if ($debug) {
+          echo "API Result:<pre>";
+          print_r($userinfo);
+          print_r($result);
+          echo "</pre>";
         }
-        $wpdb->query($query);
-        */
+
+        if ($userinfo==NULL) return AuthStatus::Error;
+        $external_id = $userinfo->{$result['external_id']};
+        if ($external_id==NULL) return AuthStatus::Error;
+
 
 
         $data=array();
         $data['wordpress_id']=$user_id;
         $data['service_id']=$result['service_id'];
-        if ((int)$external_id)  {
+        // http://php.net/manual/en/function.ctype-digit.php 
+        // been looking forever for this function
+        if (ctype_digit($external_id))  {
+          $testQuery = $wpdb->prepare("select count(*) from $table_name where external_id_int = %d", $external_id);
           $data['external_id_int']=$external_id;
         } else {
+          $testQuery = $wpdb->prepare("select count(*) from $table_name where external_id_text = %s", $external_id);
           $data['external_id_text']=$external_id;
         }
+        if ($wpdb->get_var($testQuery)) return AuthStatus::LinkInUse;
+
         $wpdb->insert($table_name, $data);
 
 
@@ -558,7 +557,6 @@ if (interface_exists("AuthService")) {
         $table_name= $wpdb->prefix . "bs_oauth_accounts";
 
         $options = array('FailOnAccessError'=>true, 'DecodeXMLResponse'=>'simplexml');
-        $_SESSION['bsauth_display'] = $display_name;
         // url, method, 
         $client->CallAPI($result['userinfo_url'], $result['request_method'],
                                                     $params, $options, $userinfo); 
@@ -578,7 +576,7 @@ if (interface_exists("AuthService")) {
         $external_id = $userinfo->{$result['external_id']};
 
         //echo "<pre>"; var_dump($userinfo); echo "\n\n"; var_dump($external_id); echo "\n\n"; var_dump($result); die($client->error);
-        if ((int)$external_id)  {
+        if (ctype_digit($external_id))  {
           // no information lost while casting to int, we use the external id 
           // stored as an int in the database as this processes faster
           $query = $wpdb->prepare("SELECT `wordpress_id` FROM $table_name WHERE `service_id` = %d AND `external_id_int` = %d",$result['service_id'],$external_id);  
