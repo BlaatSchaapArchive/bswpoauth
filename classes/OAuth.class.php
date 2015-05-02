@@ -164,30 +164,6 @@ class OAuth implements AuthService {
     // a security breach.
     $query = $wpdb->insert($table_name, $_POST);
   }
-//------------------------------------------------------------------------------
-  public function getMaxOrder(){
-    global $wpdb;
-    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
-    return $wpdb->get_var( "SELECT MAX(display_order) FROM $table_name");
-  }
-//------------------------------------------------------------------------------
-  public function moveUp($service_id){
-    global $wpdb;
-    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
-    $query = $wpdb->prepare("SELECT display_order FROM $table_name WHERE service_id = %d",$service_id);
-    $current_order =  $wpdb->get_var($query);
-    $query = $wpdb->update($table_name, array("display_order" => $display_order), array("display_order" => $display_order + 1) );
-    $query = $wpdb->update($table_name, array("display_order" => $display_order + 1), array("service_id" => $service_id) );
-  }
-//------------------------------------------------------------------------------
-  public function moveDown($service_id){
-    global $wpdb;
-    $table_name = $wpdb->prefix . "bs_oauth_services_configured";
-    $query = $wpdb->prepare("SELECT display_order FROM $table_name WHERE service_id = %d",$service_id);
-    $current_order =  $wpdb->get_var($query);
-    $query = $wpdb->update($table_name, array("display_order" => $display_order), array("display_order" => $display_order - 1) );
-    $query = $wpdb->update($table_name, array("display_order" => $display_order - 1), array("service_id" => $service_id) );
-  }
 
 //------------------------------------------------------------------------------
   public function getPreConfiguredServices(){
@@ -394,7 +370,6 @@ class OAuth implements AuthService {
       $table_name = $wpdb->prefix . "bs_oauth_services_configured";
       $query = "CREATE TABLE $table_name (
                 `service_id` INT NOT NULL AUTO_INCREMENT  ,
-                `enabled` BOOLEAN NOT NULL DEFAULT TRUE ,
                 `service_known_id` INT DEFAULT 0,
                 `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
                 `request_token_url` TEXT NULL DEFAULT NULL,
@@ -406,28 +381,22 @@ class OAuth implements AuthService {
                 `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL,
                 `pin_dialog_url` TEXT NULL DEFAULT NULL,
                 `offline_dialog_url` TEXT NULL DEFAULT NULL,
-                `display_name` TEXT NOT NULL ,
-                `display_order` INT NOT NULL DEFAULT 1,
                 `client_id` TEXT NOT NULL ,
                 `client_secret` TEXT NOT NULL,
-                `custom_icon_url` TEXT NULL DEFAULT NULL,
-                `custom_icon_filename` TEXT NULL DEFAULT NULL,
-                `custom_icon_enabled` BOOLEAN DEFAULT FALSE,
-                `default_icon`  TEXT NULL DEFAULT NULL,
                 `fixed_redirect_url` BOOLEAN NOT NULL DEFAULT TRUE ,
                 `override_redirect_url` TEXT NULL DEFAULT NULL,
-                `auto_register` BOOL NOT NULL DEFAULT FALSE,
                 `request_method` ENUM('GET', 'POST') DEFAULT 'GET',
                 `data_format` ENUM('FORM','JSON','XML') DEFAULT 'JSON',
-                `external_id` TEXT NULL DEFAULT NULL ,
-                `first_name`  TEXT NULL DEFAULT NULL ,
-                `last_name`  TEXT NULL DEFAULT NULL ,
-                `user_email`  TEXT NULL DEFAULT NULL ,
-                `user_url`  TEXT NULL DEFAULT NULL ,
-                `user_nicename`  TEXT NULL DEFAULT NULL ,
-                `user_login`  TEXT NULL DEFAULT NULL ,
-                `scope`  TEXT NULL DEFAULT NULL ,
-                `email_verified`  TEXT NULL DEFAULT NULL ,
+                `external_id` TEXT NULL DEFAULT NULL,
+                `first_name`  TEXT NULL DEFAULT NULL,
+                `last_name`  TEXT NULL DEFAULT NULL,
+                `user_email`  TEXT NULL DEFAULT NULL,
+                `user_url`  TEXT NULL DEFAULT NULL,
+                `user_nicename`  TEXT NULL DEFAULT NULL,
+                `user_login`  TEXT NULL DEFAULT NULL,
+                `scope`  TEXT NULL DEFAULT NULL,
+                `email_verified`  TEXT NULL DEFAULT NULL,
+                `login_options_id` INT NOT NULL, 
                 PRIMARY KEY  (service_id)
                 );";
       dbDelta($query);
@@ -611,61 +580,63 @@ class OAuth implements AuthService {
     $tabs=array();  
 
 
-  // HIDDEN FIELDS
-  $HiddenTab = new BlaatConfigTab("hidden","",true);
-  $HiddenTab->addOption(new BlaatConfigOption("service_id",
-                __("Service ID","blaat_auth")));
+    // HIDDEN FIELDS
+    $HiddenTab = new BlaatConfigTab("hidden","",true);
+    $HiddenTab->addOption(new BlaatConfigOption("service_id",
+                  __("Service ID","blaat_auth")));
 
-  $HiddenTab->addOption(new BlaatConfigOption("plugin_id",
-                __("Plugin ID","blaat_auth"),"text", true,"blaat_oauth"));
+    $HiddenTab->addOption(new BlaatConfigOption("plugin_id",
+                  __("Plugin ID","blaat_auth"),"text", true,"blaat_oauth"));
 
-  $HiddenTab->addOption(new BlaatConfigOption("display_order",
-                __("Display Order","blaat_auth")));
-
-  $tabs[]=$HiddenTab;
-
-
-  // GENERIC FIELDS
-  $GenericTab = new BlaatConfigTab("generic", 
-                  __("Generic configuration","blaat_oauth"));
-  $tabs[]=$GenericTab;
-
-  $GenericTab->addOption(new BlaatConfigOption("display_name",
-                  __("Display name","blaat_auth"),
-                  "text",true));
-
-  $GenericTab->addOption(new BlaatConfigOption("enabled",
-                  __("Enabled","blaat_auth"),
-                  "checkbox",false,true));
+   
+    $HiddenTab->addOption(new BlaatConfigOption("login_options_id",
+                  __("Login Options ID","blaat_auth")));
 
 
+    $tabs[]=$HiddenTab;
 
 
+    // GENERIC FIELDS
+    $GenericTab = new BlaatConfigTab("generic", 
+                    __("Generic configuration","blaat_oauth"));
+    $tabs[]=$GenericTab;
 
-  // OAUTH FIELDS
+    $GenericTab->addOption(new BlaatConfigOption("display_name",
+                    __("Display name","blaat_auth"),
+                    "text",true));
 
-  $OAuthTab = new BlaatConfigTab("oauth", 
-                  __("OAuth configuration","blaat_oauth"));
-  $tabs[]=$OAuthTab;
+    $GenericTab->addOption(new BlaatConfigOption("enabled",
+                    __("Enabled","blaat_auth"),
+                    "checkbox",false,true));
 
 
 
-  $configoption = new BlaatConfigOption("oauth_version",
-                  __("OAuth version","blaat_auth"),
-                  "select",true, "2.0");
-  $configoption->addOption(new BlaatConfigSelectOption("2.0","2.0"));
-  $configoption->addOption(new BlaatConfigSelectOption("1.0","1.0"));
-  $configoption->addOption(new BlaatConfigSelectOption("1.0a","1.0a"));
-  $OAuthTab->addOption($configoption);
 
-  $OAuthTab->addOption(new BlaatConfigOption("request_token_url",
-                __("Request Token URL (1.0 and 1.0a only)","blaat_auth"),
-                "url",false));
-  // TODO: how to define value dependencies? required-if-oauth-version-is-not-2.0
 
-  $OAuthTab->addOption(new BlaatConfigOption("dialog_url",
-                __("Dialog URL","blaat_auth"),
-                "url",true));
+    // OAUTH FIELDS
+
+    $OAuthTab = new BlaatConfigTab("oauth", 
+                    __("OAuth configuration","blaat_oauth"));
+    $tabs[]=$OAuthTab;
+
+
+
+    $configoption = new BlaatConfigOption("oauth_version",
+                    __("OAuth version","blaat_auth"),
+                    "select",true, "2.0");
+    $configoption->addOption(new BlaatConfigSelectOption("2.0","2.0"));
+    $configoption->addOption(new BlaatConfigSelectOption("1.0","1.0"));
+    $configoption->addOption(new BlaatConfigSelectOption("1.0a","1.0a"));
+    $OAuthTab->addOption($configoption);
+
+    $OAuthTab->addOption(new BlaatConfigOption("request_token_url",
+                  __("Request Token URL (1.0 and 1.0a only)","blaat_auth"),
+                  "url",false));
+    // TODO: how to define value dependencies? required-if-oauth-version-is-not-2.0
+
+    $OAuthTab->addOption(new BlaatConfigOption("dialog_url",
+                  __("Dialog URL","blaat_auth"),
+                  "url",true));
 
     $OAuthTab->addOption(new BlaatConfigOption("access_token_url",
                   __("Access Token URL","blaat_auth"),
@@ -698,29 +669,29 @@ class OAuth implements AuthService {
                   "url",false));
 
 
-  // API FIELDS
+    // API FIELDS
 
-  $APITab = new BlaatConfigTab("api", 
-                  __("API configuration","blaat_oauth"));
-  $tabs[]=$APITab;
+    $APITab = new BlaatConfigTab("api", 
+                    __("API configuration","blaat_oauth"));
+    $tabs[]=$APITab;
 
 
-  // API FIELDS
-    
-  $configoption = new BlaatConfigOption("request_method",
-                  __("Request Method","blaat_auth"),
-                  "select",true, "GET");
-  $configoption->addOption(new BlaatConfigSelectOption("GET","GET"));
-  $configoption->addOption(new BlaatConfigSelectOption("POST","POST"));
+    // API FIELDS
+      
+    $configoption = new BlaatConfigOption("request_method",
+                    __("Request Method","blaat_auth"),
+                    "select",true, "GET");
+    $configoption->addOption(new BlaatConfigSelectOption("GET","GET"));
+    $configoption->addOption(new BlaatConfigSelectOption("POST","POST"));
     $APITab->addOption($configoption);
 
 
-  $configoption = new BlaatConfigOption("data_format",
-                  __("Data format","blaat_auth"),
-                  "select",true, "JSON");
-  $configoption->addOption(new BlaatConfigSelectOption("JSON","JSON"));
-  $configoption->addOption(new BlaatConfigSelectOption("XML","XML"));
-  $configoption->addOption(new BlaatConfigSelectOption("FORM","Form-encoded"));
+    $configoption = new BlaatConfigOption("data_format",
+                    __("Data format","blaat_auth"),
+                    "select",true, "JSON");
+    $configoption->addOption(new BlaatConfigSelectOption("JSON","JSON"));
+    $configoption->addOption(new BlaatConfigSelectOption("XML","XML"));
+    $configoption->addOption(new BlaatConfigSelectOption("FORM","Form-encoded"));
     $APITab->addOption($configoption);
 
 
@@ -755,54 +726,49 @@ class OAuth implements AuthService {
                   __("Email Verified Field","blaat_auth")));
 
 
-/* ????
-    $option=array();  
-    $option['name']="last_login";
-    $option['type']="text";
-    $option['required']=false;
-    $options[]=$option;
-*/
-
-
-    //return $options;
   return $tabs;
   }
 //------------------------------------------------------------------------------
   public function addPreconfiguredService($service_id) {
     global $wpdb;
+    $table_name = $wpdb->prefix . "bs_oauth_services_known" ;
+    $query = $wpdb->prepare("SELECT service_name as display_name, default_icon FROM $table_name 
+      WHERE service_known_id = %d ", $service_id);
+    $results = $wpdb->get_results($query, ARRAY_A);
+    $login_options_id=BlaatLogin::addConfig($results[0]);
+
+
     $query = $wpdb->prepare(
     "INSERT INTO `" . $wpdb->prefix . "bs_oauth_services_configured`
-    (
+    ( `service_known_id`,
     `oauth_version`,        `request_token_url`, 
     `dialog_url`,           `access_token_url`, 
     `userinfo_url`,         `url_parameters`, 
     `authorization_header`, `append_state_to_redirect_uri`, 
     `pin_dialog_url`,       `offline_dialog_url`, 
-    `display_name`,         `default_icon`, 
     `request_method`,       `data_format`, 
     `external_id`,          `first_name`, 
     `last_name`,            `user_email`, 
     `user_url`,             `user_nicename`, 
     `user_login`,           `scope`, 
-    `email_verified`
+    `email_verified`, `login_options_id`
     ) ( SELECT               `service_known_id`, `oauth_version`, 
     `request_token_url`,    `dialog_url`, 
     `access_token_url`,     `userinfo_url`, 
     `url_parameters`,       `authorization_header`, 
     `append_state_to_redirect_uri`, 
     `pin_dialog_url`,       `offline_dialog_url`, 
-    `service_name`,         `default_icon`, 
     `request_method`,       `data_format`, 
     `external_id`,          `first_name`, 
     `last_name`,            `user_email`, 
     `user_url`,             `user_nicename`, 
     `user_login`,           `scope`, 
-    `email_verified`
+    `email_verified` , %d
     FROM `" . $wpdb->prefix . "bs_oauth_services_known` 
     JOIN `" . $wpdb->prefix . "bs_oauth_userinfo_api_known` ON " . 
     $wpdb->prefix . "bs_oauth_userinfo_api_known.userinfo_api_known_id=" . 
     $wpdb->prefix . "bs_oauth_services_known.userinfo_api_known_id 
-    WHERE service_known_id = %d )", $service_id);
+    WHERE service_known_id = %d )", $login_options_id, $service_id);
 
     $wpdb->query($query);
     return $wpdb->insert_id;
