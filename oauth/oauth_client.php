@@ -2,7 +2,7 @@
 /*
  * oauth_client.php
  *
- * @(#) $Id: oauth_client.php,v 1.133 2015/03/10 01:52:08 mlemos Exp $
+ * @(#) $Id: oauth_client.php,v 1.138 2015/04/30 03:33:18 mlemos Exp $
  *
  */
 
@@ -12,7 +12,7 @@
 
 	<package>net.manuellemos.oauth</package>
 
-	<version>@(#) $Id: oauth_client.php,v 1.133 2015/03/10 01:52:08 mlemos Exp $</version>
+	<version>@(#) $Id: oauth_client.php,v 1.138 2015/04/30 03:33:18 mlemos Exp $</version>
 	<copyright>Copyright © (C) Manuel Lemos 2012</copyright>
 	<title>OAuth client</title>
 	<author>Manuel Lemos</author>
@@ -259,6 +259,7 @@ class oauth_client_class
 				<stringvalue>Mavenlink</stringvalue>,
 				<stringvalue>Meetup</stringvalue>,
 				<stringvalue>Microsoft</stringvalue>,
+				<stringvalue>Misfit</stringvalue>,
 				<stringvalue>oDesk</stringvalue>,
 				<stringvalue>Paypal</stringvalue>,
 				<stringvalue>PaypalApplication</stringvalue>,
@@ -359,7 +360,8 @@ class oauth_client_class
 				{SCOPE} - scope of the requested permissions to the granted by the
 				OAuth server with the user permissions<paragraphbreak />
 				{STATE} - identifier of the OAuth session state<paragraphbreak />
-				{API_KEY} - API key to access the server</usage>
+				{API_KEY} - API key to access the server<paragraphbreak />
+				{REALM} - realm name for OpenID Connect</usage>
 		</documentation>
 	</variable>
 {/metadocument}
@@ -657,6 +659,22 @@ class oauth_client_class
 {/metadocument}
 */
 	var $scope = '';
+
+/*
+{metadocument}
+	<variable>
+		<name>realm</name>
+		<type>STRING</type>
+		<value></value>
+		<documentation>
+			<purpose>Realm of authorization for OpenID Connect</purpose>
+			<usage>Set this variable to the realm value when using OpenID
+				Connect.</usage>
+		</documentation>
+	</variable>
+{/metadocument}
+*/
+	var $realm = '';
 
 /*
 {metadocument}
@@ -993,7 +1011,7 @@ class oauth_client_class
 {/metadocument}
 */
 	var $http_arguments = array();
-	var $oauth_user_agent = 'PHP-OAuth-API (http://www.phpclasses.org/oauth-api $Revision: 1.133 $)';
+	var $oauth_user_agent = 'PHP-OAuth-API (http://www.phpclasses.org/oauth-api $Revision: 1.138 $)';
 
 	var $response_time = 0;
 
@@ -1040,8 +1058,9 @@ class oauth_client_class
 			'{STATE}', UrlEncode($state), str_replace(
 			'{CLIENT_ID}', UrlEncode($this->client_id), str_replace(
 			'{API_KEY}', UrlEncode($this->api_key), str_replace(
-			'{SCOPE}', UrlEncode($this->scope),
-			$url)))));
+			'{SCOPE}', UrlEncode($this->scope), str_replace(
+			'{REALM}', UrlEncode($this->realm),
+			$url))))));
 		return(true);
 	}
 
@@ -1453,18 +1472,24 @@ class oauth_client_class
 			foreach($files as $name => $value)
 			{
 				if(!IsSet($parameters[$name]))
-					return($this->SetError('it was specified an file parameters named '.$name));
+					return($this->SetError('it was not specified a file parameter named '.$name));
 				$file = array();
-				switch(IsSet($value['Type']) ? $value['Type'] : 'FileName')
+				$value_type = IsSet($value['Type']) ? $value['Type'] : 'FileName';
+				switch($value_type)
 				{
 					case 'FileName':
 						$file['FileName'] = $parameters[$name];
+						if(IsSet($value['FileName']))
+							$file['Name'] = $value['FileName'];
 						break;
 					case 'Data':
 						$file['Data'] = $parameters[$name];
+						if(!IsSet($value['FileName']))
+							return($this->SetError('it was not specified the file name for data file parameter '.$name));
+						$file['Name'] = $value['FileName'];
 						break;
 					default:
-						return($this->SetError($value['Type'].' is not a valid type for file '.$name));
+						return($this->SetError($value_type.' is not a valid type for file '.$name));
 				}
 				$file['Content-Type'] = (IsSet($value['ContentType']) ? $value['ContentType'] : 'automatic/name');
 				$post_files[$name] = $file;
@@ -1585,7 +1610,7 @@ class oauth_client_class
 		$this->response_status = intval($http->response_status);
 		$content_type = (IsSet($options['ResponseContentType']) ? $options['ResponseContentType'] : (IsSet($headers['content-type']) ? strtolower(trim(strtok($headers['content-type'], ';'))) : 'unspecified'));
 		$content_type = preg_replace('/^(.+\\/).+\\+(.+)$/', '\\1\\2', $content_type);
-		$this->response_time = (IsSet($headers['date']) ? strtotime($headers['date']) : time());
+		$this->response_time = (IsSet($headers['date']) ? strtotime(GetType($headers['date']) === 'array' ? $headers['date'][0] : $headers['date']) : time());
 		switch($content_type)
 		{
 			case 'text/javascript':
@@ -2012,11 +2037,14 @@ class oauth_client_class
 						is the name of a local file to be uploaded. It may also be
 						<tt>'Data'</tt> if the parameter value is the actual data of
 						the file to be uploaded.<paragraphbreak />
-						- Default: <tt>'FileName'</tt><paragraphbreak />
+						Default: <tt>'FileName'</tt><paragraphbreak />
+						- <tt>FileName</tt> - defines a custom file name for the file
+						to be uploaded.<paragraphbreak />
+						Default: none<paragraphbreak />
 						- <tt>ContentType</tt> - MIME value of the content type of the
 						file. It can be <tt>'automatic/name'</tt> if the content type
 						should be determine from the file name extension.<paragraphbreak />
-						- Default: <tt>'automatic/name'</tt><paragraphbreak />
+						Default: <tt>'automatic/name'</tt><paragraphbreak />
 					<stringvalue>PostValuesInURI</stringvalue>: boolean option to
 						determine that a POST request should pass the request values
 						in the URI. The default value is
@@ -2084,17 +2112,21 @@ class oauth_client_class
 			$options['Resource'] = 'API call';
 		if(!IsSet($options['ConvertObjects']))
 			$options['ConvertObjects'] = false;
-		if(strlen($this->access_token) === 0)
+		$version = intval($this->oauth_version);
+		$two_legged = ($version === 1 && IsSet($options['2Legged']) && $options['2Legged']);
+		if(strlen($this->access_token) === 0
+		&& !$two_legged)
 		{
 			if(!$this->RetrieveToken($valid))
 				return false;
 			if(!$valid)
 				return $this->SetError('the access token is not set to a valid value');
 		}
-		switch(intval($this->oauth_version))
+		switch($version)
 		{
 			case 1:
-				if(strlen($this->access_token_expiry)
+				if(!$two_legged
+				&& strlen($this->access_token_expiry)
 				&& strcmp($this->access_token_expiry, gmstrftime('%Y-%m-%d %H:%M:%S')) <= 0)
 				{
 					if(strlen($this->refresh_token) === 0)
@@ -2122,9 +2154,9 @@ class oauth_client_class
 					if(IsSet($access_token['refresh']))
 						$this->refresh_token = $access_token['refresh'];
 				}
-				$oauth = array(
-					(strlen($this->access_token_parameter) ? $this->access_token_parameter : 'oauth_token')=>((IsSet($options['2Legged']) && $options['2Legged']) ? '' : $this->access_token)
-				);
+				$oauth = array();
+				if(!$two_legged)
+					$oauth[strlen($this->access_token_parameter) ? $this->access_token_parameter : 'oauth_token'] = $this->access_token;
 				break;
 
 			case 2:
@@ -2204,7 +2236,7 @@ class oauth_client_class
 		{
 			case 'Facebook':
 				$this->oauth_version = '2.0';
-				$this->dialog_url = 'https://www.facebook.com/dialog/oauth?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={SCOPE}&state={STATE}';
+				$this->dialog_url = 'https://www.facebook.com/v2.3/dialog/oauth?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={SCOPE}&state={STATE}';
 				$this->access_token_url = 'https://graph.facebook.com/oauth/access_token';
 				break;
 
