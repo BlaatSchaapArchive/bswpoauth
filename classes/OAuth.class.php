@@ -144,13 +144,16 @@ class OAuth implements AuthService {
   public function getConfig($service_id){
     // Rewrite to object (Remove ARRAY_A ?
     global $wpdb;
-    $table_name =      $wpdb->prefix . "bs_oauth_services_configured ";
+    $table_name =      $wpdb->prefix . "bs_oauth_services_configured 
+               JOIN ". $wpdb->prefix . "bs_login_generic_options 
+               ON ".$wpdb->prefix . "bs_oauth_services_configured.login_options_id = ". $wpdb->prefix . "bs_login_generic_options.login_options_id"  ;
     $query = $wpdb->prepare("SELECT *, \"blaat_oauth\" as plugin_id FROM $table_name  WHERE service_id = %d", $service_id);
     return $wpdb->get_row($query,ARRAY_A);
   }
 //------------------------------------------------------------------------------
-  public function setConfig($service_id){
+  public function setConfig(){
     global $wpdb;
+    $service_id = $_POST['service_id'];
     $table_name = $wpdb->prefix . "bs_oauth_services_configured";
     // as $wpdb escapes the values, using $_POST directly does not pose
     // a security breach.
@@ -596,7 +599,7 @@ class OAuth implements AuthService {
     $tabs[]=$HiddenTab;
 
 
-    // GENERIC FIELDS
+    // GENERIC FIELDS // TODO move to BlaatLogin
     $GenericTab = new BlaatConfigTab("generic", 
                     __("Generic configuration","blaat_oauth"));
     $tabs[]=$GenericTab;
@@ -610,6 +613,9 @@ class OAuth implements AuthService {
                     "checkbox",false,true));
 
 
+    $GenericTab->addOption(new BlaatConfigOption("auto_register",
+                    __("Auto Register","blaat_auth"),
+                    "checkbox",false,true));
 
 
 
