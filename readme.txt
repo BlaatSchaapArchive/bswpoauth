@@ -1,23 +1,17 @@
-=== BlaatSchaap SSO: OAuth Consumer ===
+=== BlaatLogin OAuth ===
 Contributors: GromBeestje
 Donate link: http://code.blaatschaap.be/donations/
 Tags: oauth, authentication, sso
 Stable tag: trunk
-Requires at least: 3.7
-Tested up to: 4.1.1
+Requires at least: 3.7.0
+Tested up to: 4.2.1
 License: BSD
 License URI: http://opensource.org/licenses/BSD-3-Clause
 
 This plugin turns your WordPress website into an OAuth Consumer.
 It allowsallows your users to sign in with any OAuth provider.
-This plugin comes with many pre-configured sites such as Facebook, 
-Google, LinkedIn, Microsoft, Twitter, Tumblr and many others. It
-is possible to configure any OAuth Provider with this plugin.
 
 == Description ==
-
-First tested with WordPress version 3.7. It will probably work with earlier
-versions but this has not been tested.
 
 The OAuth plugin for WordPress allows you to provide authentication against any
 OAuth provider. This plugin is uses the OAuth library by Manuel Lemos. The
@@ -35,6 +29,25 @@ and upload the files and directories to
 /path/to/your/webroot/wp-content/plugins/
 
 == Changelog ==
+
+0.4.4:
+Major rewrite. Much of the code in this release was intended to be released 
+only with version 0.5. However, the issues discovered leading to the 0.4.3
+release made me decided to create a release before the rewrite was completely
+done. This version should work reliable on all supported OAuth services. At
+this point, not all services can be supported. Pre-configured services are
+Facebook, github, Google, Linkedin Microsoft, and Twitter. Other services
+can be configured manually, but at the moment only those that use a flat
+data structure. Nested data structures will be supported in a future release.
+Data migration for earlier releases is included, but at this moment limited
+to Facebook, github, Google, Linkedin Microsoft, and Twitter.
+
+
+0.4.3:
+Database query fix. $wpdb->prepare was called with %d and a string as
+parameter. This error conceiled a number of other bugs. Any version
+prior to this release is considered unreliable. Due a design flaw any
+release only works with few providers. Known to work are Twitter and github.
 
 0.4.2: 
 Bugfixes in the Registration and Linking code. 

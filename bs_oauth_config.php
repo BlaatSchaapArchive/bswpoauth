@@ -721,6 +721,7 @@ function bsoauth_list_services(){
 
 //------------------------------------------------------------------------------
 function bsoauth_menu() {
+  if(!function_exists("blaat_page_registered")) return; // missing dependencies
 
   if (!blaat_page_registered('blaat_plugins')){
     add_menu_page('BlaatSchaap', 'BlaatSchaap', 'manage_options', 'blaat_plugins', 'blaat_plugins_page');

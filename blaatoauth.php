@@ -29,14 +29,18 @@ load_plugin_textdomain('blaat_auth', false, basename( dirname( __FILE__ ) ) . '/
 //------------------------------------------------------------------------------
 function bsoauth_init(){
   ob_start();
-  blaat_session_start();
-  if (class_exists("BlaatOAuth")) {
-    $oauth = new BlaatOAuth();
-    global $BSLOGIN_PLUGINS;
-    if (!isset($BSLOGIN_PLUGINS)) $BSLOGIN_PLUGINS = array();
-    $BSLOGIN_PLUGINS["blaat_oauth"]=$oauth;
+  if (function_exists("blaat_session_start")) {
+    blaat_session_start();
+    if (class_exists("BlaatOAuth")) {
+      $oauth = new BlaatOAuth();
+      global $BSLOGIN_PLUGINS;
+      if (!isset($BSLOGIN_PLUGINS)) $BSLOGIN_PLUGINS = array();
+      $BSLOGIN_PLUGINS["blaat_oauth"]=$oauth;
+    } else {
+      //missing dependencies blaat login base
+    }
   } else {
-    //missing dependencies
+    // missing dependencies blaat base
   }
 }
 //------------------------------------------------------------------------------
