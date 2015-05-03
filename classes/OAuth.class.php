@@ -11,13 +11,13 @@ if (interface_exists("AuthService")) {
       $db_migration_required = false;      
       $table_name = $wpdb->prefix . "bs_oauth_services";
       $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
-
+/*
       $table_name = $wpdb->prefix . "bs_oauth_custom"; 
       $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
 
       $table_name = $wpdb->prefix . "bs_oauth_sessions"; 
       $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
-
+*/
       if($db_migration_required) {
         // Usually BlaatLogin plugins are not supposed to generate pages by
         // themselves... they should provide config options to BlaatLogin
@@ -49,104 +49,121 @@ if (interface_exists("AuthService")) {
         
       } else {
 
-        $xmlroot->addChild("div", __(
-  "The database structure of BlaatLogin OAuth has changed. 
-  Previous versions of this plugin did not store all data required. We will try
-  to migrate the settings. We will automatically import configuration for
-  Facebook, github, Google, LinkedIn, Microsoft and Twitter. Other services
-  require additional configuration. At this point, some services cannot
-  be configured.","BlaatOAuth"));
 
 
+        if (isset($_POST["blaatoauth_migrate_delete_tables"])) {
+          $wpdb->query("DROP TABLE $table_services");          
+          $table_name = $wpdb->prefix . "bs_oauth_custom"; 
+          $wpdb->query("DROP TABLE $table_name");
+          $table_name = $wpdb->prefix . "bs_oauth_sessions";
+          $wpdb->query("DROP TABLE $table_name");
 
-        if (isset($_POST['blaatoauth_migrate_service_auto'])) {
-          $old_service_id = (int) $_POST['blaatoauth_migrate_service_auto'];
-          // Due the (int) cast, it's save to be used directly
-          if ($old_service_id) {
-            $query = "SELECT service_known_id FROM $table_known 
-                      WHERE service_name = 
-                        (SELECT client_name 
-                         FROM $table_services
-                         WHERE id = $old_service_id)";
-            $preconfig_service = $wpdb->get_var($query);
-            $new_service_id = self::addPreconfiguredService($preconfig_service);
+          $xmlroot->addChild("div", __("Data migration completed","BlaatOAuth"));
+          $xmlroot->addChild("div", __("Thank you for using BlaatLogin OAuth","BlaatOAuth"));
 
-            $query = "SELECT client_id,client_secret FROM $table_services WHERE id = $old_service_id";
-            $results = $wpdb->get_results($query, ARRAY_A); // get_col cannot be given the ARRAY_A parameter
-            $table_services_new = $wpdb->prefix . "bs_oauth_services_configured";
-            $wpdb->update($table_services_new, $results[0], array("service_id"=>$new_service_id));
 
-            // NOTE: enabled is not migrated 
+        } else {
 
-            $text = __("Service Migrated","BlaatOAuth");          
-            $xmldiv = $xmlroot->addChild("div", $text);
-            $xmldiv->addAttribute("class","updated");            
+          $xmlroot->addChild("div", __(
+    "The database structure of BlaatLogin OAuth has changed. 
+    Previous versions of this plugin did not store all data required. We will try
+    to migrate the settings. At his point, migration is supported for
+    Facebook, github, Google, LinkedIn, Microsoft and Twitter.","BlaatOAuth"));
 
-            $wpdb->delete($table_services, array("id"=>$old_service_id));
-            
-            
+
+          if (isset($_POST['blaatoauth_migrate_service_auto'])) {
+            $old_service_id = (int) $_POST['blaatoauth_migrate_service_auto'];
+            // Due the (int) cast, it's save to be used directly
+            if ($old_service_id) {
+              $query = "SELECT service_known_id FROM $table_known 
+                        WHERE service_name = 
+                          (SELECT client_name 
+                           FROM $table_services
+                           WHERE id = $old_service_id)";
+              $preconfig_service = $wpdb->get_var($query);
+              $new_service_id = self::addPreconfiguredService($preconfig_service);
+
+              $query = "SELECT client_id,client_secret FROM $table_services WHERE id = $old_service_id";
+              $results = $wpdb->get_results($query, ARRAY_A); // get_col cannot be given the ARRAY_A parameter
+              $table_services_new = $wpdb->prefix . "bs_oauth_services_configured";
+              $wpdb->update($table_services_new, $results[0], array("service_id"=>$new_service_id));
+
+              // NOTE: enabled is not migrated 
+
+              $text = __("Service Migrated","BlaatOAuth");          
+              $xmldiv = $xmlroot->addChild("div", $text);
+              $xmldiv->addAttribute("class","updated");            
+
+              $wpdb->delete($table_services, array("id"=>$old_service_id));
+              
+            }
           }
-        }
 
-
-        $xmlform = $xmlroot->addChild("form");
-        $xmlform->addAttribute("method","post");
-        $done = true;
+          $xmlform = $xmlroot->addChild("form");
+          $xmlform->addAttribute("method","post");
+          $done = true;
 
 
 
-        $query = "SELECT client_name,id FROM $table_services WHERE client_name IN " .
-                 "(SELECT service_name FROM $table_known)";
-        $results = $wpdb->get_results($query);
-        //$xmlroot->addChild("pre", var_export($results,true));
-        if (count($results)) {
-          $done=false;
-          $xmlform->addChild("div",__("The following services can be migrated automatically","BlaatOAuth"));
-          foreach ($results as $result) {
-            $text = sprintf(__("Migrate %s","BlaatOAuth"), $result->client_name);
-            $xmlbutton = $xmlform->addChild("button",$text);
-            $xmlbutton->addAttribute("name","blaatoauth_migrate_service_auto");
-            $xmlbutton->addAttribute("value",$result->id);
+          $query = "SELECT client_name,id FROM $table_services WHERE client_name IN " .
+                   "(SELECT service_name FROM $table_known)";
+          $results = $wpdb->get_results($query);
+          //$xmlroot->addChild("pre", var_export($results,true));
+          if (count($results)) {
+            $done=false;
+            $xmlform->addChild("div",__("The following services can be migrated automatically","BlaatOAuth"));
+            foreach ($results as $result) {
+              $text = sprintf(__("Migrate %s","BlaatOAuth"), $result->client_name);
+              $xmlbutton = $xmlform->addChild("button",$text);
+              $xmlbutton->addAttribute("name","blaatoauth_migrate_service_auto");
+              $xmlbutton->addAttribute("value",$result->id);
+            }
           }
-        }
 
-        $query = "SELECT client_name,id FROM $table_services WHERE client_name NOT IN " .
-                 "(SELECT service_name FROM $table_known)";
-        $results = $wpdb->get_results($query);
+          $query = "SELECT client_name,id FROM $table_services WHERE client_name NOT IN " .
+                   "(SELECT service_name FROM $table_known)";
+          $results = $wpdb->get_results($query);
 
-        if (count($results)) {
-          $done=false;
-          $xmlform->addChild("div",__("The following services require additional configuration","BlaatOAuth"));
-          foreach ($results as $result) {
-            $text = sprintf(__("Migrate %s","BlaatOAuth"), $result->client_name);
-            $xmlbutton = $xmlform->addChild("button",$text);
-            $xmlbutton->addAttribute("name","blaatoauth_migrate_service_semi");
-            $xmlbutton->addAttribute("value",$result->id);
+          if (count($results)) {
+            $done=false;
+            $xmlform->addChild("div",__("The following services cannot be automatically migrated yet in this release","BlaatOAuth"));
+            foreach ($results as $result) {
+              $text = sprintf(__("Migrate %s","BlaatOAuth"), $result->client_name);
+              $xmlbutton = $xmlform->addChild("button",$text);
+              $xmlbutton->addAttribute("name","blaatoauth_migrate_service_semi");
+              $xmlbutton->addAttribute("value",$result->id);
+              $xmlbutton->addAttribute("disabled","true");
+            }
           }
-        }
 
-        $query = "SELECT display_name,id FROM $table_services WHERE client_name IS NULL";
-        $results = $wpdb->get_results($query);
+          $query = "SELECT display_name,id FROM $table_services WHERE client_name IS NULL";
+          $results = $wpdb->get_results($query);
 
-        if (count($results)) {
-          $done=false;
-          $xmlform->addChild("div",__("The following services are manually configured and cannot be converted automatically","BlaatOAuth"));
-          foreach ($results as $result) {
-            $text = sprintf(__("Migrate %s","BlaatOAuth"), $result->display_name);
-            $xmlbutton = $xmlform->addChild("button",$text);
-            $xmlbutton->addAttribute("name","blaatoauth_migrate_service_manual");
-            $xmlbutton->addAttribute("value",$result->id);
+          if (count($results)) {
+            $done=false;
+            $xmlform->addChild("div",__("Manually configured services cannot be migrated yet in this release","BlaatOAuth"));
+            foreach ($results as $result) {
+              $text = sprintf(__("Migrate %s","BlaatOAuth"), $result->display_name);
+              $xmlbutton = $xmlform->addChild("button",$text);
+              $xmlbutton->addAttribute("name","blaatoauth_migrate_service_manual");
+              $xmlbutton->addAttribute("value",$result->id);
+              $xmlbutton->addAttribute("disabled","true");
+            }
           }
+
+          if ($done) {
+            $xmlform->addChild("div",__("All services have been migrated. The old table can be removed.","BlaatOAuth"));
+              $xmlbutton = $xmlform->addChild("button",$text);
+              $xmlbutton->addAttribute("name","blaatoauth_migrate_delete_tables");
+              $xmlbutton->addAttribute("value",1);
+          }
+
+          $xmlform->addChild("div",__("If you need help migrating your configured services, you can contact me using the link below","BlaatOAuth"));
+          $xmla = $xmlform->addChild("a",__("contact me","BlaatOAuth"));
+          $xmla->addAttribute("href", "http://code.blaatschaap.be/contact/");
+          $xmla->addAttribute("target", "_blank");
+
         }
-
-        if ($done) {
-          $xmlform->addChild("div",__("All services have been migrated. The old table can be removed.","BlaatOAuth"));
-            $xmlbutton = $xmlform->addChild("button",$text);
-            $xmlbutton->addAttribute("name","blaatoauth_migrate_delete_table");
-            $xmlbutton->addAttribute("value",1);
-        }
-
-
       }
       BlaatSchaap::xml2html($xmlroot);
 
@@ -156,15 +173,9 @@ if (interface_exists("AuthService")) {
       // TODO: how to get link to the page?
       $class = "update-nag";
       $href = "admin.php?page=blaatoauth_configure_migration";
-      $message = __(
-"The database structure of BlaatLogin OAuth has changed. 
-Previous versions of this plugin did not store all data required. We will try
-to migrate the settings. We will automatically import configuration for
-Facebook, github, Google, LinkedIn, Microsoft and Twitter. Other services
-require additional configuration. At this point, some services cannot
-be configured.","BlaatOAuth");
+      $message = __("The database structure of BlaatLogin OAuth has changed.","BlaatOAuth");
 
-    	$message .= sprintf(__("Please consult the <a href='%s'>migration settings</a>","BlaatLogin"), $href);
+    	$message .= " " .sprintf(__("Please consult the <a href='%s'>migration settings</a>","BlaatLogin"), $href);
       $title = __("BlaatLogin OAuth", "BlaatOAuth");
       echo"<div class=\"$class\"> <h1>$title</h1><p>$message</p></div>"; 
     }
@@ -238,7 +249,7 @@ be configured.","BlaatOAuth");
           $button['icon']=  plugin_dir_url(__FILE__) . "../icons/" . $result['default_icon'];
         }
 
-        $button['order']        = $result['display_order'];
+        $button['order']        = $result['sortorder'];
         $button['plugin']       = "blaat_oauth";
         $button['id']           = $result['service_id'];
         $button['display_name'] = $result['display_name'];
@@ -296,7 +307,7 @@ be configured.","BlaatOAuth");
         }
 
 
-        $button['order']   = $available_service['display_order'];
+        $button['order']   = $available_service['sortorder'];
         $button['plugin']  = "blaat_oauth";
         $button['id']      = $available_service['service_id'];
         //$button['service'] = $service;
