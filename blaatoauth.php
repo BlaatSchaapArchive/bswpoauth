@@ -30,8 +30,8 @@ load_plugin_textdomain('blaat_auth', false, basename( dirname( __FILE__ ) ) . '/
 function bsoauth_init(){
   ob_start();
   blaat_session_start();
-  if (class_exists("OAuth")) {
-    $oauth = new OAuth();
+  if (class_exists("BlaatOAuth")) {
+    $oauth = new BlaatOAuth();
     global $BSLOGIN_PLUGINS;
     if (!isset($BSLOGIN_PLUGINS)) $BSLOGIN_PLUGINS = array();
     $BSLOGIN_PLUGINS["blaat_oauth"]=$oauth;
@@ -52,7 +52,7 @@ function bsoauth_styles(){
 
 
 
-register_activation_hook(__FILE__,"OAuth::install");
+register_activation_hook(__FILE__,"BlaatOAuth::install");
 
 add_action("wp_enqueue_scripts",    "bsoauth_styles" );
 add_action("admin_enqueue_scripts", "bsoauth_styles" );

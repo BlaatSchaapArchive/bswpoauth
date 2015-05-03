@@ -3,10 +3,176 @@
 require_once("OAuthException.class.php");
 
 if (interface_exists("AuthService")) {
-  class OAuth implements AuthService {
+  class BlaatOAuth implements AuthService {
   //------------------------------------------------------------------------------
 
+    public function init(){
+      global $wpdb;
+      $db_migration_required = false;      
+      $table_name = $wpdb->prefix . "bs_oauth_services";
+      $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
+
+      $table_name = $wpdb->prefix . "bs_oauth_custom"; 
+      $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
+
+      $table_name = $wpdb->prefix . "bs_oauth_sessions"; 
+      $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
+
+      if($db_migration_required) {
+        // Usually BlaatLogin plugins are not supposed to generate pages by
+        // themselves... they should provide config options to BlaatLogin
+        // and handled by BlaatBase. However, data migration is an exceptional
+        // case, not part of normal configuration.
+
+        add_submenu_page('blaat_plugins' ,  __('BlaatLogin OAuth Migration',"BlaatOAuth"),   
+                                            __('BlaatLogin OAuth Migration',"BlaatOAuth"), 
+                                            'manage_options', 
+                                            'blaatoauth_configure_migration', 
+                                            'BlaatOAuth::generateMigrationPage' );
+
+        add_action( 'admin_notices', 'BlaatOAuth::generateMigrationPageNotice' ); 
+
+      }
+    }
+
+
+    function generateMigrationPage(){
+      global $wpdb;
+      $table_services = $wpdb->prefix . "bs_oauth_services";
+      $table_known = $wpdb->prefix . "bs_oauth_services_known";
+
+      $xmlroot = new SimpleXMLElement('<div />');
+      $xmlroot->addChild("h1", __('BlaatLogin OAuth Migration',"BlaatLogin"));
+      if (isset($_POST['blaatoauth_page_migration'])) {
+
+      // bs_oauth_services.client_name bs_oauth_services_known.service_name
+        
+      } else {
+
+        $xmlroot->addChild("div", __(
+  "The database structure of BlaatLogin OAuth has changed. 
+  Previous versions of this plugin did not store all data required. We will try
+  to migrate the settings. We will automatically import configuration for
+  Facebook, github, Google, LinkedIn, Microsoft and Twitter. Other services
+  require additional configuration. At this point, some services cannot
+  be configured.","BlaatOAuth"));
+
+
+
+        if (isset($_POST['blaatoauth_migrate_service_auto'])) {
+          $old_service_id = (int) $_POST['blaatoauth_migrate_service_auto'];
+          // Due the (int) cast, it's save to be used directly
+          if ($old_service_id) {
+            $query = "SELECT service_known_id FROM $table_known 
+                      WHERE service_name = 
+                        (SELECT client_name 
+                         FROM $table_services
+                         WHERE id = $old_service_id)";
+            $preconfig_service = $wpdb->get_var($query);
+            $new_service_id = self::addPreconfiguredService($preconfig_service);
+
+            $query = "SELECT client_id,client_secret FROM $table_services WHERE id = $old_service_id";
+            $results = $wpdb->get_results($query, ARRAY_A); // get_col cannot be given the ARRAY_A parameter
+            $table_services_new = $wpdb->prefix . "bs_oauth_services_configured";
+            $wpdb->update($table_services_new, $results[0], array("service_id"=>$new_service_id));
+
+            // NOTE: enabled is not migrated 
+
+            $text = __("Service Migrated","BlaatOAuth");          
+            $xmldiv = $xmlroot->addChild("div", $text);
+            $xmldiv->addAttribute("class","updated");            
+
+            $wpdb->delete($table_services, array("id"=>$old_service_id));
+            
+            
+          }
+        }
+
+
+        $xmlform = $xmlroot->addChild("form");
+        $xmlform->addAttribute("method","post");
+        $done = true;
+
+
+
+        $query = "SELECT client_name,id FROM $table_services WHERE client_name IN " .
+                 "(SELECT service_name FROM $table_known)";
+        $results = $wpdb->get_results($query);
+        //$xmlroot->addChild("pre", var_export($results,true));
+        if (count($results)) {
+          $done=false;
+          $xmlform->addChild("div",__("The following services can be migrated automatically","BlaatOAuth"));
+          foreach ($results as $result) {
+            $text = sprintf(__("Migrate %s","BlaatOAuth"), $result->client_name);
+            $xmlbutton = $xmlform->addChild("button",$text);
+            $xmlbutton->addAttribute("name","blaatoauth_migrate_service_auto");
+            $xmlbutton->addAttribute("value",$result->id);
+          }
+        }
+
+        $query = "SELECT client_name,id FROM $table_services WHERE client_name NOT IN " .
+                 "(SELECT service_name FROM $table_known)";
+        $results = $wpdb->get_results($query);
+
+        if (count($results)) {
+          $done=false;
+          $xmlform->addChild("div",__("The following services require additional configuration","BlaatOAuth"));
+          foreach ($results as $result) {
+            $text = sprintf(__("Migrate %s","BlaatOAuth"), $result->client_name);
+            $xmlbutton = $xmlform->addChild("button",$text);
+            $xmlbutton->addAttribute("name","blaatoauth_migrate_service_semi");
+            $xmlbutton->addAttribute("value",$result->id);
+          }
+        }
+
+        $query = "SELECT display_name,id FROM $table_services WHERE client_name IS NULL";
+        $results = $wpdb->get_results($query);
+
+        if (count($results)) {
+          $done=false;
+          $xmlform->addChild("div",__("The following services are manually configured and cannot be converted automatically","BlaatOAuth"));
+          foreach ($results as $result) {
+            $text = sprintf(__("Migrate %s","BlaatOAuth"), $result->display_name);
+            $xmlbutton = $xmlform->addChild("button",$text);
+            $xmlbutton->addAttribute("name","blaatoauth_migrate_service_manual");
+            $xmlbutton->addAttribute("value",$result->id);
+          }
+        }
+
+        if ($done) {
+          $xmlform->addChild("div",__("All services have been migrated. The old table can be removed.","BlaatOAuth"));
+            $xmlbutton = $xmlform->addChild("button",$text);
+            $xmlbutton->addAttribute("name","blaatoauth_migrate_delete_table");
+            $xmlbutton->addAttribute("value",1);
+        }
+
+
+      }
+      BlaatSchaap::xml2html($xmlroot);
+
+    }
+//------------------------------------------------------------------------------
+    function generateMigrationPageNotice(){
+      // TODO: how to get link to the page?
+      $class = "update-nag";
+      $href = "admin.php?page=blaatoauth_configure_migration";
+      $message = __(
+"The database structure of BlaatLogin OAuth has changed. 
+Previous versions of this plugin did not store all data required. We will try
+to migrate the settings. We will automatically import configuration for
+Facebook, github, Google, LinkedIn, Microsoft and Twitter. Other services
+require additional configuration. At this point, some services cannot
+be configured.","BlaatOAuth");
+
+    	$message .= sprintf(__("Please consult the <a href='%s'>migration settings</a>","BlaatLogin"), $href);
+      $title = __("BlaatLogin OAuth", "BlaatOAuth");
+      echo"<div class=\"$class\"> <h1>$title</h1><p>$message</p></div>"; 
+    }
+//------------------------------------------------------------------------------
+
+
     public $redirect_uri; // override the redirect url
+
 
   //------------------------------------------------------------------------------
     public function Login($service_id){
@@ -173,6 +339,8 @@ if (interface_exists("AuthService")) {
       $service_id = $_POST['service_id'];
       $table_name = $wpdb->prefix . "bs_oauth_services_configured";
       $query = $wpdb->delete($table_name, array("service_id" => $service_id) );
+      $table_name = $wpdb->prefix . "bs_oauth_accounts";
+      $query = $wpdb->delete($table_name, array("service_id" => $service_id) );
     }
   //------------------------------------------------------------------------------
     public function addConfig() {
@@ -225,7 +393,7 @@ if (interface_exists("AuthService")) {
         } else if ($result['fixed_redirect_url']) {
           // old default, loggin in page
           // TODO page migration
-          $client->redirect_uri  = site_url("/".get_option("login_page"));
+          $client->redirect_uri  = site_url("/".get_option("blaatlogin_page"));
         } else if (strlen($result['override_redirect_url'])) {  
         // allow redirect-uri overrides from database
           $client->redirect_uri  = $result['override_redirect_url'];
@@ -345,48 +513,6 @@ if (interface_exists("AuthService")) {
         dbDelta($query);
 
 
-        $table_name = $wpdb->prefix . "bs_oauth_services_known";
-        $query = "CREATE TABLE $table_name (
-                  `service_known_id` INT NOT NULL AUTO_INCREMENT   ,
-                  `service_name` TEXT NULL DEFAULT NULL ,
-                  `oauth_version` ENUM('1.0','1.0a','2.0') DEFAULT '2.0',
-                  `request_token_url` TEXT NULL DEFAULT NULL,
-                  `dialog_url` TEXT NOT NULL,
-                  `access_token_url` TEXT NOT NULL,
-                  `userinfo_url` TEXT NOT NULL,
-                  `userinfo_api_known_id` INT NULL DEFAULT NULL ,
-                  `url_parameters` BOOLEAN DEFAULT FALSE,
-                  `authorization_header` BOOLEAN DEFAULT TRUE,
-                  `append_state_to_redirect_uri` TEXT NULL DEFAULT NULL,
-                  `pin_dialog_url` TEXT NULL DEFAULT NULL,
-                  `offline_dialog_url` TEXT NULL DEFAULT NULL,
-                  `default_icon`  TEXT NULL DEFAULT NULL,
-                  `variant`  TEXT NULL DEFAULT NULL,
-                  KEY (service_name(255)),
-                  PRIMARY KEY  (service_known_id)
-                  );";
-        dbDelta($query);
-
-        $table_name = $wpdb->prefix . "bs_oauth_userinfo_api_known";
-        $query = "CREATE TABLE $table_name (
-                  `userinfo_api_known_id` INT NOT NULL AUTO_INCREMENT   ,
-                  `request_method` ENUM('GET', 'POST') DEFAULT 'GET',
-                  `api_name` TEXT NULL DEFAULT NULL ,
-                  `data_format` ENUM('FORM','JSON','XML') DEFAULT 'JSON',
-                  `external_id` TEXT NULL DEFAULT NULL ,
-                  `first_name`  TEXT NULL DEFAULT NULL ,
-                  `last_name`  TEXT NULL DEFAULT NULL ,
-                  `user_email`  TEXT NULL DEFAULT NULL ,
-                  `user_url`  TEXT NULL DEFAULT NULL ,
-                  `user_nicename`  TEXT NULL DEFAULT NULL ,
-                  `user_login`  TEXT NULL DEFAULT NULL ,
-                  `scope`  TEXT NULL DEFAULT NULL ,
-                  `email_verified`  TEXT NULL DEFAULT NULL ,
-                  PRIMARY KEY  (userinfo_api_known_id)
-        );";
-        dbDelta($query);
-
-
         $table_name = $wpdb->prefix . "bs_oauth_services_configured";
         $query = "CREATE TABLE $table_name (
                   `service_id` INT NOT NULL AUTO_INCREMENT  ,
@@ -421,6 +547,12 @@ if (interface_exists("AuthService")) {
                   );";
         dbDelta($query);
    
+
+        $service_info = file_get_contents(  plugin_dir_path( __DIR__ ) . "/sql/service_data.sql");
+        if ($wpdb->prefix != "wp_") $service_info = str_replace("wp_", $wpdb->prefix);
+        $service_info_queries = explode(";", $service_info);
+        foreach ($service_info_queries as $query) $wpdb->query($query);
+
         update_option( "bs_oauth_dbversion" , $dbver);
         update_option( "bs_oauth_dbmigrate50required" , true);
       }
@@ -467,7 +599,7 @@ if (interface_exists("AuthService")) {
         // TODO : test if already linked, but first we need to see if this new
         // implementation even works.
 
-        $debug = true;
+        $debug = false;
         if ($debug) {
           echo "API Result:<pre>";
           print_r($userinfo);
@@ -487,10 +619,10 @@ if (interface_exists("AuthService")) {
         // http://php.net/manual/en/function.ctype-digit.php 
         // been looking forever for this function
         if (ctype_digit($external_id))  {
-          $testQuery = $wpdb->prepare("select count(*) from $table_name where external_id_int = %d", $external_id);
+          $testQuery = $wpdb->prepare("select count(*) from $table_name where external_id_int = %d AND service_id = %d", $external_id, $result['service_id']);
           $data['external_id_int']=$external_id;
         } else {
-          $testQuery = $wpdb->prepare("select count(*) from $table_name where external_id_text = %s", $external_id);
+          $testQuery = $wpdb->prepare("select count(*) from $table_name where external_id_text = %s AND service_id = %d", $external_id, $result['service_id']);
           $data['external_id_text']=$external_id;
         }
         if ($wpdb->get_var($testQuery)) return AuthStatus::LinkInUse;
