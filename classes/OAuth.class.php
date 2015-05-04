@@ -7,32 +7,34 @@ if (interface_exists("AuthService")) {
   //------------------------------------------------------------------------------
 
     public function init(){
-      global $wpdb;
-      $db_migration_required = false;      
-      $table_name = $wpdb->prefix . "bs_oauth_services";
-      $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
-/*
-      $table_name = $wpdb->prefix . "bs_oauth_custom"; 
-      $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
+      if (class_exists("BlaatSchaap")) {
+        global $wpdb;
+        $db_migration_required = false;      
+        $table_name = $wpdb->prefix . "bs_oauth_services";
+        $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
+  /*
+        $table_name = $wpdb->prefix . "bs_oauth_custom"; 
+        $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
 
-      $table_name = $wpdb->prefix . "bs_oauth_sessions"; 
-      $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
-*/
-      if($db_migration_required) {
-        // Usually BlaatLogin plugins are not supposed to generate pages by
-        // themselves... they should provide config options to BlaatLogin
-        // and handled by BlaatBase. However, data migration is an exceptional
-        // case, not part of normal configuration.
+        $table_name = $wpdb->prefix . "bs_oauth_sessions"; 
+        $db_migration_required |= BlaatSchaap::DBTableExists($table_name);
+  */
+        if($db_migration_required) {
+          // Usually BlaatLogin plugins are not supposed to generate pages by
+          // themselves... they should provide config options to BlaatLogin
+          // and handled by BlaatBase. However, data migration is an exceptional
+          // case, not part of normal configuration.
 
-        add_submenu_page('blaat_plugins' ,  __('BlaatLogin OAuth Migration',"BlaatOAuth"),   
-                                            __('BlaatLogin OAuth Migration',"BlaatOAuth"), 
-                                            'manage_options', 
-                                            'blaatoauth_configure_migration', 
-                                            'BlaatOAuth::generateMigrationPage' );
+          add_submenu_page('blaat_plugins' ,  __('BlaatLogin OAuth Migration',"BlaatOAuth"),   
+                                              __('BlaatLogin OAuth Migration',"BlaatOAuth"), 
+                                              'manage_options', 
+                                              'blaatoauth_configure_migration', 
+                                              'BlaatOAuth::generateMigrationPage' );
 
-        add_action( 'admin_notices', 'BlaatOAuth::generateMigrationPageNotice' ); 
+          add_action( 'admin_notices', 'BlaatOAuth::generateMigrationPageNotice' ); 
 
-      }
+        }
+      } // else missing dependencies
     }
 
 
@@ -153,7 +155,7 @@ if (interface_exists("AuthService")) {
 
           if ($done) {
             $xmlform->addChild("div",__("All services have been migrated. The old table can be removed.","BlaatOAuth"));
-              $xmlbutton = $xmlform->addChild("button",$text);
+              $xmlbutton = $xmlform->addChild("button",__("Delete old tables","BlaatOAuth"));
               $xmlbutton->addAttribute("name","blaatoauth_migrate_delete_tables");
               $xmlbutton->addAttribute("value",1);
           }
