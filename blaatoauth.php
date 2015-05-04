@@ -22,6 +22,7 @@ require_once("bs_oauth_config.php");
 //require_once("classes/AuthService.class.php"); // Moved to BlaatLogin Base Plugin
 require_once("classes/OAuth.class.php");
 require_once("required_plugins.php");
+require_once("db.php");
 
 
 //------------------------------------------------------------------------------
@@ -56,7 +57,7 @@ function bsoauth_styles(){
 
 
 
-register_activation_hook(__FILE__,"BlaatOAuth::install");
+register_activation_hook(__FILE__,"blaatoauth_install_database");
 
 add_action("wp_enqueue_scripts",    "bsoauth_styles" );
 add_action("admin_enqueue_scripts", "bsoauth_styles" );
