@@ -487,7 +487,7 @@ if (interface_exists("AuthService")) {
       global $wpdb;
       global $bs_oauth_plugin;
       // dbver in sync with plugin ver
-      $dbver = 50;
+      $dbver = 44;
       $live_dbver = get_option( "bs_oauth_dbversion" );
       
       if (($dbver != $live_dbver) || get_option("bs_debug_updatedb") ) {
