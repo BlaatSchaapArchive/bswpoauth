@@ -690,11 +690,11 @@ if (interface_exists("AuthService")) {
                       __("Enabled","blaat_auth"),
                       "checkbox",false,true));
 
-
+      /* Not yet implemented, hiding the option
       $GenericTab->addOption(new BlaatConfigOption("auto_register",
                       __("Auto Register","blaat_auth"),
                       "checkbox",false,true));
-
+      */
 
 
       // OAUTH FIELDS
@@ -735,13 +735,13 @@ if (interface_exists("AuthService")) {
                     "text",true));
 
       $OAuthTab->addOption(new BlaatConfigOption("url_parameters",
-                    "url_parameters" /* !! */,
+                    __("URL Parameters","blaat_auth"),
                     "checkbox"));
 
       $OAuthTab->addOption(new BlaatConfigOption("authorization_header",
-                    "authorization_header" /* !! */,
-                    "checkbox",false,true)); // default is set to true
-                                                  // so why does it not show up?
+                    __("Authorization Header","blaat_auth"),
+                    "checkbox",false,true)); 
+                                             
 
     // OPTIONAL FIELDS
       $OAuthTab->addOption(new BlaatConfigOption("pin_dialog_url",
@@ -761,6 +761,12 @@ if (interface_exists("AuthService")) {
 
 
       // API FIELDS
+
+
+      $APITab->addOption(new BlaatConfigOption("userinfo_url",
+                    __("User info API URL","blaat_auth"),
+                    "url",true));
+
         
       $configoption = new BlaatConfigOption("request_method",
                       __("Request Method","blaat_auth"),
