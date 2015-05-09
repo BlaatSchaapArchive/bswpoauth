@@ -406,7 +406,9 @@ if (interface_exists("AuthService")) {
         } else if ($result['fixed_redirect_url']) {
           // old default, loggin in page
           // TODO page migration
-          $client->redirect_uri  = site_url("/".get_option("blaatlogin_page"));
+          //$client->redirect_uri  = site_url("/".get_option("blaatlogin_page"));
+          // OK ... but what about http vs https?
+          $client->redirect_uri  = get_permalink(get_option("blaatlogin_page"));
         } else if (strlen($result['override_redirect_url'])) {  
         // allow redirect-uri overrides from database
           $client->redirect_uri  = $result['override_redirect_url'];
@@ -650,7 +652,7 @@ if (interface_exists("AuthService")) {
 
 
   //------------------------------------------------------------------------------
-    public function getConfigOptions() {
+    public function getConfigOptions(&$tabs) {
       // sort the options in tabs
       // general / oauth / api / hidden
       // TODO: possibly hide preconfigured values for preconfigures services
@@ -658,7 +660,7 @@ if (interface_exists("AuthService")) {
 
       $options=array();  
 
-      $tabs=array();  
+      //$tabs=array();  
 
 
       // HIDDEN FIELDS
@@ -677,24 +679,7 @@ if (interface_exists("AuthService")) {
       $tabs[]=$HiddenTab;
 
 
-      // GENERIC FIELDS // TODO move to BlaatLogin
-      $GenericTab = new BlaatConfigTab("generic", 
-                      __("Generic configuration","blaat_oauth"));
-      $tabs[]=$GenericTab;
 
-      $GenericTab->addOption(new BlaatConfigOption("display_name",
-                      __("Display name","blaat_auth"),
-                      "text",true));
-
-      $GenericTab->addOption(new BlaatConfigOption("enabled",
-                      __("Enabled","blaat_auth"),
-                      "checkbox",false,true));
-
-      /* Not yet implemented, hiding the option
-      $GenericTab->addOption(new BlaatConfigOption("auto_register",
-                      __("Auto Register","blaat_auth"),
-                      "checkbox",false,true));
-      */
 
 
       // OAUTH FIELDS
