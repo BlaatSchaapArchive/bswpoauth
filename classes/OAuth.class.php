@@ -881,7 +881,92 @@ if (interface_exists("AuthService")) {
       return $services;
     }
 
+      public function getServicesLinked($wordpress_id=0, $enabled=true){
+        global $wpdb;
+        $services = array(); 
+        $services['linked']= array();
+        $services['unlinked'] = array();
+    
 
+        $tables =      $wpdb->prefix . "bs_oauth_services_configured ".
+            " JOIN  " . $wpdb->prefix . "bs_oauth_accounts" .
+  " on " . $wpdb->prefix . "bs_oauth_accounts.service_id=" . $wpdb->prefix . "bs_oauth_services_configured.service_id";
+
+        if ($wordpress_id) {
+          $user_id = $wordpress_id;
+        } else {
+          $user = wp_get_current_user();
+          $user_id    = $user->ID;
+        }
+        
+        $query = $wpdb->prepare("SELECT ".$wpdb->prefix ."bs_oauth_services_configured.service_id AS service_id FROM $tables WHERE `wordpress_id` = %d",$user_id);
+
+
+
+        $linked_services = $wpdb->get_results($query,ARRAY_A);
+         
+        
+        $table_name = $wpdb->prefix . "bs_oauth_services_configured
+                  JOIN ". $wpdb->prefix . "bs_login_generic_options 
+                 ON ".$wpdb->prefix . "bs_oauth_services_configured.login_options_id = ". $wpdb->prefix . "bs_login_generic_options.login_options_id"  ;
+
+        $query = "SELECT * FROM $table_name" ;
+        if ($enabled) $query .= " where enabled=1";
+        //$available_services = $wpdb->get_results($query,ARRAY_A);
+        $available_services = $wpdb->get_results($query);
+
+
+
+
+        $linked = Array();
+        foreach ($linked_services as $linked_service) {
+          $linked[]=$linked_service['service_id'];
+        }  
+
+
+        
+        
+        foreach ($available_services as $available_service) {
+          
+
+
+
+        if($available_service->custom_icon_enabled) {
+          $icon= $available_service->custom_icon_url;
+        } elseif($available_service->default_icon) {
+          $icon=  plugin_dir_url(__DIR__) . "/icons/" . $available_service->default_icon;
+        }
+
+          
+        /*
+        $button['order']   = $available_service['sortorder'];
+        $button['plugin']  = "blaat_oauth";
+        $button['id']      = $available_service['service_id'];
+        //$button['service'] = $service;
+
+        $button['display_name'] = $available_service['display_name'];
+       */
+
+        $service = new BlaatLoginService("blaat_oauth",
+                                         $available_service->service_id, 
+                                         $available_service->display_name, 
+                                         $available_service->sortorder, 
+                                         $icon, $available_service->enabled,
+                                         $available_service->login_options_id);
+
+        
+        
+        if (in_array($available_service->service_id,$linked)) { 
+          $services['linked'][]=$service;
+        //$button;
+        } else {
+          $services['unlinked'][]=$service;
+        }
+
+
+      }
+      return $services;
+    }
   }
 } else {// end interface exists AuthService
   // missing dependencies
